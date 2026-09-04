@@ -1,0 +1,406 @@
+﻿{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Central Excel Data Hub{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-file-excel me-2 text-success"></i> Central Data Exchange & Excel Hub
+    </h3>
+    <p class="text-muted small mb-0">
+      Universal bidirectional Excel (.xlsx) integration: download sample templates, perform bulk student/teacher/class onboarding, and export real-time institutional backups.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'download_db_backup' %}" class="btn btn-warning text-dark fw-bold shadow-sm">
+      <i class="fas fa-database me-1"></i> Full SQL / DB Backup
+    </a>
+  </div>
+</div>
+
+<!-- Quick Statistics Banner -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-primary text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Active Students</div>
+          <h3 class="fw-bold mb-0">{{ active_students }}</h3>
+          <span class="small text-white-50">Total Registered: {{ total_students }}</span>
+        </div>
+        <i class="fas fa-user-graduate fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-success text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Active Faculty</div>
+          <h3 class="fw-bold mb-0">{{ active_teachers }}</h3>
+          <span class="small text-white-50">Teachers & Staff</span>
+        </div>
+        <i class="fas fa-chalkboard-teacher fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-info text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Academic Classes</div>
+          <h3 class="fw-bold mb-0">{{ total_classes }}</h3>
+          <span class="small text-white-50">{{ total_sections }} Configured Sections</span>
+        </div>
+        <i class="fas fa-school fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-dark text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Excel Engine</div>
+          <h3 class="fw-bold mb-0">openpyxl</h3>
+          <span class="small text-white-50">Standard .xlsx Compatible</span>
+        </div>
+        <i class="fas fa-file-invoice fa-2x text-warning opacity-75"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Cards Grid -->
+<div class="row g-4 mb-4">
+
+  <!-- 1. Students & Admissions -->
+  <div class="col-lg-4 col-md-6">
+    <div class="card h-100 shadow-sm border-top border-primary border-3">
+      <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-primary-subtle text-primary p-3 rounded-circle me-3">
+            <i class="fas fa-user-graduate fa-lg"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Students & Admissions</h5>
+            <span class="badge bg-primary">Bulk Data & Roster</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Export full student directories with admission numbers, class & section assignments, father names, contact details, and dates. Upload standardized spreadsheets to onboard hundreds of students in seconds with automatic 12-month fee ledger initialization.
+        </p>
+        <div class="d-grid gap-2">
+          <a href="{% url 'export_students_excel' %}" class="btn btn-primary fw-bold">
+            <i class="fas fa-download me-1"></i> Export All Students (.xlsx)
+          </a>
+          <a href="{% url 'download_student_template' %}" class="btn btn-outline-primary">
+            <i class="fas fa-file-excel me-1"></i> Download Sample Template
+          </a>
+          <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importStudentModal">
+            <i class="fas fa-upload me-1"></i> Bulk Import Students
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Teachers & Staff -->
+  <div class="col-lg-4 col-md-6">
+    <div class="card h-100 shadow-sm border-top border-success border-3">
+      <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-success-subtle text-success p-3 rounded-circle me-3">
+            <i class="fas fa-chalkboard-teacher fa-lg"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Faculty & Staff</h5>
+            <span class="badge bg-success">Staff Management</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Export institutional staff lists with Staff IDs, designations, national identity numbers (CNIC), salary scale grades, and contact details. Bulk import existing school teaching staff directly from Excel.
+        </p>
+        <div class="d-grid gap-2">
+          <a href="{% url 'export_teachers_excel' %}" class="btn btn-success fw-bold">
+            <i class="fas fa-download me-1"></i> Export Staff Directory (.xlsx)
+          </a>
+          <a href="{% url 'download_teacher_template' %}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel me-1"></i> Download Sample Template
+          </a>
+          <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importTeacherModal">
+            <i class="fas fa-upload me-1"></i> Bulk Import Staff
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Classes & Sections -->
+  <div class="col-lg-4 col-md-6">
+    <div class="card h-100 shadow-sm border-top border-info border-3">
+      <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-info-subtle text-info p-3 rounded-circle me-3">
+            <i class="fas fa-chalkboard fa-lg"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Classes & Sections</h5>
+            <span class="badge bg-info text-dark">Academic Setup</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Manage institutional grade structure, monthly fee schedules per class level, and section breakdowns. Easily initialize or replicate the complete class roster across schools or branches.
+        </p>
+        <div class="d-grid gap-2">
+          <a href="{% url 'export_classes_excel' %}" class="btn btn-info text-dark fw-bold">
+            <i class="fas fa-download me-1"></i> Export Classes & Fee Setup
+          </a>
+          <a href="{% url 'download_class_template' %}" class="btn btn-outline-info text-dark">
+            <i class="fas fa-file-excel me-1"></i> Download Sample Template
+          </a>
+          <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importClassModal">
+            <i class="fas fa-upload me-1"></i> Bulk Import Classes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Fee Registers & Defaulters -->
+  <div class="col-lg-6 col-md-6">
+    <div class="card h-100 shadow-sm border-top border-warning border-3">
+      <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-warning-subtle text-warning p-3 rounded-circle me-3">
+            <i class="fas fa-table fa-lg"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Fee Registers & Arrears</h5>
+            <span class="badge bg-warning text-dark">12-Month Financial Ledgers</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Extract full 12-month fee collection spreadsheets showing exact monthly billings, payments, and outstanding arrears per student for the active academic session. Generate instant Excel reports of all fee defaulters sorted by highest due amount.
+        </p>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <a href="{% url 'export_fee_register_excel' %}" class="btn btn-outline-primary w-100 fw-bold">
+              <i class="fas fa-file-excel me-1"></i> Export Fee Register
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <a href="{% url 'export_defaulters_excel' %}" class="btn btn-outline-danger w-100 fw-bold">
+              <i class="fas fa-exclamation-triangle me-1"></i> Export Defaulters List
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Cashbook & Accounts -->
+  <div class="col-lg-6 col-md-6">
+    <div class="card h-100 shadow-sm border-top border-secondary border-3">
+      <div class="card-body d-flex flex-column p-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-secondary-subtle text-secondary p-3 rounded-circle me-3">
+            <i class="fas fa-book-open fa-lg"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0 text-dark">Cashbook & Accounting Reports</h5>
+            <span class="badge bg-secondary">Audit & Balance Sheets</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Download detailed transaction histories combining student fee receipts, categorized campus expenses, and teacher salary bill disbursements. Export monthly financial summaries displaying operating margins, total revenues, and net surplus/deficits.
+        </p>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <a href="{% url 'export_cashbook_excel' %}" class="btn btn-outline-success w-100 fw-bold">
+              <i class="fas fa-file-excel me-1"></i> Export Cashbook Ledger
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <a href="{% url 'export_monthly_summary_excel' %}" class="btn btn-outline-dark w-100 fw-bold">
+              <i class="fas fa-chart-line me-1"></i> Export Monthly Summary
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Migration & Onboarding Guide Card -->
+<div class="card shadow-sm border-0 bg-light p-4 mb-4">
+  <div class="d-flex align-items-start">
+    <div class="me-3 text-success">
+      <i class="fas fa-lightbulb fa-2x"></i>
+    </div>
+    <div>
+      <h5 class="fw-bold text-dark mb-2">School Migration & Excel Backup Workflow</h5>
+      <p class="text-muted small mb-3">
+        Whether moving from another software or manual paper registers into Kohisar Model School & College (KMS), follow these 3 simple steps:
+      </p>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="bg-white p-3 rounded border h-100">
+            <span class="badge bg-primary mb-2">Step 1</span>
+            <h6 class="fw-bold">Download Sample Template</h6>
+            <p class="text-muted small mb-0">
+              Download the official <code>.xlsx</code> sample template above. Each template comes pre-formatted with expected columns and example rows.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="bg-white p-3 rounded border h-100">
+            <span class="badge bg-primary mb-2">Step 2</span>
+            <h6 class="fw-bold">Populate Your Data</h6>
+            <p class="text-muted small mb-0">
+              Copy and paste your school's records into the spreadsheet using Microsoft Excel, Google Sheets, or LibreOffice Calc. Keep the column header row intact.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="bg-white p-3 rounded border h-100">
+            <span class="badge bg-success mb-2">Step 3</span>
+            <h6 class="fw-bold">Upload & Auto-Link</h6>
+            <p class="text-muted small mb-0">
+              Click <strong>Import</strong>. KMS will automatically create classes, sections, family units, assign admission numbers, and generate 12-month fee ledgers instantly.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+
+<!-- Import Students Modal -->
+<div class="modal fade" id="importStudentModal" tabindex="-1" aria-labelledby="importStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_students_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="importStudentModalLabel">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Students (.xlsx)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            Quickly onboard or restore students in bulk by uploading a standardized Excel spreadsheet.
+          </p>
+          <div class="alert alert-info py-2 small d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-info-circle me-1"></i> Need the official template?</span>
+            <a href="{% url 'download_student_template' %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-download me-1"></i> Download Sample Excel
+            </a>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Excel (.xlsx) File *</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <div class="form-text small">
+              Missing classes, sections, and family units will be created automatically, and 12-month fee ledgers will be initialized.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-upload me-1"></i> Upload & Import Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Import Teachers Modal -->
+<div class="modal fade" id="importTeacherModal" tabindex="-1" aria-labelledby="importTeacherModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_teachers_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="importTeacherModalLabel">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Teachers & Staff (.xlsx)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            Easily import faculty and staff members in bulk by uploading an Excel spreadsheet.
+          </p>
+          <div class="alert alert-info py-2 small d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-info-circle me-1"></i> Need the official template?</span>
+            <a href="{% url 'download_teacher_template' %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-download me-1"></i> Download Sample Excel
+            </a>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Excel (.xlsx) File *</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <div class="form-text small">
+              Supported format: Microsoft Excel (.xlsx). Staff IDs and salary scales are automatically recognized and linked.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-upload me-1"></i> Upload & Import Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Import Classes Modal -->
+<div class="modal fade" id="importClassModal" tabindex="-1" aria-labelledby="importClassModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_classes_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header bg-info text-dark">
+          <h5 class="modal-title fw-bold" id="importClassModalLabel">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Classes & Sections (.xlsx)
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            Quickly set up school grades and sections by uploading an Excel workbook.
+          </p>
+          <div class="alert alert-info py-2 small d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-info-circle me-1"></i> Need the official template?</span>
+            <a href="{% url 'download_class_template' %}" class="btn btn-sm btn-dark">
+              <i class="fas fa-download me-1"></i> Download Sample Excel
+            </a>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Excel (.xlsx) File *</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <div class="form-text small">
+              Supported format: Microsoft Excel (.xlsx). Comma-separated sections (e.g. <code>A, B, C</code>) are automatically parsed.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-info fw-bold">
+            <i class="fas fa-upload me-1"></i> Upload & Import Classes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

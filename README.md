@@ -40,6 +40,19 @@ A comprehensive, production-grade **Student Information, Fee Ledger, Payroll & A
 - **Branded Master Control:** Custom administrative console featuring Kohisar emblem and institutional branding.
 - **Database Backup Engine:** Live downloadable snapshots and one-click restore utilities.
 
+### 6. 📊 Universal Excel Import & Export (`openpyxl` Data Hub)
+- **Central Data Exchange Hub (`/excel-hub/`):** Unified institutional dashboard to manage all import/export tasks in one place.
+- **Sample Spreadsheet Templates:** Download pre-formatted Excel templates (`.xlsx`) with sample data for Students, Faculty/Staff, and Classes/Sections.
+- **Bulk Student & Staff Onboarding:** Upload `.xlsx` spreadsheets to onboard or migrate hundreds of records in seconds, automatically creating classes, sections, family units, and initializing 12-month fee ledgers.
+- **Real-Time Data Exports:** One-click institutional exports with professional navy styling and auto-adjusted columns for:
+  - Student Directory & Admissions
+  - Faculty & Staff Directory with Salary Scales
+  - Academic Classes & Fee Schedules
+  - 12-Month Fee Register Grid
+  - Outstanding Fee Defaulters List
+  - Consolidated Cashbook Ledger (Income & Expenses)
+  - Monthly Financial Statements & Cashflows
+
 ---
 
 ## 🚀 Quick Start & One-Click Execution

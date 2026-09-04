@@ -5,7 +5,8 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from school.models import AcademicSession, ClassLevel, Section
+from school.excel_utils import create_styled_workbook, excel_download_response
+from school.models import AcademicSession, ClassLevel, Section, SchoolSetting
 from students.models import FamilyHousehold, Student
 from .forms import FamilyFeePaymentForm, FeeAdjustmentForm, FeeCollectForm
 from .models import FeePaymentReceipt, StudentFeeLedger, StudentFeeMonthEntry
@@ -435,3 +436,147 @@ def class_fee_summary(request):
         "active_session": active_session,
     }
     return render(request, "finance/class_fee_summary.html", context)
+
+
+@login_required
+def export_fee_register_excel(request):
+    """
+    Exports the comprehensive Fee Register grid to Excel with monthly dues & balances.
+    """
+    active_session = AcademicSession.objects.filter(is_active=True).first()
+    session_id = request.GET.get("session")
+    if session_id:
+        current_session = get_object_or_404(AcademicSession, pk=session_id)
+    else:
+        current_session = active_session or AcademicSession.objects.first()
+
+    class_id = request.GET.get("class", "")
+    students = Student.objects.filter(status="Active").select_related("current_class", "current_section")
+    if class_id:
+        students = students.filter(current_class_id=class_id)
+
+    school = SchoolSetting.objects.first()
+    school_name = school.name if school else "Kohisar Model School & College (KMS)"
+
+    month_names = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ]
+
+    headers = [
+        "Adm #",
+        "Student Name",
+        "Father Name",
+        "Class - Section",
+    ] + [f"{m} (Bal)" for m in month_names] + [
+        "Total Billed (PKR)",
+        "Total Paid (PKR)",
+        "Net Outstanding (PKR)",
+    ]
+
+    rows = []
+    if current_session:
+        for student in students:
+            ledger, _ = StudentFeeLedger.objects.get_or_create(
+                student=student, academic_session=current_session
+            )
+            entries = {e.month: e for e in ledger.monthly_entries.all()}
+
+            cls_name = f"{student.current_class.name} - {student.current_section.name}" if student.current_class and student.current_section else (student.current_class.name if student.current_class else "-")
+
+            month_balances = []
+            for m in range(1, 13):
+                entry = entries.get(m)
+                month_balances.append(float(entry.balance) if entry else 0.0)
+
+            total_due = float(sum(e.total_amount for e in entries.values()))
+            total_paid = float(sum(e.paid_amount for e in entries.values()))
+            total_balance = float(sum(e.balance for e in entries.values()))
+
+            rows.append([
+                student.admission_no,
+                student.full_name,
+                student.father_name or "-",
+                cls_name,
+            ] + month_balances + [
+                total_due,
+                total_paid,
+                total_balance,
+            ])
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M")
+    filename = f"Fee_Register_{timestamp}.xlsx"
+    session_title = f"Fee Register ({current_session.name if current_session else 'All'})"
+    buffer = create_styled_workbook(session_title, headers, rows, school_name=school_name)
+    return excel_download_response(buffer, filename)
+
+
+@login_required
+def export_defaulters_excel(request):
+    """
+    Exports the Defaulters list (students with outstanding fee balances) to Excel.
+    """
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    class_id = request.GET.get("class", "")
+    section_id = request.GET.get("section", "")
+
+    students = Student.objects.filter(status="Active").select_related("current_class", "current_section")
+    if class_id:
+        students = students.filter(current_class_id=class_id)
+    if section_id:
+        students = students.filter(current_section_id=section_id)
+
+    school = SchoolSetting.objects.first()
+    school_name = school.name if school else "Kohisar Model School & College (KMS)"
+
+    headers = [
+        "Adm #",
+        "Student Name",
+        "Father Name",
+        "Class",
+        "Section",
+        "Contact Number",
+        "Unpaid Months Count",
+        "Total Outstanding Dues (PKR)",
+    ]
+
+    defaulter_rows = []
+    if active_session:
+        for s in students:
+            ledger = StudentFeeLedger.objects.filter(student=s, academic_session=active_session).first()
+            if ledger:
+                unpaid_entries = [e for e in ledger.monthly_entries.all() if e.balance > 0]
+                if unpaid_entries:
+                    student_dues = sum(e.balance for e in unpaid_entries)
+                    defaulter_rows.append({
+                        "adm_no": s.admission_no,
+                        "name": s.full_name,
+                        "father": s.father_name or "-",
+                        "class": s.current_class.name if s.current_class else "-",
+                        "section": s.current_section.name if s.current_section else "-",
+                        "contact": s.contact_number or "-",
+                        "unpaid_count": len(unpaid_entries),
+                        "dues": float(student_dues),
+                    })
+
+    defaulter_rows.sort(key=lambda x: x["dues"], reverse=True)
+
+    rows = [
+        [
+            d["adm_no"],
+            d["name"],
+            d["father"],
+            d["class"],
+            d["section"],
+            d["contact"],
+            d["unpaid_count"],
+            d["dues"],
+        ]
+        for d in defaulter_rows
+    ]
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M")
+    filename = f"Fee_Defaulters_{timestamp}.xlsx"
+    buffer = create_styled_workbook("Fee Defaulters Ledger", headers, rows, school_name=school_name)
+    return excel_download_response(buffer, filename)
+

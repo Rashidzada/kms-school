@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from school.excel_utils import create_styled_workbook, excel_download_response
+from school.models import SchoolSetting
 from finance.models import FeePaymentReceipt
 from teachers.models import MonthlySalaryBill
 from .forms import ExpenseForm
@@ -191,3 +193,151 @@ def monthly_summary(request):
         "net_total": net_total,
     }
     return render(request, "accounts/monthly_summary.html", context)
+
+
+@login_required
+def export_cashbook_excel(request):
+    """
+    Exports filtered or all cashbook records (Income & Expenses) to Excel.
+    """
+    start_date = request.GET.get("start_date", "")
+    end_date = request.GET.get("end_date", "")
+
+    receipts = FeePaymentReceipt.objects.select_related("student").all()
+    expenses = Expense.objects.all()
+    salaries = MonthlySalaryBill.objects.filter(is_paid=True).select_related("teacher")
+
+    if start_date:
+        receipts = receipts.filter(payment_date__gte=start_date)
+        expenses = expenses.filter(date__gte=start_date)
+        salaries = salaries.filter(payment_date__gte=start_date)
+
+    if end_date:
+        receipts = receipts.filter(payment_date__lte=end_date)
+        expenses = expenses.filter(date__lte=end_date)
+        salaries = salaries.filter(payment_date__lte=end_date)
+
+    entries = []
+    for r in receipts:
+        entries.append({
+            "date": str(r.payment_date),
+            "type": "Income",
+            "category": "Student Fee",
+            "description": f"Receipt #{r.receipt_no} - {r.student.full_name}",
+            "reference": r.receipt_no,
+            "income": float(r.amount_paid),
+            "expense": 0.0,
+        })
+
+    for e in expenses:
+        entries.append({
+            "date": str(e.date),
+            "type": "Expense",
+            "category": e.category,
+            "description": f"{e.category}: {e.note or 'Expense'}",
+            "reference": e.reference or e.payment_mode or "-",
+            "income": 0.0,
+            "expense": float(e.amount),
+        })
+
+    for s in salaries:
+        net = float(s.net_payable)
+        entries.append({
+            "date": str(s.payment_date),
+            "type": "Expense",
+            "category": "Staff Salary",
+            "description": f"Salary: {s.teacher.full_name} ({s.month_name} {s.year})",
+            "reference": s.voucher_no or f"VCH-{s.id}",
+            "income": 0.0,
+            "expense": net,
+        })
+
+    entries.sort(key=lambda x: x["date"], reverse=True)
+
+    school = SchoolSetting.objects.first()
+    school_name = school.name if school else "Kohisar Model School & College (KMS)"
+
+    headers = [
+        "Date",
+        "Transaction Type",
+        "Category",
+        "Description",
+        "Reference / Voucher",
+        "Income (PKR)",
+        "Expense (PKR)",
+    ]
+
+    rows = [
+        [
+            e["date"],
+            e["type"],
+            e["category"],
+            e["description"],
+            e["reference"],
+            e["income"],
+            e["expense"],
+        ]
+        for e in entries
+    ]
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M")
+    filename = f"Cashbook_{timestamp}.xlsx"
+    buffer = create_styled_workbook("Cashbook Transactions Ledger", headers, rows, school_name=school_name)
+    return excel_download_response(buffer, filename)
+
+
+@login_required
+def export_monthly_summary_excel(request):
+    """
+    Exports month-by-month financial statement rollup to Excel.
+    """
+    import calendar
+    monthly_data = defaultdict(lambda: {"income": Decimal("0.00"), "expense": Decimal("0.00")})
+
+    for r in FeePaymentReceipt.objects.all():
+        key = (r.payment_date.year, r.payment_date.month)
+        monthly_data[key]["income"] += r.amount_paid
+
+    for e in Expense.objects.all():
+        key = (e.date.year, e.date.month)
+        monthly_data[key]["expense"] += e.amount
+
+    for s in MonthlySalaryBill.objects.filter(is_paid=True, payment_date__isnull=False):
+        key = (s.payment_date.year, s.payment_date.month)
+        monthly_data[key]["expense"] += s.net_payable
+
+    school = SchoolSetting.objects.first()
+    school_name = school.name if school else "Kohisar Model School & College (KMS)"
+
+    headers = [
+        "Year",
+        "Month",
+        "Month Name",
+        "Total Fee Collections (PKR)",
+        "Total Expenses & Salaries (PKR)",
+        "Net Operating Balance (PKR)",
+        "Financial Status",
+    ]
+
+    rows = []
+    for (year, month), val in sorted(monthly_data.items(), key=lambda x: (x[0][0], x[0][1]), reverse=True):
+        income = float(val["income"])
+        expense = float(val["expense"])
+        net = income - expense
+        status = "Surplus" if net > 0 else ("Deficit" if net < 0 else "Balanced")
+        month_name = calendar.month_name[month] if 1 <= month <= 12 else f"Month {month}"
+        rows.append([
+            year,
+            month,
+            month_name,
+            income,
+            expense,
+            net,
+            status,
+        ])
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M")
+    filename = f"Monthly_Financial_Summary_{timestamp}.xlsx"
+    buffer = create_styled_workbook("Monthly Financial Summary", headers, rows, school_name=school_name)
+    return excel_download_response(buffer, filename)
+

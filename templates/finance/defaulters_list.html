@@ -10,6 +10,9 @@
     <p class="text-muted small mb-0">Active students with outstanding fee balances for Academic Session: <strong>{{ active_session.name }}</strong></p>
   </div>
   <div class="d-flex gap-2">
+    <a href="{% url 'export_defaulters_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success" title="Export Defaulters to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
+    </a>
     <button onclick="window.print()" class="btn btn-outline-secondary"><i class="fas fa-print me-1"></i> Print List</button>
   </div>
 </div>

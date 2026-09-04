@@ -460,3 +460,263 @@ def character_certificate(request, pk):
     """
     student = get_object_or_404(Student, pk=pk)
     return render(request, "students/character_certificate.html", {"student": student})
+
+
+@login_required
+def export_students_excel(request):
+    """
+    Export students to professionally styled Excel spreadsheet.
+    """
+    from school.excel_utils import create_styled_workbook, excel_download_response
+
+    students = Student.objects.select_related(
+        "current_class", "current_section", "family"
+    ).all()
+
+    # Apply active filters if present
+    query = request.GET.get("q", "").strip()
+    class_id = request.GET.get("class", "")
+    section_id = request.GET.get("section", "")
+    status = request.GET.get("status", "")
+
+    if query:
+        students = students.filter(
+            Q(full_name__icontains=query)
+            | Q(admission_no__icontains=query)
+            | Q(father_name__icontains=query)
+            | Q(residence__icontains=query)
+        )
+    if class_id:
+        students = students.filter(current_class_id=class_id)
+    if section_id:
+        students = students.filter(current_section_id=section_id)
+    if status:
+        students = students.filter(status=status)
+
+    headers = [
+        "Admission #",
+        "Full Name",
+        "Father Name",
+        "Gender",
+        "Date of Birth",
+        "Class",
+        "Section",
+        "Family ID",
+        "Contact Number",
+        "Residence Address",
+        "Status",
+        "Admission Date",
+    ]
+
+    rows = []
+    for s in students:
+        rows.append([
+            s.admission_no,
+            s.full_name,
+            s.father_name,
+            s.gender,
+            s.dob.strftime("%Y-%m-%d") if s.dob else "",
+            s.current_class.name if s.current_class else "",
+            s.current_section.name if s.current_section else "",
+            s.family.family_id if s.family else "",
+            s.contact_number,
+            s.residence,
+            s.status,
+            s.admission_date.strftime("%Y-%m-%d") if s.admission_date else "",
+        ])
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M")
+    buffer = create_styled_workbook("Student Directory", headers, rows)
+    return excel_download_response(buffer, f"KMS_Students_Export_{timestamp}.xlsx")
+
+
+@login_required
+def download_student_template(request):
+    """
+    Download empty/sample Excel template for bulk student onboarding.
+    """
+    from school.excel_utils import create_styled_workbook, excel_download_response
+
+    headers = [
+        "Admission # (Optional)",
+        "Full Name *",
+        "Father Name *",
+        "Gender (Male/Female) *",
+        "Date of Birth (YYYY-MM-DD)",
+        "Class Name *",
+        "Section (A/B/C)",
+        "Contact Number",
+        "Residence Address",
+        "Status (Active/Withdrawn)",
+        "Admission Date (YYYY-MM-DD)",
+    ]
+
+    sample_rows = [
+        [
+            "1051",
+            "Muhammad Hamza",
+            "Tariq Mahmood",
+            "Male",
+            "2015-04-12",
+            "Class 5",
+            "A",
+            "0345-9876543",
+            "Qalagay, Swat",
+            "Active",
+            "2026-03-01",
+        ],
+        [
+            "1052",
+            "Fatima Noor",
+            "Abdul Rashid",
+            "Female",
+            "2016-08-25",
+            "Class 4",
+            "B",
+            "0300-1234567",
+            "Barikot, Swat",
+            "Active",
+            "2026-03-01",
+        ],
+    ]
+
+    buffer = create_styled_workbook("Students Import Template", headers, sample_rows)
+    return excel_download_response(buffer, "KMS_Students_Sample_Template.xlsx")
+
+
+@login_required
+def import_students_excel(request):
+    """
+    Bulk import students from Excel file with automated class, section,
+    family matching, and 12-month fee ledger initialization.
+    """
+    from datetime import datetime, date
+    from school.excel_utils import parse_excel_upload
+
+    if request.method != "POST" or "excel_file" not in request.FILES:
+        messages.error(request, "Please select an Excel file (.xlsx) to upload.")
+        return redirect("student_list")
+
+    excel_file = request.FILES["excel_file"]
+    records, errors = parse_excel_upload(excel_file, header_row=2)
+
+    if errors:
+        for err in errors:
+            messages.error(request, err)
+        return redirect("student_list")
+
+    if not records:
+        messages.warning(request, "The uploaded Excel file contains no student data rows.")
+        return redirect("student_list")
+
+    active_session = AcademicSession.objects.filter(is_active=True).first()
+    success_count = 0
+    row_errors = []
+
+    def parse_date(val):
+        if not val:
+            return None
+        if isinstance(val, (datetime, date)):
+            return val if isinstance(val, date) else val.date()
+        val_str = str(val).strip()
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
+            try:
+                return datetime.strptime(val_str, fmt).date()
+            except ValueError:
+                continue
+        return None
+
+    with transaction.atomic():
+        for r in records:
+            row_num = r.get("_row_number", "?")
+            full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
+            father_name = str(r.get("father_name__", "") or r.get("father_name", "")).strip()
+
+            if not full_name:
+                row_errors.append(f"Row {row_num}: Missing Full Name.")
+                continue
+
+            # Class matching or auto-creation
+            class_raw = str(r.get("class_name__", "") or r.get("class", "") or r.get("class_name", "")).strip()
+            class_obj = None
+            if class_raw:
+                class_obj = ClassLevel.objects.filter(name__iexact=class_raw).first()
+                if not class_obj:
+                    class_obj = ClassLevel.objects.create(name=class_raw, level="Primary", monthly_fee=Decimal("1500.00"))
+
+            # Section matching or default
+            section_raw = str(r.get("section__a_b_c_", "") or r.get("section", "A")).strip().upper() or "A"
+            section_obj = None
+            if class_obj:
+                section_obj = Section.objects.filter(class_level=class_obj, name__iexact=section_raw).first()
+                if not section_obj:
+                    section_obj = Section.objects.create(class_level=class_obj, name=section_raw)
+
+            # Gender
+            gender_raw = str(r.get("gender__male_female___", "") or r.get("gender", "Male")).strip().capitalize()
+            gender = gender_raw if gender_raw in ["Male", "Female"] else "Male"
+
+            # Contact & Address
+            contact = str(r.get("contact_number", "") or "").strip()
+            residence = str(r.get("residence_address", "") or r.get("residence", "")).strip()
+
+            # Family matching or creation
+            family = None
+            if father_name:
+                family = FamilyHousehold.objects.filter(father_guardian_name__iexact=father_name).first()
+                if not family and contact:
+                    family = FamilyHousehold.objects.filter(contact_number=contact).first()
+                if not family:
+                    family = FamilyHousehold.objects.create(
+                        father_guardian_name=father_name,
+                        contact_number=contact,
+                        address=residence,
+                    )
+
+            # Dates
+            dob = parse_date(r.get("date_of_birth__yyyy_mm_dd_", None) or r.get("date_of_birth", None))
+            adm_date = parse_date(r.get("admission_date__yyyy_mm_dd_", None) or r.get("admission_date", None)) or timezone.now().date()
+
+            # Status
+            status_raw = str(r.get("status__active_withdrawn_", "") or r.get("status", "Active")).strip().capitalize()
+            status = "Withdrawn" if "withdrawn" in status_raw.lower() else "Active"
+
+            # Admission number
+            adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_no", "")).strip()
+            if adm_no and Student.objects.filter(admission_no=adm_no).exists():
+                adm_no = ""  # Force auto-generation if duplicate exists
+
+            student = Student(
+                full_name=full_name,
+                father_name=father_name,
+                gender=gender,
+                dob=dob or date(2015, 1, 1),
+                current_class=class_obj,
+                current_section=section_obj,
+                family=family,
+                contact_number=contact,
+                residence=residence,
+                status=status,
+                admission_date=adm_date,
+            )
+            if adm_no:
+                student.admission_no = adm_no
+            student.save()
+
+            # Initialize 12-month Fee Ledger if active session exists
+            if active_session and class_obj:
+                ledger, _ = StudentFeeLedger.objects.get_or_create(
+                    student=student,
+                    academic_session=active_session,
+                )
+                initialize_ledger_months(ledger, student, class_obj.monthly_fee)
+
+            success_count += 1
+
+    if success_count > 0:
+        messages.success(request, f"Excel Import Completed! Successfully imported {success_count} student records with automated 12-month fee ledgers.")
+    if row_errors:
+        messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+
+    return redirect("student_list")
+

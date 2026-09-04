@@ -9,7 +9,10 @@
     <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-book-open me-2 text-primary"></i> Consolidated Cashbook</h3>
     <p class="text-muted small mb-0">Unified financial ledger combining student fee income, general operational expenses, and disbursed staff salaries.</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'export_cashbook_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success" title="Export Cashbook to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
+    </a>
     <a href="{% url 'add_expense' %}" class="btn btn-warning text-dark fw-bold">
       <i class="fas fa-plus me-1"></i> Add Expense
     </a>

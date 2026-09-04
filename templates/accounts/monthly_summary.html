@@ -10,6 +10,9 @@
     <p class="text-muted small mb-0">Monthly cashflow rollup showing income vs outgoings by calendar month.</p>
   </div>
   <div class="d-flex gap-2">
+    <a href="{% url 'export_monthly_summary_excel' %}" class="btn btn-success" title="Export Monthly Summary to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
+    </a>
     <a href="{% url 'cashbook_summary' %}" class="btn btn-outline-primary">
       <i class="fas fa-arrow-left me-1"></i> Full Cashbook
     </a>

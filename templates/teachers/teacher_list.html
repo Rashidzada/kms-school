@@ -9,12 +9,18 @@
     <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-chalkboard-teacher me-2 text-success"></i> Teachers & Staff Directory</h3>
     <p class="text-muted small mb-0">Total Staff Members: {{ teachers.count }}</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'teacher_create' %}" class="btn btn-success">
-      <i class="fas fa-user-plus me-1"></i> Add Teacher
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'export_teachers_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success" title="Export current filtered staff list to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
     </a>
-    <a href="{% url 'salary_bill_list' %}" class="btn btn-outline-success">
+    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importTeacherModal">
+      <i class="fas fa-file-upload me-1"></i> Import Excel
+    </button>
+    <a href="{% url 'salary_bill_list' %}" class="btn btn-outline-primary">
       <i class="fas fa-file-invoice-dollar me-1"></i> Salary Bills
+    </a>
+    <a href="{% url 'teacher_create' %}" class="btn btn-primary">
+      <i class="fas fa-user-plus me-1"></i> Add Teacher
     </a>
   </div>
 </div>
@@ -121,6 +127,47 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Import Teachers Modal -->
+<div class="modal fade" id="importTeacherModal" tabindex="-1" aria-labelledby="importTeacherModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_teachers_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="importTeacherModalLabel">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Teachers & Staff (.xlsx)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            Easily import faculty and staff members in bulk by uploading an Excel spreadsheet.
+          </p>
+          <div class="alert alert-info py-2 small d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-info-circle me-1"></i> Need the official template?</span>
+            <a href="{% url 'download_teacher_template' %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-download me-1"></i> Download Sample Excel
+            </a>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Excel (.xlsx) File *</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <div class="form-text small">
+              Supported format: Microsoft Excel Workbook (<code>.xlsx</code>). Staff IDs, designations, contact numbers, and salary scales are automatically recognized and created.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-upload me-1"></i> Upload & Import Data
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock %}

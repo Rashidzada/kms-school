@@ -3,6 +3,9 @@ from . import views
 
 urlpatterns = [
     path("", views.student_list, name="student_list"),
+    path("export-excel/", views.export_students_excel, name="export_students_excel"),
+    path("download-template/", views.download_student_template, name="download_student_template"),
+    path("import-excel/", views.import_students_excel, name="import_students_excel"),
     path("add/", views.student_create, name="student_create"),
     path("admission-register/", views.admission_register, name="admission_register"),
     path("withdrawals/", views.withdrawal_register, name="withdrawal_register"),

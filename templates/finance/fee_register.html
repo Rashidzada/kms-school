@@ -9,7 +9,10 @@
     <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-table me-2 text-primary"></i> 12-Month Fee Register Grid</h3>
     <p class="text-muted small mb-0">Overview of student fee ledgers across all 12 months for Session: <strong>{{ current_session.name }}</strong></p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'export_fee_register_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success" title="Export Fee Register to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
+    </a>
     <a href="{% url 'defaulters_list' %}" class="btn btn-outline-danger">
       <i class="fas fa-exclamation-triangle me-1"></i> Defaulters List
     </a>

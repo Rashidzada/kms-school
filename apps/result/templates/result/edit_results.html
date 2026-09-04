@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+Update Results
+{% endblock title %}
+
+{% block breadcrumb %}
+<a class="btn btn-sm btn-info mr-2" href="{% url 'view-results' %}">
+  <i class="fas fa-eye mr-1"></i> View Results
+</a>
+<a class="btn btn-sm btn-primary" href="{% url 'create-result' %}">
+  <i class="fas fa-plus mr-1"></i> Create Results
+</a>
+{% endblock breadcrumb %}
+
+{% block content %}
+<form method="POST" id="editResultsForm">
+  {% csrf_token %}
+  {{ formset.management_form }}
+
+  <!-- Search & Filter Toolbar (Requested by User) -->
+  <div class="card card-outline card-primary shadow-sm mb-3 no-print">
+    <div class="card-body p-3 bg-light">
+      <div class="row align-items-center">
+        <!-- Live Search Field -->
+        <div class="col-lg-5 col-md-6 col-12 mb-2 mb-md-0">
+          <label class="small font-weight-bold text-muted mb-1 d-block">
+            <i class="fas fa-search mr-1 text-primary"></i> Search Records
+          </label>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+            </div>
+            <input type="text" id="resultSearchInput" class="form-control" placeholder="Search by name, reg #, subject, or class..." autocomplete="off">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-secondary" id="clearSearchBtn" title="Clear all filters">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter by Class -->
+        <div class="col-lg-3 col-md-3 col-6 mb-2 mb-md-0">
+          <label class="small font-weight-bold text-muted mb-1 d-block">
+            <i class="fas fa-chalkboard mr-1 text-info"></i> Filter by Class
+          </label>
+          <select id="classFilterSelect" class="form-control custom-select">
+            <option value="">All Classes</option>
+          </select>
+        </div>
+
+        <!-- Filter by Subject -->
+        <div class="col-lg-2 col-md-3 col-6 mb-2 mb-md-0">
+          <label class="small font-weight-bold text-muted mb-1 d-block">
+            <i class="fas fa-book mr-1 text-success"></i> Subject
+          </label>
+          <select id="subjectFilterSelect" class="form-control custom-select">
+            <option value="">All Subjects</option>
+          </select>
+        </div>
+
+        <!-- Top Save Button -->
+        <div class="col-lg-2 col-md-12 col-12 text-md-right text-left mt-2 mt-lg-0">
+          <label class="small font-weight-bold text-muted mb-1 d-none d-lg-block">&nbsp;</label>
+          <button type="submit" class="btn btn-success btn-block font-weight-bold shadow-sm">
+            <i class="fas fa-save mr-1"></i> Save
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Counter & Help Hint -->
+      <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+        <span class="badge badge-info px-2 py-1" style="font-size: 0.85rem;">
+          Showing <strong id="visibleCount">0</strong> of <strong id="totalCount">0</strong> records
+        </span>
+        <small class="text-muted font-italic">
+          <i class="fas fa-calculator text-secondary mr-1"></i> Total score calculates automatically when you type
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="table-responsive">
+    <table id="studenttable" class="table table-sm table-bordered table-hover shadow-sm bg-white">
+      <thead class="thead-light">
+        <tr>
+          <th style="width: 4%;">#</th>
+          <th>Student Name</th>
+          <th>Subject</th>
+          <th style="width: 11%;">Test Score</th>
+          <th style="width: 11%;">Exam Score</th>
+          <th style="width: 8%;" class="text-center">Total</th>
+          <th style="width: 7%;" class="text-center">Delete</th>
+          <th>Class</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for form in formset %}
+        {{ form.id }}
+          <tr class="result-row">
+            <td class="text-muted font-weight-bold">{{ forloop.counter }}</td>
+            <td class="col-name font-weight-bold text-dark">{{ form.instance.student }}</td>
+            <td class="col-subject"><span class="badge badge-light border">{{ form.instance.subject }}</span></td>
+            <td>
+              {{ form.test_score | add_class:"form-control form-control-sm text-center font-weight-bold input-test-score" }}
+            </td>
+            <td>
+              {{ form.exam_score | add_class:"form-control form-control-sm text-center font-weight-bold input-exam-score" }}
+            </td>
+            <td class="col-total text-center font-weight-bold h6 mb-0 text-primary align-middle">
+              {{ form.instance.total_score }}
+            </td>
+            <td class="text-center align-middle">
+              {{ form.DELETE }}
+            </td>
+            <td class="col-class">
+              <span class="badge badge-info">{{ form.instance.current_class }}</span>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">
+              <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+              No result records found for the current session and term.
+            </td>
+          </tr>
+        {% endfor %}
+        <!-- Hidden No Matches Row -->
+        <tr id="noResultsRow" style="display: none;">
+          <td colspan="8" class="text-center py-4 text-danger">
+            <i class="fas fa-search-minus fa-2x mb-2 d-block"></i>
+            <strong>No matching records found.</strong> Try adjusting your search query or class/subject filters.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-3 mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <button type="submit" class="btn btn-success font-weight-bold px-4 shadow-sm">
+        <i class="fas fa-save mr-1"></i> Save Changes
+      </button>
+    </div>
+    <div class="text-muted small">
+      Session: <strong>{{ current_session }}</strong> | Term: <strong>{{ current_term }}</strong>
+    </div>
+  </div>
+</form>
+
+{% endblock content %}
+
+{% block morejs %}
+<script>
+$(document).ready(function () {
+  const $rows = $('#studenttable tbody tr.result-row');
+  const totalRows = $rows.length;
+  $('#totalCount').text(totalRows);
+  $('#visibleCount').text(totalRows);
+
+  // Collect unique classes and subjects for dropdown filters
+  const classesSet = new Set();
+  const subjectsSet = new Set();
+
+  $rows.each(function () {
+    const $row = $(this);
+    const subj = $row.find('.col-subject').text().trim();
+    const cls = $row.find('.col-class').text().trim();
+    if (subj) subjectsSet.add(subj);
+    if (cls) classesSet.add(cls);
+  });
+
+  // Populate dropdowns
+  Array.from(classesSet).sort().forEach(function (cls) {
+    $('#classFilterSelect').append(new Option(cls, cls));
+  });
+  Array.from(subjectsSet).sort().forEach(function (subj) {
+    $('#subjectFilterSelect').append(new Option(subj, subj));
+  });
+
+  // Real-time filtering function
+  function applyFilters() {
+    const query = $('#resultSearchInput').val().toLowerCase().trim();
+    const selectedClass = $('#classFilterSelect').val().toLowerCase().trim();
+    const selectedSubject = $('#subjectFilterSelect').val().toLowerCase().trim();
+
+    let visibleCount = 0;
+
+    $rows.each(function () {
+      const $row = $(this);
+      const studentText = $row.find('.col-name').text().toLowerCase();
+      const subjectText = $row.find('.col-subject').text().toLowerCase();
+      const classText = $row.find('.col-class').text().toLowerCase();
+      const rowCombined = studentText + ' ' + subjectText + ' ' + classText;
+
+      const matchesQuery = !query || rowCombined.indexOf(query) !== -1;
+      const matchesClass = !selectedClass || classText === selectedClass;
+      const matchesSubject = !selectedSubject || subjectText === selectedSubject;
+
+      if (matchesQuery && matchesClass && matchesSubject) {
+        $row.show();
+        visibleCount++;
+      } else {
+        $row.hide();
+      }
+    });
+
+    $('#visibleCount').text(visibleCount);
+    if (visibleCount === 0 && totalRows > 0) {
+      $('#noResultsRow').show();
+    } else {
+      $('#noResultsRow').hide();
+    }
+  }
+
+  // Filter event bindings
+  $('#resultSearchInput').on('keyup input', applyFilters);
+  $('#classFilterSelect, #subjectFilterSelect').on('change', applyFilters);
+
+  // Clear filters button
+  $('#clearSearchBtn').on('click', function () {
+    $('#resultSearchInput').val('');
+    $('#classFilterSelect').val('');
+    $('#subjectFilterSelect').val('');
+    applyFilters();
+    $('#resultSearchInput').focus();
+  });
+
+  // Real-time live total calculation as user types scores
+  $rows.each(function () {
+    const $row = $(this);
+    const $testInput = $row.find('.input-test-score');
+    const $examInput = $row.find('.input-exam-score');
+    const $totalCell = $row.find('.col-total');
+
+    function calculateTotal() {
+      const test = parseFloat($testInput.val()) || 0;
+      const exam = parseFloat($examInput.val()) || 0;
+      $totalCell.text(test + exam);
+    }
+
+    $testInput.on('input change', calculateTotal);
+    $examInput.on('input change', calculateTotal);
+  });
+});
+</script>
+{% endblock morejs %}
+

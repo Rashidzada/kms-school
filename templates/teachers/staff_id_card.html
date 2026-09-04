@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Staff ID Card | {{ teacher.full_name }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 40px;
+    }
+    .id-card {
+      width: 340px;
+      height: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      border: 1px solid #cbd5e0;
+      position: relative;
+    }
+    .id-card-header {
+      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+      color: #fff;
+      padding: 20px 15px;
+    }
+    .id-card-header img {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: #fff;
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+    .id-card-body {
+      padding: 20px 15px;
+      flex: 1;
+    }
+    .staff-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2b6cb0;
+      margin-top: -50px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .id-card-footer {
+      background: #f7fafc;
+      padding: 10px;
+      border-top: 1px solid #edf2f7;
+      font-size: 8pt;
+      color: #718096;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .id-card {
+        box-shadow: none;
+        margin: 20px auto;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="text-center mb-4 no-print">
+    <button onclick="window.print()" class="btn btn-primary px-4 font-weight-bold">
+      <i class="fas fa-print me-2"></i> Print Staff ID Card
+    </button>
+  </div>
+
+  <div class="id-card">
+    <div class="id-card-header">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo">
+      {% endif %}
+      <div style="font-size: 11pt; font-weight: bold; line-height: 1.2;">{{ school_setting.name }}</div>
+      <div style="font-size: 7.5pt; opacity: 0.85;">FACULTY / STAFF IDENTITY CARD</div>
+    </div>
+
+    <div class="id-card-body">
+      {% if teacher.profile_picture %}
+        <img src="{{ teacher.profile_picture.url }}" alt="{{ teacher.full_name }}" class="staff-photo">
+      {% else %}
+        <div class="staff-photo bg-success text-white d-flex align-items-center justify-content-center mx-auto" style="font-size: 2rem; font-weight: bold;">
+          {{ teacher.full_name|slice:":1" }}
+        </div>
+      {% endif %}
+
+      <h5 class="fw-bold mt-3 mb-1 text-dark">{{ teacher.full_name }}</h5>
+      <span class="badge bg-primary text-uppercase px-3 py-1 mb-3">{{ teacher.designation }}</span>
+
+      <table class="table table-sm table-borderless text-start small mt-2 mb-0">
+        <tr>
+          <th class="text-muted" style="width: 40%;">Staff ID:</th>
+          <td class="fw-bold text-dark">{{ teacher.teacher_id }}</td>
+        </tr>
+        <tr>
+          <th class="text-muted">CNIC:</th>
+          <td>{{ teacher.cnic|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="text-muted">Contact:</th>
+          <td>{{ teacher.contact_number }}</td>
+        </tr>
+        <tr>
+          <th class="text-muted">Joining:</th>
+          <td>{{ teacher.joining_date|date:"d M Y" }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="id-card-footer">
+      <div>If found, please return to {{ school_setting.name }}</div>
+      <div>{{ school_setting.address }} | {{ school_setting.contact }}</div>
+    </div>
+  </div>
+</body>
+</html>

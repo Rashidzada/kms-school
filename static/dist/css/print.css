@@ -1,0 +1,219 @@
+/* Print Stylesheet for Django School Management System */
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+@media print {
+  /* Hide navigation, sidebars, buttons, controls, alerts, and footers */
+  .main-header,
+  .main-sidebar,
+  .control-sidebar,
+  .card-tools,
+  .breadcrumb,
+  .btn,
+  button,
+  .btn-tool,
+  footer,
+  .main-footer,
+  .toastr,
+  .no-print,
+  .dataTables_filter,
+  .dataTables_length,
+  .dataTables_info,
+  .dataTables_paginate {
+    display: none !important;
+  }
+
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 12mm 15mm;
+  }
+
+  /* Reset layout containers */
+  html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .wrapper,
+  .content-wrapper,
+  .content,
+  .container-fluid {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    position: static !important;
+    overflow: visible !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+  }
+
+  .content-header {
+    display: none !important;
+  }
+
+  /* Card and Content Elements */
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .card-header {
+    background: transparent !important;
+    border-bottom: 2px solid #222 !important;
+    padding: 6px 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .card-title {
+    font-size: 15pt !important;
+    font-weight: bold !important;
+    color: #111 !important;
+  }
+
+  .card-body {
+    padding: 0 !important;
+  }
+
+  /* Print Header (School Name & Info) */
+  .print-school-header {
+    display: block !important;
+    text-align: center;
+    border-bottom: 2px solid #222;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+
+  .print-school-header h2 {
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    margin: 0 0 4px 0 !important;
+    color: #111 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .print-school-header p {
+    font-size: 10pt !important;
+    color: #444 !important;
+    margin: 0 !important;
+  }
+
+  /* Typography & Tables */
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 8px !important;
+    margin-bottom: 12px !important;
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  th, td {
+    padding: 5px 8px !important;
+    border: 1px solid #333 !important;
+    font-size: 9.5pt !important;
+    color: #000 !important;
+  }
+
+  .thead-light th {
+    background-color: #eee !important;
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid #ccc !important;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .form-group.row {
+    margin-bottom: 6px !important;
+  }
+
+  .form-group label {
+    font-weight: 600 !important;
+    color: #222 !important;
+  }
+
+  /* Grid layout preserved in print */
+  .row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    page-break-inside: avoid;
+  }
+
+  .col-sm-4 {
+    flex: 0 0 35% !important;
+    max-width: 35% !important;
+  }
+
+  .col-sm-8 {
+    flex: 0 0 65% !important;
+    max-width: 65% !important;
+  }
+
+  /* Badges */
+  .badge {
+    border: 1px solid #666 !important;
+    color: #000 !important;
+    background: transparent !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Print footer with timestamp */
+  .print-footer {
+    display: block !important;
+    margin-top: 25px;
+    padding-top: 8px;
+    border-top: 1px solid #bbb;
+    font-size: 8.5pt;
+    color: #666;
+    text-align: right;
+  }
+}

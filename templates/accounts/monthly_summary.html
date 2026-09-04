@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Monthly Financial Summary{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-calendar-alt me-2 text-primary"></i> Monthly Financial Summary</h3>
+    <p class="text-muted small mb-0">Monthly cashflow rollup showing income vs outgoings by calendar month.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'cashbook_summary' %}" class="btn btn-outline-primary">
+      <i class="fas fa-arrow-left me-1"></i> Full Cashbook
+    </a>
+    <button onclick="window.print()" class="btn btn-outline-secondary"><i class="fas fa-print me-1"></i> Print</button>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th>Calendar Month</th>
+          <th>Year</th>
+          <th class="text-end text-success">Total Inflow (Fee Income)</th>
+          <th class="text-end text-danger">Total Outflow (Expenses + Salaries)</th>
+          <th class="text-end">Net Monthly Position</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td class="fw-bold">Month {{ r.month }}</td>
+            <td>{{ r.year }}</td>
+            <td class="text-end text-success fw-bold">PKR {{ r.income|floatformat:2|intcomma }}</td>
+            <td class="text-end text-danger fw-bold">PKR {{ r.expense|floatformat:2|intcomma }}</td>
+            <td class="text-end fw-bold {% if r.net >= 0 %}text-success{% else %}text-danger{% endif %}">
+              PKR {{ r.net|floatformat:2|intcomma }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">No monthly financial activity recorded.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light fw-bold">
+        <tr class="h6 mb-0">
+          <th colspan="2">Consolidated Total:</th>
+          <th class="text-end text-success">PKR {{ total_income|floatformat:2|intcomma }}</th>
+          <th class="text-end text-danger">PKR {{ total_expense|floatformat:2|intcomma }}</th>
+          <th class="text-end {% if net_total >= 0 %}text-success{% else %}text-danger{% endif %}">
+            PKR {{ net_total|floatformat:2|intcomma }}
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | KMS Administration{% endblock %}
+
+{% block branding %}
+<div id="site-name" style="display: flex; align-items: center; gap: 14px; padding: 4px 0;">
+  <a href="{% url 'admin:index' %}" style="display: flex; align-items: center; gap: 12px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.3px;">
+    <img src="{% static 'dist/img/logo.png' %}" alt="KMS Logo" style="height: 42px; width: 42px; border-radius: 50%; background: #ffffff; padding: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+    <div>
+      <div style="line-height: 1.2;">Kohisar Model School &amp; College</div>
+      <div style="font-size: 0.75rem; font-weight: 500; color: #f6e05e; letter-spacing: 0.5px; text-transform: uppercase;">KMS Master Administration Portal</div>
+    </div>
+  </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div style="display: flex; align-items: center; gap: 15px; margin-right: 15px;">
+  <a href="/" style="color: #ffffff; font-size: 0.85rem; font-weight: 600; text-decoration: none; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+    <span style="margin-right: 4px;">&larr;</span> Back to Main Portal
+  </a>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="icon" type="image/png" href="{% static 'dist/img/favicon.png' %}">
+<style>
+  :root {
+    --primary: #1a365d !important;
+    --secondary: #0f2442 !important;
+    --accent: #d69e2e !important;
+    --header-bg: #1a365d !important;
+    --header-color: #ffffff !important;
+    --breadcrumbs-bg: #0f2442 !important;
+  }
+  #header {
+    background: linear-gradient(135deg, #1a365d 0%, #0f2442 100%) !important;
+    color: #ffffff !important;
+    padding: 10px 20px !important;
+    border-bottom: 3px solid #d69e2e !important;
+  }
+  #header a:link, #header a:visited {
+    color: #ffffff !important;
+  }
+  div.breadcrumbs {
+    background: #0f2442 !important;
+    color: #cbd5e0 !important;
+    padding: 10px 20px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  div.breadcrumbs a {
+    color: #f6e05e !important;
+  }
+  div.breadcrumbs a:focus, div.breadcrumbs a:hover {
+    color: #ffffff !important;
+  }
+  .module h2, .module caption, .inline-group h2 {
+    background: #1a365d !important;
+    color: #ffffff !important;
+  }
+  .button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #1a365d !important;
+    border-radius: 4px !important;
+    border: none !important;
+    font-weight: 600 !important;
+  }
+  .button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #0f2442 !important;
+  }
+  .button.default, input[type=submit].default, .submit-row input.default {
+    background: #2b6cb0 !important;
+  }
+  .button.default:hover, input[type=submit].default:hover {
+    background: #1a365d !important;
+  }
+</style>
+{% endblock %}

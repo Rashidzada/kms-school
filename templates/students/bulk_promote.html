@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Class Promotion{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-level-up-alt me-2 text-primary"></i> Bulk Class Promotion</h3>
+  <p class="text-muted small mb-0">Select source class and section, choose students, and promote them together in one transaction.</p>
+</div>
+
+<!-- Step 1: Select Source Class and Section -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="fw-bold mb-0 text-primary">Step 1: Select Source Class & Section</h6>
+  </div>
+  <div class="card-body p-3">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small fw-bold">Source Class</label>
+        <select name="source_class" class="form-select" required>
+          <option value="">Choose Class...</option>
+          {% for c in classes %}
+            <option value="{{ c.id }}" {% if source_class_id == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small fw-bold">Source Section</label>
+        <select name="source_section" class="form-select" required>
+          <option value="">Choose Section...</option>
+          {% for sec in sections %}
+            <option value="{{ sec.id }}" {% if source_section_id == sec.id|stringformat:"i" %}selected{% endif %}>{{ sec.class_level.name }} - {{ sec.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i> Load Students</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Step 2: Multi-select & Destination Details -->
+{% if students %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-success">Step 2: Select Students & Destination Class/Session</h6>
+        <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-secondary">Select All</button>
+      </div>
+      <div class="card-body p-3">
+        <div class="row g-3 mb-4 p-3 bg-light rounded border">
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Promote To Class</label>
+            <select name="to_class" class="form-select" required>
+              <option value="">Choose Destination Class...</option>
+              {% for c in classes %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Promote To Section</label>
+            <select name="to_section" class="form-select" required>
+              <option value="">Choose Destination Section...</option>
+              {% for sec in sections %}
+                <option value="{{ sec.id }}">{{ sec.class_level.name }} - {{ sec.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold">Target Academic Session</label>
+            <select name="target_session" class="form-select" required>
+              <option value="">Choose Academic Session...</option>
+              {% for sess in sessions %}
+                <option value="{{ sess.id }}" {% if sess.is_active %}selected{% endif %}>{{ sess.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small">
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="headerCheckbox"></th>
+                <th>Adm #</th>
+                <th>Full Name</th>
+                <th>Father's Name</th>
+                <th>Gender</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in students %}
+                <tr>
+                  <td>
+                    <input type="checkbox" name="selected_students" value="{{ s.id }}" class="student-checkbox">
+                  </td>
+                  <td class="fw-bold">{{ s.admission_no }}</td>
+                  <td>{{ s.full_name }}</td>
+                  <td>{{ s.father_name }}</td>
+                  <td>{{ s.gender }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 pt-3 border-top text-end">
+          <button type="submit" class="btn btn-success px-4 fw-bold">
+            <i class="fas fa-check-circle me-1"></i> Promote Selected Students
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+{% elif source_class_id and source_section_id %}
+  <div class="alert alert-warning shadow-sm">
+    <i class="fas fa-info-circle me-1"></i> No active students found in the selected class and section.
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $('#headerCheckbox, #selectAllBtn').on('click', function() {
+    var checkAll = $('.student-checkbox').length !== $('.student-checkbox:checked').length;
+    $('.student-checkbox').prop('checked', checkAll);
+    $('#headerCheckbox').prop('checked', checkAll);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ teacher.full_name }} | Staff Profile{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">{{ teacher.full_name }}</h3>
+    <p class="text-muted small mb-0">Teacher ID: <strong>{{ teacher.teacher_id }}</strong> | Designation: <strong>{{ teacher.designation }}</strong></p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'experience_certificate' teacher.pk %}" class="btn btn-outline-info text-dark" target="_blank">
+      <i class="fas fa-certificate me-1"></i> Experience Cert
+    </a>
+    <a href="{% url 'staff_id_card' teacher.pk %}" class="btn btn-outline-warning text-dark" target="_blank">
+      <i class="fas fa-id-card me-1"></i> Staff ID Card
+    </a>
+    <a href="{% url 'teacher_update' teacher.pk %}" class="btn btn-outline-success">
+      <i class="fas fa-edit me-1"></i> Edit Profile
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Profile Details Card -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body text-center p-4">
+        {% if teacher.profile_picture %}
+          <img src="{{ teacher.profile_picture.url }}" alt="{{ teacher.full_name }}" class="rounded-circle img-thumbnail mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+        {% else %}
+          <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px; font-size: 2.5rem; font-weight: bold;">
+            {{ teacher.full_name|slice:":1" }}
+          </div>
+        {% endif %}
+        <h5 class="fw-bold mb-1">{{ teacher.full_name }}</h5>
+        <div class="text-muted small mb-2"><span class="badge bg-light text-dark border">{{ teacher.designation }}</span></div>
+        
+        <div class="mb-3">
+          {% if teacher.status == "Active" %}
+            <span class="badge bg-success px-3 py-1">Active Faculty</span>
+          {% else %}
+            <span class="badge bg-secondary px-3 py-1">Inactive</span>
+          {% endif %}
+        </div>
+
+        <ul class="list-group list-group-flush text-start small mt-3">
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Staff ID:</span>
+            <strong>{{ teacher.teacher_id }}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Joining Date:</span>
+            <span>{{ teacher.joining_date|date:"d M Y" }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">CNIC:</span>
+            <span>{{ teacher.cnic|default:"-" }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Date of Birth:</span>
+            <span>{{ teacher.dob|date:"d M Y" }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Contact #:</span>
+            <span>{{ teacher.contact_number }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Qualification:</span>
+            <span class="text-end">{{ teacher.qualification }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Experience:</span>
+            <span class="text-end">{{ teacher.experience }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Address:</span>
+            <span class="text-end">{{ teacher.address }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between bg-light">
+            <span class="text-muted">Assigned Salary Scale:</span>
+            <strong class="text-success">{{ teacher.salary_scale.name|default:"None" }}</strong>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salary Bill History -->
+  <div class="col-lg-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-success">
+          <i class="fas fa-file-invoice-dollar me-2"></i> Full Salary Bill History
+        </h6>
+        <span class="badge bg-light text-dark border">{{ salary_bills.count }} Bills Generated</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>Month/Year</th>
+              <th>Base Pay</th>
+              <th>Allowances</th>
+              <th>Deductions</th>
+              <th>Net Payable</th>
+              <th>Status</th>
+              <th>Voucher #</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill in salary_bills %}
+              <tr>
+                <td class="fw-bold">{{ bill.month }}/{{ bill.year }}</td>
+                <td>PKR {{ bill.base_pay|floatformat:0|intcomma }}</td>
+                <td>PKR {{ bill.allowances|floatformat:0|intcomma }}</td>
+                <td class="text-danger">PKR {{ bill.deductions|floatformat:0|intcomma }}</td>
+                <td class="fw-bold text-success">PKR {{ bill.net_payable|floatformat:0|intcomma }}</td>
+                <td>
+                  {% if bill.is_paid %}
+                    <span class="badge bg-success">Paid</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  {% endif %}
+                </td>
+                <td><small class="text-muted">{{ bill.voucher_no|default:"-" }}</small></td>
+                <td class="text-end">
+                  <a href="{% url 'salary_bill_detail' bill.pk %}" class="btn btn-sm btn-outline-secondary py-0" title="Print Pay Slip" target="_blank">
+                    <i class="fas fa-print"></i> Slip
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center py-4 text-muted">
+                  No salary bills generated yet for this teacher.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

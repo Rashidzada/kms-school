@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Class Fee Summary{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-chart-pie me-2 text-primary"></i> Class-Wise Fee Summary</h3>
+    <p class="text-muted small mb-0">Total fee payable, collected, and outstanding balance per class level for Session: <strong>{{ active_session.name }}</strong></p>
+  </div>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-outline-secondary"><i class="fas fa-print me-1"></i> Print Summary</button>
+  </div>
+</div>
+
+<!-- 3 Stat Blocks -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card bg-light border p-3">
+      <small class="text-muted text-uppercase fw-bold">Total Fees Expected / Due</small>
+      <h3 class="fw-bold mb-0 text-dark">PKR {{ grand_due|floatformat:2|intcomma }}</h3>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-light border p-3">
+      <small class="text-muted text-uppercase fw-bold">Total Fees Collected</small>
+      <h3 class="fw-bold mb-0 text-success">PKR {{ grand_paid|floatformat:2|intcomma }}</h3>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-light border p-3">
+      <small class="text-muted text-uppercase fw-bold">Total Outstanding Receivables</small>
+      <h3 class="fw-bold mb-0 text-danger">PKR {{ grand_balance|floatformat:2|intcomma }}</h3>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th>Class Level</th>
+          <th>Level Category</th>
+          <th class="text-center">Enrolled Students</th>
+          <th class="text-end">Total Amount Due</th>
+          <th class="text-end">Total Amount Paid</th>
+          <th class="text-end">Outstanding Balance</th>
+          <th class="text-center">Collection Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in summary %}
+          <tr>
+            <td class="fw-bold">{{ row.class.name }}</td>
+            <td><span class="badge bg-light text-dark border">{{ row.class.level }}</span></td>
+            <td class="text-center">{{ row.student_count }}</td>
+            <td class="text-end">PKR {{ row.total_due|floatformat:2|intcomma }}</td>
+            <td class="text-end text-success fw-bold">PKR {{ row.total_paid|floatformat:2|intcomma }}</td>
+            <td class="text-end text-danger fw-bold">PKR {{ row.balance|floatformat:2|intcomma }}</td>
+            <td class="text-center">
+              {% if row.total_due > 0 %}
+                <span class="badge bg-primary">
+                  {% widthratio row.total_paid row.total_due 100 %}%
+                </span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">No classes found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light fw-bold">
+        <tr>
+          <th colspan="3" class="text-end text-uppercase">School Total:</th>
+          <th class="text-end">PKR {{ grand_due|floatformat:2|intcomma }}</th>
+          <th class="text-end text-success">PKR {{ grand_paid|floatformat:2|intcomma }}</th>
+          <th class="text-end text-danger">PKR {{ grand_balance|floatformat:2|intcomma }}</th>
+          <th class="text-center">
+            {% if grand_due > 0 %}
+              <span class="badge bg-success">
+                {% widthratio grand_paid grand_due 100 %}%
+              </span>
+            {% else %}
+              -
+            {% endif %}
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

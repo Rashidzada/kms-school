@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-success">
+          <i class="fas fa-chalkboard-teacher me-2"></i> {{ title }}
+        </h5>
+        <a href="{% url 'teacher_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Back to List
+        </a>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+            <a href="{% url 'teacher_list' %}" class="btn btn-light border px-4">Cancel</a>
+            <button type="submit" class="btn btn-success px-4 fw-bold">
+              <i class="fas fa-save me-1"></i> Save Teacher
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>School Leaving Certificate | {{ student.full_name }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Times New Roman', serif;
+      padding: 30px;
+    }
+    .cert-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 40px;
+      border: 8px double #1a365d;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .cert-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.06;
+      width: 400px;
+      pointer-events: none;
+    }
+    .cert-title {
+      font-size: 26pt;
+      font-weight: bold;
+      color: #1a365d;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #1a365d;
+      display: inline-block;
+      padding-bottom: 5px;
+      margin-top: 15px;
+    }
+    .cert-line {
+      font-size: 14pt;
+      line-height: 2.2;
+      margin-top: 25px;
+      text-align: justify;
+    }
+    .cert-field {
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      padding: 0 8px;
+      color: #0f2442;
+    }
+    .signature-box {
+      margin-top: 60px;
+      display: flex;
+      justify-content: space-between;
+      text-align: center;
+    }
+    .signature-line {
+      width: 200px;
+      border-top: 1px solid #333;
+      padding-top: 5px;
+      font-weight: bold;
+      font-size: 11pt;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .cert-container {
+        box-shadow: none;
+        border: 6px double #000;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="text-center mb-3 no-print">
+    <button onclick="window.print()" class="btn btn-primary px-4 py-2 font-weight-bold">
+      <i class="fas fa-print me-2"></i> Print School Leaving Certificate
+    </button>
+  </div>
+
+  <div class="cert-container">
+    {% if school_setting.logo %}
+      <img src="{{ school_setting.logo.url }}" alt="Watermark" class="cert-watermark">
+    {% else %}
+      <img src="{% static 'dist/img/logo.png' %}" alt="Watermark" class="cert-watermark">
+    {% endif %}
+
+    <div class="text-center">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" style="width: 85px; height: 85px; border-radius: 50%;">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="width: 85px; height: 85px; border-radius: 50%;">
+      {% endif %}
+      <h2 class="mt-2 mb-0 fw-bold" style="color: #1a365d;">{{ school_setting.name }}</h2>
+      <div class="small text-muted">{{ school_setting.address }} | Phone: {{ school_setting.contact }}</div>
+      <div><span class="cert-title">School Leaving Certificate</span></div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+      <div><strong>Certificate Serial #:</strong> KMS-SLC-{{ student.admission_no }}</div>
+      <div><strong>Date of Issue:</strong> {% now "d F, Y" %}</div>
+    </div>
+
+    <div class="cert-line">
+      This is to certify that 
+      <span class="cert-field">{{ student.full_name }}</span>, 
+      Son/Daughter of 
+      <span class="cert-field">{{ student.father_name }}</span>, 
+      bearing Admission / Registration Number 
+      <span class="cert-field">{{ student.admission_no }}</span>, 
+      was a bonafide student of this institution. 
+      <br><br>
+      According to the school admission register, his/her Date of Birth is 
+      <span class="cert-field">{{ student.dob|date:"d F, Y" }}</span>. 
+      He/She was admitted into Class 
+      <span class="cert-field">{{ student.current_class.name }}</span> 
+      on 
+      <span class="cert-field">{{ student.admission_date|date:"d F, Y" }}</span>, 
+      and left the institution on 
+      <span class="cert-field">{{ student.withdrawal_date|default:"Today"|date:"d F, Y" }}</span> 
+      while studying in Class 
+      <span class="cert-field">{{ student.class_at_withdrawal|default:student.current_class.name }}</span>.
+      <br><br>
+      All school dues, fees, and charges up to date have been 
+      <span class="cert-field">Satisfactorily Settled</span>. 
+      His/Her conduct and character during his/her stay at this institution were found to be 
+      <span class="cert-field">Good</span>.
+      <br><br>
+      Reason for leaving the school: 
+      <span class="cert-field">{{ student.remarks|default:"Completed studies / On guardian request" }}</span>.
+      <br><br>
+      We wish him/her every success in his/her future educational endeavours.
+    </div>
+
+    <div class="signature-box">
+      <div>
+        <div class="signature-line">Class Incharge / Teacher</div>
+      </div>
+      <div>
+        <div class="signature-line">Accounts Officer</div>
+      </div>
+      <div>
+        <div class="signature-line">Principal / Headmaster</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Families & Households{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-users me-2 text-primary"></i> Families & Households</h3>
+    <p class="text-muted small mb-0">Group sibling students to manage unified billing and combined family fee payments.</p>
+  </div>
+  <a href="{% url 'family_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i> Add Family
+  </a>
+</div>
+
+<!-- Search Bar -->
+<div class="card mb-4 shadow-sm border-0 bg-light">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-10">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by Family ID (e.g. FAM-0001), Guardian Name, Contact, Address...">
+        </div>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-search me-1"></i> Search</button>
+        <a href="{% url 'family_list' %}" class="btn btn-outline-secondary"><i class="fas fa-sync-alt"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Family List Table -->
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light small">
+        <tr>
+          <th>Family ID</th>
+          <th>Father / Guardian Name</th>
+          <th>Contact Number</th>
+          <th>Residence Address</th>
+          <th>Linked Students (Siblings)</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in families %}
+          <tr>
+            <td class="fw-bold text-primary">{{ f.family_id }}</td>
+            <td class="fw-bold">{{ f.father_guardian_name }}</td>
+            <td>{{ f.contact_number }}</td>
+            <td><small class="text-muted">{{ f.address }}</small></td>
+            <td>
+              {% for s in f.students.all %}
+                <a href="{% url 'student_detail' s.pk %}" class="badge bg-light text-dark border text-decoration-none me-1">
+                  {{ s.full_name }} ({{ s.current_class.name }})
+                </a>
+              {% empty %}
+                <span class="text-muted small">No students linked</span>
+              {% endfor %}
+            </td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <a href="{% url 'family_payment' f.pk %}" class="btn btn-outline-success" title="Collect Family Fee">
+                  <i class="fas fa-money-bill-wave"></i> Family Pay
+                </a>
+                <a href="{% url 'family_update' f.pk %}" class="btn btn-outline-secondary" title="Edit Family">
+                  <i class="fas fa-edit"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="fas fa-users-slash fa-3x mb-3 d-block text-secondary"></i>
+              No families found matching your criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Details{% endblock title %}
+
+{% block breadcrumb %}
+<a class="btn btn-sm btn-secondary" href="{% url 'staff-list' %}"><i class="fas fa-arrow-left mr-1"></i> Back to Staff List</a>
+{% endblock breadcrumb %}
+
+{% block content-header %}
+<div class="card-header">
+  <h3 class="card-title font-weight-bold"><i class="fas fa-user-tie mr-2"></i>Staff Details</h3>
+  <div class="card-tools">
+    <button type="button" onclick="window.print()" class="btn btn-tool text-primary font-weight-bold" title="Print this staff record">
+      <i class="fas fa-print mr-1"></i> Print
+    </button>
+    <a href="{% url 'staff-update' object.id %}" class="btn btn-tool text-secondary" title="Edit">
+      <i class="fas fa-edit"></i>
+    </a>
+    <a href="{% url 'staff-delete' object.id %}" class="btn btn-tool text-danger" title="Delete">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+</div>
+{% endblock content-header %}
+
+{% block content %}
+    <div class="row">
+      <div class="col-sm-4">
+        <div>
+          <h3>{{ object }}</h3>
+          <h5>{{ object.get_gender_display }}</h5>
+          <h5>
+            <span class="badge {% if object.current_status == 'active' %}badge-success{% else %}badge-secondary{% endif %}">
+              {{ object.get_current_status_display }}
+            </span>
+          </h5>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        <div>
+          <div class="form-group border-bottom row">
+            <label class="col-sm-4 font-weight-bold">
+              Date of Birth
+            </label>
+            <div class="col-sm-8">
+              {{ object.date_of_birth }}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col-sm-4 font-weight-bold">
+              Date of Admission
+            </label>
+            <div class="col-sm-8">
+              {{ object.date_of_admission }}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col-sm-4 font-weight-bold">
+               Mobile Number
+            </label>
+            <div class="col-sm-8">
+              {{ object.mobile_number }}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col-sm-4 font-weight-bold">
+              Address
+            </label>
+            <div class="col-sm-8">
+              {{ object.address }}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col-sm-4 font-weight-bold">
+              Comments
+            </label>
+            <div class="col-sm-8">
+              {{ object.others }}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+{% endblock content %}
+

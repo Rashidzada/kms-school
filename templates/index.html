@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock title %}
+
+{% block fullcard %}
+<div class="row">
+  <!-- School Welcome Banner -->
+  <div class="col-12 mb-4">
+    <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: #fff; border-radius: 12px;">
+      <div class="card-body p-4">
+        <div class="row align-items-center">
+          <div class="col-auto text-center mb-3 mb-md-0">
+            <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="img-fluid rounded-circle shadow" style="width: 110px; height: 110px; background: #fff; padding: 4px;">
+          </div>
+          <div class="col">
+            <h2 class="font-weight-bold mb-1" style="font-size: 1.8rem; letter-spacing: 0.5px;">{{ school_name | default:"Kohisar Model School & College" }}</h2>
+            <p class="mb-2 text-warning font-italic" style="font-size: 1.05rem;">
+              <i class="fas fa-quote-left mr-1"></i> {{ school_slogan }} <i class="fas fa-quote-right ml-1"></i>
+            </p>
+            <p class="mb-0 text-light small" style="opacity: 0.9;">
+              <i class="fas fa-map-marker-alt mr-1 text-danger"></i> {{ school_address }}
+              {% if school_registration %}
+                &nbsp;|&nbsp; <i class="fas fa-certificate mr-1 text-info"></i> {{ school_registration }}
+              {% endif %}
+            </p>
+          </div>
+          <div class="col-auto text-right d-none d-lg-block">
+            <span class="badge badge-warning px-3 py-2 text-dark font-weight-bold d-block mb-1" style="font-size: 0.9rem;">
+              Session: {{ current_session }}
+            </span>
+            <span class="badge badge-light px-3 py-2 text-dark font-weight-bold d-block" style="font-size: 0.9rem;">
+              Term: {{ current_term }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Statistics Cards -->
+  <div class="col-lg-3 col-6">
+    <div class="small-box bg-info elevation-2">
+      <div class="inner">
+        <h3>{{ total_students }}</h3>
+        <p>Active Students</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-user-graduate"></i>
+      </div>
+      <a href="{% url 'student-list' %}" class="small-box-footer">View Students <i class="fas fa-arrow-circle-right"></i></a>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="small-box bg-success elevation-2">
+      <div class="inner">
+        <h3>{{ total_staff }}</h3>
+        <p>Member of Staff</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-chalkboard-teacher"></i>
+      </div>
+      <a href="{% url 'staff-list' %}" class="small-box-footer">View Staff <i class="fas fa-arrow-circle-right"></i></a>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="small-box bg-warning elevation-2">
+      <div class="inner">
+        <h3>{{ total_classes }}</h3>
+        <p>Classes</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-chalkboard"></i>
+      </div>
+      <a href="{% url 'classes' %}" class="small-box-footer">Manage Classes <i class="fas fa-arrow-circle-right"></i></a>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-6">
+    <div class="small-box bg-danger elevation-2">
+      <div class="inner">
+        <h3>{{ total_invoices }}</h3>
+        <p>Invoices</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <a href="{% url 'invoice-list' %}" class="small-box-footer">View Invoices <i class="fas fa-arrow-circle-right"></i></a>
+    </div>
+  </div>
+
+  <!-- Quick Actions Card -->
+  <div class="col-12 mt-2">
+    <div class="card card-outline card-primary elevation-1">
+      <div class="card-header">
+        <h3 class="card-title font-weight-bold"><i class="fas fa-bolt mr-2 text-warning"></i>Quick Actions</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{% url 'student-create' %}" class="btn btn-outline-primary btn-block text-left p-3">
+              <i class="fas fa-user-plus fa-lg mr-2 text-primary"></i>
+              <strong>New Student</strong>
+              <div class="small text-muted mt-1">Enroll a new student</div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{% url 'staff-create' %}" class="btn btn-outline-success btn-block text-left p-3">
+              <i class="fas fa-user-tie fa-lg mr-2 text-success"></i>
+              <strong>New Staff</strong>
+              <div class="small text-muted mt-1">Add staff member</div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{% url 'invoice-create' %}" class="btn btn-outline-warning btn-block text-left p-3">
+              <i class="fas fa-receipt fa-lg mr-2 text-warning"></i>
+              <strong>New Invoice</strong>
+              <div class="small text-muted mt-1">Generate invoice</div>
+            </a>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-2">
+            <a href="{% url 'view-results' %}" class="btn btn-outline-info btn-block text-left p-3">
+              <i class="fas fa-poll-h fa-lg mr-2 text-info"></i>
+              <strong>View Results</strong>
+              <div class="small text-muted mt-1">Academic report cards</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock fullcard %}
+

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Promote Student | {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-primary">
+          <i class="fas fa-level-up-alt me-2"></i> Academic Promotion: {{ student.full_name }}
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="alert alert-light border mb-4">
+          <div class="row">
+            <div class="col-6">
+              <small class="text-muted d-block">Current Class & Section</small>
+              <strong>{{ student.current_class.name }} - {{ student.current_section.name }}</strong>
+            </div>
+            <div class="col-6">
+              <small class="text-muted d-block">Admission Number</small>
+              <strong>{{ student.admission_no }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+            <a href="{% url 'student_detail' student.pk %}" class="btn btn-light border">Cancel</a>
+            <button type="submit" class="btn btn-primary fw-bold">
+              <i class="fas fa-check me-1"></i> Confirm Promotion
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

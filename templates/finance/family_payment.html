@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}Family Payment | {{ family.family_id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm border-success">
+      <div class="card-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-users me-2"></i> Combined Family Fee Payment
+        </h5>
+        <span class="badge bg-white text-success">{{ family.family_id }}</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="p-3 bg-light rounded border mb-4">
+          <div class="row">
+            <div class="col-md-4">
+              <small class="text-muted d-block">Guardian Name</small>
+              <strong>{{ family.father_guardian_name }}</strong>
+            </div>
+            <div class="col-md-4">
+              <small class="text-muted d-block">Contact Number</small>
+              <strong>{{ family.contact_number }}</strong>
+            </div>
+            <div class="col-md-4">
+              <small class="text-muted d-block">Academic Session</small>
+              <strong>{{ active_session.name }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+            <a href="{% url 'family_list' %}" class="btn btn-light border">Cancel</a>
+            <button type="submit" class="btn btn-success fw-bold px-4">
+              <i class="fas fa-check-circle me-1"></i> Process Combined Family Payment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

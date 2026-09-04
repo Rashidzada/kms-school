@@ -3,17 +3,13 @@ title Kohisar Model School ^& College (KMS) - Server Runner
 color 1F
 
 :: Determine Project Directory (Portable detection)
-if exist "%~dp0manage.py" (
-    set "PROJECT_DIR=%~dp0"
-) else if exist "%cd%\manage.py" (
-    set "PROJECT_DIR=%cd%"
-) else if exist "C:\kms-school\manage.py" (
-    set "PROJECT_DIR=C:\kms-school"
-) else if exist "C:\KMS_Software\manage.py" (
-    set "PROJECT_DIR=C:\KMS_Software"
-) else (
-    set "PROJECT_DIR=%~dp0"
-)
+set "PROJECT_DIR="
+if exist "%~dp0manage.py" set "PROJECT_DIR=%~dp0"
+if not defined PROJECT_DIR if exist "%cd%\manage.py" set "PROJECT_DIR=%cd%"
+if not defined PROJECT_DIR if exist "C:\Users\RashidZada\Desktop\Django-School-Management-System\manage.py" set "PROJECT_DIR=C:\Users\RashidZada\Desktop\Django-School-Management-System"
+if not defined PROJECT_DIR if exist "C:\kms-school\manage.py" set "PROJECT_DIR=C:\kms-school"
+if not defined PROJECT_DIR if exist "C:\KMS_Software\manage.py" set "PROJECT_DIR=C:\KMS_Software"
+if not defined PROJECT_DIR set "PROJECT_DIR=%~dp0"
 
 :: Remove trailing slash if present
 if "%PROJECT_DIR:~-1%"=="\" set "PROJECT_DIR=%PROJECT_DIR:~0,-1%"
@@ -69,7 +65,7 @@ echo.
 :: 3. Check Port 8001 & Free if Stale Process Exists
 echo [*] Preparing Port 8001 for KMS Web Portal...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8001" ^| findstr "LISTENING"') do (
-    echo     [!] Freeing existing process on port 8001 (PID: %%a)...
+    echo     [!] Freeing existing process on port 8001 [PID: %%a]...
     taskkill /F /PID %%a >nul 2>&1
 )
 echo     [OK] Port 8001 is ready.

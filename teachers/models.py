@@ -99,7 +99,27 @@ class MonthlySalaryBill(models.Model):
         verbose_name_plural = "Monthly Salary Bills"
 
     def __str__(self):
-        return f"{self.teacher.full_name} - {self.month}/{self.year} (Net: {self.net_payable})"
+        return f"{self.teacher.full_name} - {self.month_name} {self.year} (Net: {self.net_payable})"
+
+    @property
+    def month_name(self):
+        import calendar
+        try:
+            return calendar.month_name[int(self.month)]
+        except (IndexError, TypeError, ValueError):
+            return f"Month {self.month}"
+
+    @property
+    def month_abbr(self):
+        import calendar
+        try:
+            return calendar.month_abbr[int(self.month)]
+        except (IndexError, TypeError, ValueError):
+            return str(self.month)
+
+    @property
+    def period_display(self):
+        return f"{self.month_name} {self.year}"
 
     @property
     def net_payable(self):

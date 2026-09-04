@@ -71,7 +71,7 @@ def cashbook_summary(request):
             "date": s.payment_date,
             "type": "Expense",
             "category": "Salary",
-            "description": f"Salary: {s.teacher.full_name} ({s.month}/{s.year})",
+            "description": f"Salary: {s.teacher.full_name} ({s.month_name} {s.year})",
             "reference": s.voucher_no or f"VCH-{s.id}",
             "income": Decimal("0.00"),
             "expense": net,
@@ -168,11 +168,13 @@ def monthly_summary(request):
         key = (s.payment_date.year, s.payment_date.month)
         monthly_data[key]["expense"] += s.net_payable
 
+    import calendar
     rows = []
     for (year, month), val in sorted(monthly_data.items(), key=lambda x: (x[0][0], x[0][1]), reverse=True):
         rows.append({
             "year": year,
             "month": month,
+            "month_name": calendar.month_name[month] if 1 <= month <= 12 else f"Month {month}",
             "income": val["income"],
             "expense": val["expense"],
             "net": val["income"] - val["expense"],

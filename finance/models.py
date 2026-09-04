@@ -59,7 +59,19 @@ class StudentFeeMonthEntry(models.Model):
         verbose_name_plural = "Fee Month Entries"
 
     def __str__(self):
-        return f"{self.ledger.student.full_name} - Month {self.month} (Bal: {self.balance})"
+        return f"{self.ledger.student.full_name} - {self.get_month_display()} (Bal: PKR {self.balance:,.2f})"
+
+    @property
+    def month_name(self):
+        return self.get_month_display()
+
+    @property
+    def month_abbr(self):
+        import calendar
+        try:
+            return calendar.month_abbr[int(self.month)]
+        except (IndexError, TypeError, ValueError):
+            return str(self.month)
 
     @property
     def total_amount(self):

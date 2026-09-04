@@ -32,7 +32,7 @@
       <tbody>
         {% for r in rows %}
           <tr>
-            <td class="fw-bold">Month {{ r.month }}</td>
+            <td class="fw-bold">{{ r.month_name }}</td>
             <td>{{ r.year }}</td>
             <td class="text-end text-success fw-bold">PKR {{ r.income|floatformat:2|intcomma }}</td>
             <td class="text-end text-danger fw-bold">PKR {{ r.expense|floatformat:2|intcomma }}</td>

@@ -113,7 +113,7 @@
           <tbody>
             {% for bill in salary_bills %}
               <tr>
-                <td class="fw-bold">{{ bill.month }}/{{ bill.year }}</td>
+                <td class="fw-bold">{{ bill.month_name }} {{ bill.year }}</td>
                 <td>PKR {{ bill.base_pay|floatformat:0|intcomma }}</td>
                 <td>PKR {{ bill.allowances|floatformat:0|intcomma }}</td>
                 <td class="text-danger">PKR {{ bill.deductions|floatformat:0|intcomma }}</td>

@@ -61,6 +61,19 @@ class MonthlySalaryBillForm(forms.ModelForm):
 
 
 class GenerateSalaryBillsForm(forms.Form):
-    MONTH_CHOICES = [(i, f"Month {i}") for i in range(1, 13)]
-    month = forms.ChoiceField(choices=MONTH_CHOICES, label="Month")
-    year = forms.IntegerField(label="Year", initial=2026)
+    MONTH_CHOICES = [
+        (1, "January"),
+        (2, "February"),
+        (3, "March"),
+        (4, "April"),
+        (5, "May"),
+        (6, "June"),
+        (7, "July"),
+        (8, "August"),
+        (9, "September"),
+        (10, "October"),
+        (11, "November"),
+        (12, "December"),
+    ]
+    month = forms.ChoiceField(choices=MONTH_CHOICES, label="Salary Month")
+    year = forms.IntegerField(label="Salary Year", initial=2026)

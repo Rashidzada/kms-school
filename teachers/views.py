@@ -124,13 +124,15 @@ def salary_bill_list(request):
     total_net = sum(b.net_payable for b in bills)
     total_paid = sum(b.net_payable for b in bills if b.is_paid)
 
+    import calendar
     context = {
         "bills": bills,
         "selected_month": int(month) if month else "",
         "selected_year": int(year) if year else "",
+        "selected_month_name": calendar.month_name[int(month)] if month else "All Months",
         "total_net": total_net,
         "total_paid": total_paid,
-        "months": [(i, f"Month {i}") for i in range(1, 13)],
+        "months": [(i, calendar.month_name[i]) for i in range(1, 13)],
     }
     return render(request, "teachers/salary_bill_list.html", context)
 

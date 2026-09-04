@@ -80,7 +80,7 @@
             <td class="fw-bold text-success">{{ b.teacher.teacher_id }}</td>
             <td class="fw-bold">{{ b.teacher.full_name }}</td>
             <td><span class="badge bg-light text-dark border">{{ b.teacher.designation }}</span></td>
-            <td>{{ b.month }}/{{ b.year }}</td>
+            <td class="fw-bold text-nowrap">{{ b.month_name }} {{ b.year }}</td>
             <td>{{ b.base_pay|floatformat:0|intcomma }}</td>
             <td>{{ b.allowances|floatformat:0|intcomma }}</td>
             <td class="text-danger">{{ b.deductions|floatformat:0|intcomma }}</td>

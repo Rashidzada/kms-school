@@ -160,7 +160,7 @@
             <tbody>
               {% for entry in ledger.monthly_entries.all %}
                 <tr {% if entry.balance > 0 %}class="table-warning bg-opacity-25"{% endif %}>
-                  <td class="fw-bold">{{ entry.get_month_display|slice:":3" }}</td>
+                  <td class="fw-bold">{{ entry.get_month_display }}</td>
                   <td>{{ entry.arrears|floatformat:0|intcomma }}</td>
                   <td>{{ entry.monthly_fee|floatformat:0|intcomma }}</td>
                   <td>{{ entry.exam_fee|floatformat:0|intcomma }}</td>

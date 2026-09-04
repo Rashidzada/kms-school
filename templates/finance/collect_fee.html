@@ -56,6 +56,36 @@
           </div>
         </div>
 
+        <!-- Student Total Dues & Family Household Notice -->
+        <div class="row g-2 mb-4">
+          <div class="col-md-6">
+            <div class="p-3 rounded h-100 {% if student_total_dues > 0 %}bg-danger bg-opacity-10 border border-danger{% else %}bg-success bg-opacity-10 border border-success{% endif %}">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="small fw-bold text-dark"><i class="fas fa-user-graduate me-1 text-primary"></i> Total Student Dues:</span>
+                <span class="fw-bold {% if student_total_dues > 0 %}text-danger{% else %}text-success{% endif %}">
+                  PKR {{ student_total_dues|floatformat:2|intcomma }}
+                </span>
+              </div>
+            </div>
+          </div>
+          {% if family %}
+            <div class="col-md-6">
+              <div class="p-3 rounded h-100 bg-primary bg-opacity-10 border border-primary">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small fw-bold text-dark"><i class="fas fa-users me-1 text-primary"></i> Full Family Dues:</span>
+                  <span class="fw-bold text-danger">PKR {{ family_total_dues|floatformat:2|intcomma }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <small class="text-muted">{{ family_siblings_summary|length }} sibling{{ family_siblings_summary|length|pluralize }} enrolled</small>
+                  <a href="{% url 'family_payment' family.pk %}" class="btn btn-xs btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                    Pay All Siblings &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
         <form method="post">
           {% csrf_token %}
           {{ form|crispy }}

@@ -152,26 +152,46 @@
         <tr>
           <td>Basic Pay</td>
           <td class="text-end fw-bold">{{ bill.base_pay|floatformat:2|intcomma }}</td>
-          <td>Absence / Late Deductions</td>
-          <td class="text-end text-danger">{{ bill.deductions|floatformat:2|intcomma }}</td>
+          <td>
+            Absence Deductions
+            {% if bill.absent_days > 0 %}
+              <small class="text-muted d-block">({{ bill.absent_days }} days absent @ PKR {{ bill.base_pay|floatformat:0 }} / 30)</small>
+            {% endif %}
+          </td>
+          <td class="text-end text-danger">{{ bill.auto_absent_deduction|floatformat:2|intcomma }}</td>
         </tr>
         <tr>
           <td>Allowances (Medical + Conveyance + Other)</td>
           <td class="text-end fw-bold">{{ bill.allowances|floatformat:2|intcomma }}</td>
-          <td>Income Tax / Welfare</td>
-          <td class="text-end text-danger">0.00</td>
+          <td>Other Deductions / Cuts</td>
+          <td class="text-end text-danger">{{ bill.other_deductions|floatformat:2|intcomma }}</td>
         </tr>
       </tbody>
       <tfoot class="table-light">
         <tr>
           <th>Gross Earnings:</th>
-          <th class="text-end text-primary">PKR {{ bill.base_pay|add:bill.allowances|floatformat:2|intcomma }}</th>
+          <th class="text-end text-primary">PKR {{ bill.gross_pay|floatformat:2|intcomma }}</th>
           <th>Total Deductions:</th>
           <th class="text-end text-danger">PKR {{ bill.deductions|floatformat:2|intcomma }}</th>
         </tr>
-        <tr class="table-success h5 mb-0">
-          <th colspan="2" class="text-uppercase">Net Salary Payable:</th>
-          <th colspan="2" class="text-end text-success fw-bold">PKR {{ bill.net_payable|floatformat:2|intcomma }}</th>
+        <tr class="table-light">
+          <th colspan="2" class="text-uppercase">Net Monthly Salary:</th>
+          <th colspan="2" class="text-end fw-bold text-dark">PKR {{ bill.net_payable|floatformat:2|intcomma }}</th>
+        </tr>
+        <tr class="table-light">
+          <th colspan="2" class="text-uppercase text-success">Total Amount Paid / Disbursed:</th>
+          <th colspan="2" class="text-end text-success fw-bold">PKR {{ bill.actual_paid|floatformat:2|intcomma }}</th>
+        </tr>
+        <tr class="{% if bill.balance_left > 0 %}table-warning{% else %}table-success{% endif %} h5 mb-0">
+          <th colspan="2" class="text-uppercase">Remaining Balance Left for Teacher:</th>
+          <th colspan="2" class="text-end fw-bold {% if bill.balance_left > 0 %}text-danger{% else %}text-success{% endif %}">
+            PKR {{ bill.balance_left|floatformat:2|intcomma }}
+            {% if bill.balance_left == 0 %}
+              <span class="badge bg-success ms-2 fs-6">Fully Cleared</span>
+            {% else %}
+              <span class="badge bg-danger ms-2 fs-6">Dues Remaining</span>
+            {% endif %}
+          </th>
         </tr>
       </tfoot>
     </table>

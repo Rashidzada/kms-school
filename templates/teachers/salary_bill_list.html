@@ -10,6 +10,9 @@
     <p class="text-muted small mb-0">View, edit, and print monthly salary bills for teachers and staff.</p>
   </div>
   <div class="d-flex gap-2">
+    <a href="{% url 'export_salary_bills_excel' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success" title="Export current filtered salary bills to Excel">
+      <i class="fas fa-file-excel me-1"></i> Export Excel
+    </a>
     <a href="{% url 'generate_salary_bills' %}" class="btn btn-success">
       <i class="fas fa-cogs me-1"></i> Generate Salary Bills
     </a>
@@ -41,16 +44,22 @@
 
 <!-- Financial Rollup Strip -->
 <div class="row g-3 mb-4">
-  <div class="col-md-6">
+  <div class="col-md-4">
     <div class="card bg-light border p-3">
       <small class="text-muted text-uppercase fw-bold">Total Net Payroll</small>
-      <h3 class="fw-bold mb-0 text-dark">PKR {{ total_net|floatformat:2|intcomma }}</h3>
+      <h4 class="fw-bold mb-0 text-dark">PKR {{ total_net|floatformat:2|intcomma }}</h4>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-4">
     <div class="card bg-light border p-3">
-      <small class="text-muted text-uppercase fw-bold">Total Paid Disbursed</small>
-      <h3 class="fw-bold mb-0 text-success">PKR {{ total_paid|floatformat:2|intcomma }}</h3>
+      <small class="text-muted text-uppercase fw-bold">Total Disbursed / Paid</small>
+      <h4 class="fw-bold mb-0 text-success">PKR {{ total_paid|floatformat:2|intcomma }}</h4>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-light border p-3">
+      <small class="text-muted text-uppercase fw-bold">Total Salary Dues Left (Unpaid)</small>
+      <h4 class="fw-bold mb-0 {% if total_balance_left > 0 %}text-danger{% else %}text-success{% endif %}">PKR {{ total_balance_left|floatformat:2|intcomma }}</h4>
     </div>
   </div>
 </div>
@@ -65,10 +74,11 @@
           <th>Faculty Member</th>
           <th>Designation</th>
           <th>Month/Year</th>
-          <th>Base Pay</th>
-          <th>Allowances</th>
+          <th>Gross Pay</th>
           <th>Deductions</th>
           <th>Net Payable</th>
+          <th>Paid Amount</th>
+          <th>Balance Left</th>
           <th>Status</th>
           <th>Payment Date</th>
           <th class="text-end">Actions</th>
@@ -81,15 +91,33 @@
             <td class="fw-bold">{{ b.teacher.full_name }}</td>
             <td><span class="badge bg-light text-dark border">{{ b.teacher.designation }}</span></td>
             <td class="fw-bold text-nowrap">{{ b.month_name }} {{ b.year }}</td>
-            <td>{{ b.base_pay|floatformat:0|intcomma }}</td>
-            <td>{{ b.allowances|floatformat:0|intcomma }}</td>
-            <td class="text-danger">{{ b.deductions|floatformat:0|intcomma }}</td>
-            <td class="fw-bold text-success">PKR {{ b.net_payable|floatformat:0|intcomma }}</td>
-            <td>
-              {% if b.is_paid %}
-                <span class="badge bg-success">Paid</span>
+            <td>PKR {{ b.gross_pay|floatformat:0|intcomma }}</td>
+            <td class="text-danger">
+              {% if b.deductions > 0 %}
+                -{{ b.deductions|floatformat:0|intcomma }}
+                {% if b.absent_days > 0 %}
+                  <span class="badge bg-light text-danger border" title="{{ b.absent_days }} absent days">({{ b.absent_days }}d absent)</span>
+                {% endif %}
               {% else %}
-                <span class="badge bg-warning text-dark">Pending</span>
+                0
+              {% endif %}
+            </td>
+            <td class="fw-bold text-primary">PKR {{ b.net_payable|floatformat:0|intcomma }}</td>
+            <td class="fw-bold text-success">PKR {{ b.actual_paid|floatformat:0|intcomma }}</td>
+            <td class="fw-bold {% if b.balance_left > 0 %}text-danger{% else %}text-muted{% endif %}">
+              {% if b.balance_left > 0 %}
+                PKR {{ b.balance_left|floatformat:0|intcomma }}
+              {% else %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>0</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if b.payment_status == "Cleared" %}
+                <span class="badge bg-success">Cleared</span>
+              {% elif b.payment_status == "Partial" %}
+                <span class="badge bg-warning text-dark">Partial</span>
+              {% else %}
+                <span class="badge bg-danger">Pending</span>
               {% endif %}
             </td>
             <td>{{ b.payment_date|date:"d/m/Y"|default:"-" }}</td>
@@ -98,15 +126,15 @@
                 <a href="{% url 'salary_bill_detail' b.pk %}" class="btn btn-outline-secondary" title="Print Pay Slip" target="_blank">
                   <i class="fas fa-print"></i>
                 </a>
-                <a href="{% url 'salary_bill_update' b.pk %}" class="btn btn-outline-success" title="Edit / Mark Paid">
-                  <i class="fas fa-check-circle"></i>
+                <a href="{% url 'salary_bill_update' b.pk %}" class="btn btn-outline-success" title="Edit / Pay / Deduct">
+                  <i class="fas fa-edit"></i>
                 </a>
               </div>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="11" class="text-center py-5 text-muted">
+            <td colspan="12" class="text-center py-5 text-muted">
               No salary bills found for this period. Click <strong>Generate Salary Bills</strong> to batch create them.
             </td>
           </tr>

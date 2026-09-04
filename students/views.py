@@ -13,14 +13,120 @@ from .forms import FamilyHouseholdForm, SinglePromoteForm, StudentForm, StudentW
 from .models import FamilyHousehold, PromotionHistory, Student
 
 
+def compute_students_fee_ledger_map(students_list, active_session=None):
+    """
+    Computes fee status, paid months (real names), pending months with dues,
+    and full family household dues for a given list of students.
+    Zero N+1 queries by bulk-prefetching ledgers and monthly entries.
+    """
+    if not active_session:
+        active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+
+    student_ids = [s.id for s in students_list]
+    ledgers = StudentFeeLedger.objects.filter(
+        student_id__in=student_ids,
+        academic_session=active_session
+    ).prefetch_related("monthly_entries")
+    ledger_map = {l.student_id: l for l in ledgers}
+
+    # Family dues map across all families in this student cohort
+    family_ids = set([s.family_id for s in students_list if s.family_id])
+    family_dues_map = {fid: Decimal("0.00") for fid in family_ids}
+    family_count_map = {fid: 0 for fid in family_ids}
+
+    if family_ids and active_session:
+        fam_students = list(Student.objects.filter(family_id__in=family_ids, status="Active").values_list("id", "family_id"))
+        fam_student_ids = [fs[0] for fs in fam_students]
+        fam_student_to_family = dict(fam_students)
+
+        fam_ledgers = StudentFeeLedger.objects.filter(
+            student_id__in=fam_student_ids,
+            academic_session=active_session
+        ).prefetch_related("monthly_entries")
+
+        for fl in fam_ledgers:
+            fl_entries = list(fl.monthly_entries.order_by("month"))
+            fl_due = max(Decimal("0.00"), fl_entries[-1].balance if fl_entries else Decimal("0.00"))
+            if fl_due > 0:
+                fid = fam_student_to_family.get(fl.student_id)
+                if fid:
+                    family_dues_map[fid] = family_dues_map.get(fid, Decimal("0.00")) + fl_due
+
+        for _, fid in fam_students:
+            family_count_map[fid] = family_count_map.get(fid, 0) + 1
+
+    for s in students_list:
+        l = ledger_map.get(s.id)
+        if not l:
+            s.total_dues = Decimal("0.00")
+            s.has_dues = False
+            s.paid_months_list = []
+            s.paid_months_display = "None"
+            s.pending_months_list = []
+            s.pending_months_display = "None"
+            s.family_total_dues = Decimal("0.00")
+            s.family_siblings_count = 0
+            continue
+
+        entries = list(l.monthly_entries.order_by("month"))
+        paid_months = []
+        pending_months = []
+
+        for e in entries:
+            chg = (e.monthly_fee or Decimal("0.00")) + (e.exam_fee or Decimal("0.00")) + (e.other_charges or Decimal("0.00"))
+            if e.month == 1:
+                chg += (e.arrears or Decimal("0.00"))
+            if chg <= 0 and (e.paid_amount or Decimal("0.00")) <= 0:
+                continue
+            net_unpaid = chg - (e.paid_amount or Decimal("0.00"))
+            if net_unpaid <= 0:
+                paid_months.append(e.get_month_display())
+            else:
+                pending_months.append({
+                    "month": e.month,
+                    "month_name": e.get_month_display(),
+                    "month_abbr": e.month_abbr,
+                    "due": net_unpaid,
+                })
+
+        tot_due = max(Decimal("0.00"), entries[-1].balance if entries else Decimal("0.00"))
+
+        if len(paid_months) == 12:
+            paid_display = "All 12 Months (Jan - Dec)"
+        elif len(paid_months) > 3:
+            paid_display = f"{paid_months[0]} - {paid_months[-1]} ({len(paid_months)} mos)"
+        elif paid_months:
+            paid_display = ", ".join(paid_months)
+        else:
+            paid_display = "No payments yet"
+
+        if pending_months:
+            pending_parts = [f"{p['month_name']}: PKR {p['due']:,.0f}" for p in pending_months]
+            pending_display = " | ".join(pending_parts)
+        else:
+            pending_display = "Cleared (PKR 0)"
+
+        s.total_dues = tot_due
+        s.has_dues = (tot_due > Decimal("0.00"))
+        s.paid_months_list = paid_months
+        s.paid_months_display = paid_display
+        s.pending_months_list = pending_months
+        s.pending_months_display = pending_display
+        s.family_total_dues = family_dues_map.get(s.family_id, Decimal("0.00")) if s.family_id else Decimal("0.00")
+        s.family_siblings_count = family_count_map.get(s.family_id, 0) if s.family_id else 0
+
+    return students_list
+
+
 @login_required
 def student_list(request):
     """
-    Searchable, filterable student list (FR-3.3):
-    Filters: class, section, status.
+    Searchable, filterable student list (FR-3.3) with real month dues,
+    paid months display, pending dues breakdown, and full family dues:
+    Filters: class, section, status, fee_status.
     Free-text search: full name, admission number, father's name, residence.
     """
-    students = Student.objects.select_related(
+    students_qs = Student.objects.select_related(
         "current_class", "current_section", "family"
     ).all()
 
@@ -28,9 +134,10 @@ def student_list(request):
     class_id = request.GET.get("class", "")
     section_id = request.GET.get("section", "")
     status = request.GET.get("status", "")
+    fee_status = request.GET.get("fee_status", "")
 
     if query:
-        students = students.filter(
+        students_qs = students_qs.filter(
             Q(full_name__icontains=query)
             | Q(admission_no__icontains=query)
             | Q(father_name__icontains=query)
@@ -38,23 +145,45 @@ def student_list(request):
         )
 
     if class_id:
-        students = students.filter(current_class_id=class_id)
+        students_qs = students_qs.filter(current_class_id=class_id)
     if section_id:
-        students = students.filter(current_section_id=section_id)
+        students_qs = students_qs.filter(current_section_id=section_id)
     if status:
-        students = students.filter(status=status)
+        students_qs = students_qs.filter(status=status)
+
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    students_list = list(students_qs)
+    compute_students_fee_ledger_map(students_list, active_session=active_session)
+
+    # Summary metrics before fee_status filtering
+    total_active_students = len([s for s in students_list if s.status == "Active"])
+    total_students_with_dues = len([s for s in students_list if s.has_dues])
+    total_cleared_students = len([s for s in students_list if not s.has_dues])
+    total_outstanding_school_dues = sum(s.total_dues for s in students_list)
+
+    # Filter by fee_status
+    if fee_status == "has_dues":
+        students_list = [s for s in students_list if s.has_dues]
+    elif fee_status == "cleared":
+        students_list = [s for s in students_list if not s.has_dues]
 
     classes = ClassLevel.objects.all()
     sections = Section.objects.all()
 
     context = {
-        "students": students,
+        "students": students_list,
         "classes": classes,
         "sections": sections,
         "query": query,
         "selected_class": class_id,
         "selected_section": section_id,
         "selected_status": status,
+        "selected_fee_status": fee_status,
+        "active_session": active_session,
+        "total_active_students": total_active_students,
+        "total_students_with_dues": total_students_with_dues,
+        "total_cleared_students": total_cleared_students,
+        "total_outstanding_school_dues": total_outstanding_school_dues,
     }
     return render(request, "students/student_list.html", context)
 
@@ -96,7 +225,8 @@ def student_create(request):
 @login_required
 def student_detail(request, pk):
     """
-    Student profile detail page (FR-3.4) with fee ledger history and promotion history.
+    Student profile detail page (FR-3.4) with fee ledger history, promotion history,
+    active session dues left, paid months list, pending months list, and family dues.
     """
     student = get_object_or_404(
         Student.objects.select_related("current_class", "current_section", "family"),
@@ -109,10 +239,68 @@ def student_detail(request, pk):
         "monthly_entries"
     ).all()
 
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    active_ledger = None
+    if active_session:
+        active_ledger = ledgers.filter(academic_session=active_session).first()
+
+    student_total_dues = Decimal("0.00")
+    paid_months_list = []
+    pending_months_list = []
+    if active_ledger:
+        entries = list(active_ledger.monthly_entries.order_by("month"))
+        student_total_dues = max(Decimal("0.00"), entries[-1].balance if entries else Decimal("0.00"))
+        for e in entries:
+            chg = (e.monthly_fee or Decimal("0.00")) + (e.exam_fee or Decimal("0.00")) + (e.other_charges or Decimal("0.00"))
+            if e.month == 1:
+                chg += (e.arrears or Decimal("0.00"))
+            if chg <= 0 and (e.paid_amount or Decimal("0.00")) <= 0:
+                continue
+            net_unpaid = chg - (e.paid_amount or Decimal("0.00"))
+            if net_unpaid <= 0:
+                paid_months_list.append(e.get_month_display())
+            else:
+                pending_months_list.append({
+                    "month": e.month,
+                    "month_name": e.get_month_display(),
+                    "month_abbr": e.month_abbr,
+                    "due": net_unpaid,
+                })
+
+    # Full Family / Household Breakdown
+    family = student.family
+    family_total_dues = Decimal("0.00")
+    family_siblings_summary = []
+    if family and active_session:
+        for sib in family.students.filter(status="Active").select_related("current_class", "current_section"):
+            sib_ledger = StudentFeeLedger.objects.filter(student=sib, academic_session=active_session).first()
+            if sib_ledger:
+                sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
+                sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
+                sib_unpaid = [f"{e.get_month_display()} (PKR {max(Decimal('0.00'), e.total_amount - (e.paid_amount or Decimal('0.00'))):,.0f})" for e in sib_entries if e.balance > 0]
+            else:
+                sib_dues = Decimal("0.00")
+                sib_unpaid = []
+            family_total_dues += sib_dues
+            family_siblings_summary.append({
+                "student": sib,
+                "dues": sib_dues,
+                "unpaid_months": sib_unpaid,
+                "is_current": (sib.id == student.id),
+            })
+
     context = {
         "student": student,
         "promotions": promotions,
         "ledgers": ledgers,
+        "active_session": active_session,
+        "active_ledger": active_ledger,
+        "student_total_dues": student_total_dues,
+        "paid_months_list": paid_months_list,
+        "pending_months_list": pending_months_list,
+        "family": family,
+        "family_total_dues": family_total_dues,
+        "family_siblings_summary": family_siblings_summary,
     }
     return render(request, "students/student_detail.html", context)
 
@@ -465,11 +653,12 @@ def character_certificate(request, pk):
 @login_required
 def export_students_excel(request):
     """
-    Export students to professionally styled Excel spreadsheet.
+    Export students to professionally styled Excel spreadsheet including
+    active session fee status, outstanding dues, paid months, and family dues.
     """
     from school.excel_utils import create_styled_workbook, excel_download_response
 
-    students = Student.objects.select_related(
+    students_qs = Student.objects.select_related(
         "current_class", "current_section", "family"
     ).all()
 
@@ -478,20 +667,30 @@ def export_students_excel(request):
     class_id = request.GET.get("class", "")
     section_id = request.GET.get("section", "")
     status = request.GET.get("status", "")
+    fee_status = request.GET.get("fee_status", "")
 
     if query:
-        students = students.filter(
+        students_qs = students_qs.filter(
             Q(full_name__icontains=query)
             | Q(admission_no__icontains=query)
             | Q(father_name__icontains=query)
             | Q(residence__icontains=query)
         )
     if class_id:
-        students = students.filter(current_class_id=class_id)
+        students_qs = students_qs.filter(current_class_id=class_id)
     if section_id:
-        students = students.filter(current_section_id=section_id)
+        students_qs = students_qs.filter(current_section_id=section_id)
     if status:
-        students = students.filter(status=status)
+        students_qs = students_qs.filter(status=status)
+
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    students_list = list(students_qs)
+    compute_students_fee_ledger_map(students_list, active_session=active_session)
+
+    if fee_status == "has_dues":
+        students_list = [s for s in students_list if s.has_dues]
+    elif fee_status == "cleared":
+        students_list = [s for s in students_list if not s.has_dues]
 
     headers = [
         "Admission #",
@@ -505,11 +704,16 @@ def export_students_excel(request):
         "Contact Number",
         "Residence Address",
         "Status",
+        "Fee Status",
+        "Total Dues (PKR)",
+        "Paid Months",
+        "Pending Months & Dues",
+        "Family Total Dues (PKR)",
         "Admission Date",
     ]
 
     rows = []
-    for s in students:
+    for s in students_list:
         rows.append([
             s.admission_no,
             s.full_name,
@@ -522,6 +726,11 @@ def export_students_excel(request):
             s.contact_number,
             s.residence,
             s.status,
+            "Outstanding Dues" if s.has_dues else "Cleared",
+            float(s.total_dues),
+            ", ".join(s.paid_months_list) if s.paid_months_list else "None",
+            s.pending_months_display,
+            float(s.family_total_dues) if s.family else 0.0,
             s.admission_date.strftime("%Y-%m-%d") if s.admission_date else "",
         ])
 

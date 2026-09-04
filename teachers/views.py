@@ -130,7 +130,8 @@ def salary_bill_list(request):
         bills = bills.filter(year=int(year))
 
     total_net = sum(b.net_payable for b in bills)
-    total_paid = sum(b.net_payable for b in bills if b.is_paid)
+    total_paid = sum(b.actual_paid for b in bills)
+    total_balance_left = sum(b.balance_left for b in bills)
 
     import calendar
     context = {
@@ -140,9 +141,83 @@ def salary_bill_list(request):
         "selected_month_name": calendar.month_name[int(month)] if month else "All Months",
         "total_net": total_net,
         "total_paid": total_paid,
+        "total_balance_left": total_balance_left,
         "months": [(i, calendar.month_name[i]) for i in range(1, 13)],
     }
     return render(request, "teachers/salary_bill_list.html", context)
+
+
+@login_required
+def export_salary_bills_excel(request):
+    """
+    Export monthly salary bills to Excel spreadsheet with gross, deductions,
+    absent cuts, net payable, actual paid, and remaining balance left to teacher.
+    """
+    import calendar
+    from school.excel_utils import create_styled_workbook, excel_download_response
+
+    today = timezone.now().date()
+    month = request.GET.get("month", str(today.month))
+    year = request.GET.get("year", str(today.year))
+
+    bills = MonthlySalaryBill.objects.select_related("teacher", "teacher__salary_scale").all()
+    if month:
+        bills = bills.filter(month=int(month))
+    if year:
+        bills = bills.filter(year=int(year))
+
+    headers = [
+        "Bill #",
+        "Staff ID",
+        "Teacher Full Name",
+        "Designation",
+        "Month",
+        "Year",
+        "Days Present",
+        "Days Absent",
+        "Basic Pay (PKR)",
+        "Allowances (PKR)",
+        "Gross Earnings (PKR)",
+        "Absent Cut (PKR)",
+        "Other Deductions (PKR)",
+        "Total Deductions (PKR)",
+        "Net Payable (PKR)",
+        "Amount Paid (PKR)",
+        "Balance Left (PKR)",
+        "Payment Status",
+        "Payment Date",
+    ]
+
+    rows = []
+    for b in bills:
+        m_name = calendar.month_name[b.month] if 1 <= b.month <= 12 else str(b.month)
+        status_label = "Cleared" if b.payment_status == "Cleared" else ("Partial" if b.payment_status == "Partial" else "Pending")
+        rows.append([
+            b.id,
+            b.teacher.teacher_id,
+            b.teacher.full_name,
+            b.teacher.designation,
+            m_name,
+            b.year,
+            b.days_present,
+            b.absent_days,
+            float(b.base_pay),
+            float(b.allowances),
+            float(b.gross_pay),
+            float(b.auto_absent_deduction),
+            float(b.other_deductions),
+            float(b.deductions),
+            float(b.net_payable),
+            float(b.actual_paid),
+            float(b.balance_left),
+            status_label,
+            b.payment_date.strftime("%Y-%m-%d") if b.payment_date else "",
+        ])
+
+    m_str = calendar.month_name[int(month)] if month else "All"
+    y_str = year or today.year
+    buffer = create_styled_workbook(f"Salary Bills {m_str} {y_str}", headers, rows)
+    return excel_download_response(buffer, f"KMS_Salary_Bills_{m_str}_{y_str}.xlsx")
 
 
 @login_required

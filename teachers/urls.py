@@ -13,6 +13,7 @@ urlpatterns = [
     path("<int:pk>/id-card/", views.staff_id_card, name="staff_id_card"),
     path("salary-scales/", views.salary_scale_list, name="salary_scale_list"),
     path("salary-bills/", views.salary_bill_list, name="salary_bill_list"),
+    path("salary-bills/export-excel/", views.export_salary_bills_excel, name="export_salary_bills_excel"),
     path("salary-bills/<int:pk>/", views.salary_bill_detail, name="salary_bill_detail"),
     path("salary-bills/<int:pk>/edit/", views.salary_bill_update, name="salary_bill_update"),
     path("salary-bills/generate/", views.generate_salary_bills, name="generate_salary_bills"),

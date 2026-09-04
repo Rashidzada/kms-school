@@ -129,6 +129,123 @@
       </div>
     </div>
 
+    <!-- Financial Overview & Family Balance Ribbon -->
+    <div class="card shadow-sm mb-4 border-0 border-start border-primary border-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-dark">
+          <i class="fas fa-wallet me-2 text-primary"></i> Financial Dues & Family Overview (Session: {{ active_session.name }})
+        </h6>
+        <div class="d-flex gap-2">
+          <a href="{% url 'collect_fee' student.pk %}" class="btn btn-sm btn-success">
+            <i class="fas fa-money-bill-wave me-1"></i> Collect Student Fee
+          </a>
+          {% if family %}
+            <a href="{% url 'family_payment' family.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-users me-1"></i> Pay Family Fee
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3 mb-3">
+          <!-- Student Individual Dues -->
+          <div class="col-md-6">
+            <div class="p-3 rounded h-100 {% if student_total_dues > 0 %}bg-danger bg-opacity-10 border border-danger{% else %}bg-success bg-opacity-10 border border-success{% endif %}">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-dark"><i class="fas fa-user-graduate me-1 text-primary"></i> Student Outstanding Dues:</span>
+                {% if student_total_dues > 0 %}
+                  <span class="badge bg-danger fs-6 px-3 py-1">PKR {{ student_total_dues|floatformat:2|intcomma }}</span>
+                {% else %}
+                  <span class="badge bg-success fs-6 px-3 py-1"><i class="fas fa-check-circle me-1"></i> Fully Cleared</span>
+                {% endif %}
+              </div>
+              
+              <!-- Paid Months -->
+              <div class="mb-2">
+                <small class="text-muted fw-bold d-block">Months Paid for this Session:</small>
+                {% if paid_months_list %}
+                  <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% for m in paid_months_list %}
+                      <span class="badge bg-success bg-opacity-75 text-white">{{ m }}</span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <small class="text-muted fst-italic">No monthly payments recorded yet.</small>
+                {% endif %}
+              </div>
+
+              <!-- Pending Months -->
+              <div>
+                <small class="text-muted fw-bold d-block">Months with Outstanding Dues:</small>
+                {% if pending_months_list %}
+                  <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% for p in pending_months_list %}
+                      <span class="badge bg-danger text-white">{{ p.month_name }}: PKR {{ p.due|floatformat:0|intcomma }}</span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> No pending months - 100% up to date!</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Family Household Combined Dues -->
+          <div class="col-md-6">
+            <div class="p-3 rounded h-100 bg-light border">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-dark"><i class="fas fa-users me-1 text-primary"></i> Full Family Household Dues:</span>
+                {% if family %}
+                  {% if family_total_dues > 0 %}
+                    <span class="badge bg-danger fs-6 px-3 py-1">PKR {{ family_total_dues|floatformat:2|intcomma }}</span>
+                  {% else %}
+                    <span class="badge bg-success fs-6 px-3 py-1"><i class="fas fa-check-circle me-1"></i> Family Cleared</span>
+                  {% endif %}
+                {% else %}
+                  <span class="badge bg-secondary">No Family Linked</span>
+                {% endif %}
+              </div>
+
+              {% if family %}
+                <div class="small text-muted mb-2">
+                  Household ID: <strong>{{ family.family_id }}</strong> | Father/Guardian: <strong>{{ family.father_guardian_name }}</strong>
+                </div>
+                
+                <!-- Sibling breakdown table -->
+                <div class="table-responsive">
+                  <table class="table table-sm table-bordered bg-white mb-0 small text-center">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Sibling Student</th>
+                        <th>Class</th>
+                        <th>Dues Left</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for sib in family_siblings_summary %}
+                        <tr {% if sib.is_current %}class="table-primary fw-bold"{% endif %}>
+                          <td class="text-start">
+                            {{ sib.student.full_name }}
+                            {% if sib.is_current %}<span class="badge bg-primary text-white ms-1">Current</span>{% endif %}
+                          </td>
+                          <td>{{ sib.student.current_class.name }}</td>
+                          <td class="{% if sib.dues > 0 %}text-danger fw-bold{% else %}text-success{% endif %}">
+                            PKR {{ sib.dues|floatformat:0|intcomma }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <p class="text-muted small mb-0">This student is not linked to any Family Household profile yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Fee Ledgers -->
     {% for ledger in ledgers %}
       <div class="card shadow-sm mb-4">

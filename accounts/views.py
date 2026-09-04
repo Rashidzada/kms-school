@@ -67,8 +67,8 @@ def cashbook_summary(request):
         })
 
     for s in salaries:
-        net = s.net_payable
-        total_expense += net
+        paid = s.actual_paid
+        total_expense += paid
         entries.append({
             "date": s.payment_date,
             "type": "Expense",
@@ -76,7 +76,7 @@ def cashbook_summary(request):
             "description": f"Salary: {s.teacher.full_name} ({s.month_name} {s.year})",
             "reference": s.voucher_no or f"VCH-{s.id}",
             "income": Decimal("0.00"),
-            "expense": net,
+            "expense": paid,
         })
 
     # Sort most recent first
@@ -126,7 +126,7 @@ def daily_summary(request):
         daily_data[e.date]["expense"] += e.amount
 
     for s in MonthlySalaryBill.objects.filter(is_paid=True, payment_date__isnull=False):
-        daily_data[s.payment_date]["expense"] += s.net_payable
+        daily_data[s.payment_date]["expense"] += s.actual_paid
 
     rows = []
     for d, val in sorted(daily_data.items(), key=lambda x: x[0], reverse=True):
@@ -168,7 +168,7 @@ def monthly_summary(request):
 
     for s in MonthlySalaryBill.objects.filter(is_paid=True, payment_date__isnull=False):
         key = (s.payment_date.year, s.payment_date.month)
-        monthly_data[key]["expense"] += s.net_payable
+        monthly_data[key]["expense"] += s.actual_paid
 
     import calendar
     rows = []
@@ -241,7 +241,7 @@ def export_cashbook_excel(request):
         })
 
     for s in salaries:
-        net = float(s.net_payable)
+        paid = float(s.actual_paid)
         entries.append({
             "date": str(s.payment_date),
             "type": "Expense",
@@ -249,7 +249,7 @@ def export_cashbook_excel(request):
             "description": f"Salary: {s.teacher.full_name} ({s.month_name} {s.year})",
             "reference": s.voucher_no or f"VCH-{s.id}",
             "income": 0.0,
-            "expense": net,
+            "expense": paid,
         })
 
     entries.sort(key=lambda x: x["date"], reverse=True)
@@ -304,7 +304,7 @@ def export_monthly_summary_excel(request):
 
     for s in MonthlySalaryBill.objects.filter(is_paid=True, payment_date__isnull=False):
         key = (s.payment_date.year, s.payment_date.month)
-        monthly_data[key]["expense"] += s.net_payable
+        monthly_data[key]["expense"] += s.actual_paid
 
     school = SchoolSetting.objects.first()
     school_name = school.name if school else "Kohisar Model School & College (KMS)"

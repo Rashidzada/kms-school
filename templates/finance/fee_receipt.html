@@ -93,7 +93,7 @@
       <div class="col-6">
         <table class="table table-sm table-borderless mb-0">
           <tr>
-            <th class="text-muted" style="width: 35%;">Receipt #:</th>
+            <th class="text-muted" style="width: 38%;">Receipt #:</th>
             <td class="fw-bold text-primary">{{ receipt.receipt_no }}</td>
           </tr>
           <tr>
@@ -108,12 +108,18 @@
             <th class="text-muted">Class & Section:</th>
             <td>{{ receipt.student.current_class.name }} - {{ receipt.student.current_section.name }}</td>
           </tr>
+          {% if family %}
+            <tr>
+              <th class="text-muted">Family Household:</th>
+              <td class="fw-bold text-dark">{{ family.family_id }} ({{ family.father_guardian_name }})</td>
+            </tr>
+          {% endif %}
         </table>
       </div>
       <div class="col-6">
         <table class="table table-sm table-borderless mb-0">
           <tr>
-            <th class="text-muted" style="width: 35%;">Payment Date:</th>
+            <th class="text-muted" style="width: 38%;">Payment Date:</th>
             <td class="fw-bold">{{ receipt.payment_date|date:"d F, Y" }}</td>
           </tr>
           <tr>
@@ -132,16 +138,16 @@
       </div>
     </div>
 
-    <!-- Months Covered Table -->
-    <table class="table table-bordered mb-4 small text-center align-middle">
+    <!-- Months Covered Table with Detailed Balances -->
+    <table class="table table-bordered mb-3 small text-center align-middle">
       <thead class="table-light">
         <tr>
-          <th>#</th>
+          <th style="width: 5%;">#</th>
           <th>Student Covered</th>
           <th>Month</th>
-          <th>Monthly Fee</th>
-          <th>Exam/Other</th>
-          <th>Total Paid</th>
+          <th>Total Billed</th>
+          <th>Amount Paid</th>
+          <th>Month Balance Left</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -150,15 +156,21 @@
           <tr>
             <td>{{ forloop.counter }}</td>
             <td class="fw-bold">{{ m.ledger.student.full_name }}</td>
-            <td>{{ m.get_month_display }}</td>
-            <td>PKR {{ m.monthly_fee|floatformat:0|intcomma }}</td>
-            <td>PKR {{ m.exam_fee|add:m.other_charges|floatformat:0|intcomma }}</td>
+            <td class="fw-bold text-dark">{{ m.get_month_display }}</td>
+            <td>PKR {{ m.total_amount|floatformat:0|intcomma }}</td>
             <td class="fw-bold text-success">PKR {{ m.paid_amount|floatformat:2|intcomma }}</td>
+            <td class="fw-bold {% if m.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+              {% if m.balance > 0 %}
+                PKR {{ m.balance|floatformat:2|intcomma }}
+              {% else %}
+                <span class="text-success"><i class="fas fa-check-circle me-1"></i>PKR 0.00</span>
+              {% endif %}
+            </td>
             <td>
               {% if m.is_paid %}
                 <span class="badge bg-success">Cleared</span>
               {% else %}
-                <span class="badge bg-info text-dark">Partial</span>
+                <span class="badge bg-warning text-dark">Partial</span>
               {% endif %}
             </td>
           </tr>
@@ -166,12 +178,74 @@
       </tbody>
       <tfoot class="table-light h6 mb-0">
         <tr>
-          <th colspan="5" class="text-end text-uppercase">Total Amount Paid:</th>
+          <th colspan="4" class="text-end text-uppercase">Payment Received:</th>
           <th class="text-success fw-bold">PKR {{ receipt.amount_paid|floatformat:2|intcomma }}</th>
+          <th class="{% if this_receipt_months_dues_left > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
+            {% if this_receipt_months_dues_left > 0 %}
+              PKR {{ this_receipt_months_dues_left|floatformat:2|intcomma }}
+            {% else %}
+              PKR 0.00
+            {% endif %}
+          </th>
           <th></th>
         </tr>
       </tfoot>
     </table>
+
+    <!-- Financial Dues & Full Family Balance Summary Box -->
+    <div class="card bg-light border p-3 mb-4 small">
+      <div class="row g-3">
+        <!-- Student All-Months Dues -->
+        <div class="col-md-6 border-end">
+          <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Student Total Outstanding Dues (All Months)</span>
+          <h5 class="fw-bold mb-1 {% if student_total_dues_left > 0 %}text-danger{% else %}text-success{% endif %}">
+            PKR {{ student_total_dues_left|floatformat:2|intcomma }}
+            {% if student_total_dues_left == 0 %}
+              <span class="badge bg-success ms-2 fs-6">All Fees Cleared</span>
+            {% else %}
+              <span class="badge bg-danger ms-2 fs-6">Dues Remaining</span>
+            {% endif %}
+          </h5>
+          {% if student_unpaid_months %}
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <strong>Unpaid / Partial Months:</strong>
+              {% for u in student_unpaid_months %}
+                <span class="badge bg-white text-danger border me-1">{{ u.get_month_display }}: PKR {{ u.balance|floatformat:0 }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <small class="text-success"><i class="fas fa-check-circle me-1"></i> No remaining dues for this academic session.</small>
+          {% endif %}
+        </div>
+
+        <!-- Full Family / Household Dues -->
+        <div class="col-md-6">
+          <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Full Family / Household Dues Balance</span>
+          {% if family %}
+            <h5 class="fw-bold mb-1 {% if family_total_dues_left > 0 %}text-danger{% else %}text-success{% endif %}">
+              PKR {{ family_total_dues_left|floatformat:2|intcomma }}
+              <span class="badge bg-info text-dark ms-2 fs-6">{{ family.family_id }}</span>
+            </h5>
+            <div style="font-size: 0.75rem;" class="mt-1">
+              <strong>Sibling Breakdown:</strong>
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                {% for sib in family_siblings_summary %}
+                  <span class="badge bg-white text-dark border p-1">
+                    {{ sib.student.full_name }} ({{ sib.student.current_class.name }}):
+                    <strong class="{% if sib.dues > 0 %}text-danger{% else %}text-success{% endif %}">
+                      PKR {{ sib.dues|floatformat:0|intcomma }}
+                    </strong>
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <h6 class="fw-bold text-muted mb-1">Single Student Account</h6>
+            <small class="text-muted" style="font-size: 0.75rem;">No sibling household accounts linked to this admission.</small>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
     <div class="signature-area">
       <div>

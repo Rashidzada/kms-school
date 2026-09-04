@@ -88,6 +88,7 @@ class MonthlySalaryBill(models.Model):
     days_present = models.IntegerField(default=30)
     allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_paid = models.BooleanField(default=False)
     payment_date = models.DateField(null=True, blank=True)
     voucher_no = models.CharField(max_length=50, blank=True)
@@ -122,10 +123,55 @@ class MonthlySalaryBill(models.Model):
         return f"{self.month_name} {self.year}"
 
     @property
+    def gross_pay(self):
+        return (self.base_pay or Decimal("0.00")) + (self.allowances or Decimal("0.00"))
+
+    @property
+    def absent_days(self):
+        return max(0, 30 - int(self.days_present or 30))
+
+    @property
+    def auto_absent_deduction(self):
+        if self.base_pay and self.base_pay > 0 and self.absent_days > 0:
+            daily_rate = self.base_pay / Decimal("30.0")
+            return (Decimal(str(self.absent_days)) * daily_rate).quantize(Decimal("0.01"))
+        return Decimal("0.00")
+
+    @property
+    def other_deductions(self):
+        return max(Decimal("0.00"), (self.deductions or Decimal("0.00")) - self.auto_absent_deduction)
+
+    @property
     def net_payable(self):
-        return (self.base_pay + self.allowances) - self.deductions
+        return max(Decimal("0.00"), self.gross_pay - (self.deductions or Decimal("0.00")))
+
+    @property
+    def actual_paid(self):
+        if self.paid_amount and self.paid_amount > 0:
+            return self.paid_amount
+        if self.is_paid:
+            return self.net_payable
+        return Decimal("0.00")
+
+    @property
+    def balance_left(self):
+        return max(Decimal("0.00"), self.net_payable - self.actual_paid)
+
+    @property
+    def payment_status(self):
+        if self.actual_paid >= self.net_payable and self.net_payable > 0:
+            return "Cleared"
+        elif self.actual_paid > 0:
+            return "Partial"
+        return "Pending"
 
     def save(self, *args, **kwargs):
+        if self.is_paid and (not self.paid_amount or self.paid_amount == 0):
+            self.paid_amount = self.net_payable
+        if self.paid_amount and self.paid_amount >= self.net_payable and self.net_payable > 0:
+            self.is_paid = True
+        elif self.paid_amount and self.paid_amount < self.net_payable:
+            self.is_paid = False
         if self.is_paid and not self.payment_date:
             self.payment_date = timezone.now().date()
         super().save(*args, **kwargs)

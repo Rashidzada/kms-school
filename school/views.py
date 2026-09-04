@@ -59,7 +59,7 @@ def dashboard(request):
     )
     salaries_paid_month = Decimal("0.00")
     for bill in paid_salary_bills:
-        salaries_paid_month += bill.net_payable
+        salaries_paid_month += bill.actual_paid
 
     total_expenses_month = general_expenses_month + salaries_paid_month
 

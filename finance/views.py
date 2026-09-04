@@ -140,11 +140,41 @@ def collect_fee(request, student_id):
         )
 
     unpaid_entries = ledger.monthly_entries.filter(is_paid=False).order_by("month")
-    return render(
-        request,
-        "finance/collect_fee.html",
-        {"student": student, "ledger": ledger, "form": form, "unpaid_entries": unpaid_entries},
-    )
+
+    # Accurate student total dues
+    ledger_entries = list(ledger.monthly_entries.order_by("month"))
+    student_total_dues = max(Decimal("0.00"), ledger_entries[-1].balance if ledger_entries else Decimal("0.00"))
+
+    # Family Household Breakdown
+    family = student.family
+    family_total_dues = Decimal("0.00")
+    family_siblings_summary = []
+    if family and active_session:
+        for sib in family.students.filter(status="Active").select_related("current_class", "current_section"):
+            sib_ledger = StudentFeeLedger.objects.filter(student=sib, academic_session=active_session).first()
+            if sib_ledger:
+                sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
+                sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
+            else:
+                sib_dues = Decimal("0.00")
+            family_total_dues += sib_dues
+            family_siblings_summary.append({
+                "student": sib,
+                "dues": sib_dues,
+                "is_current": (sib.id == student.id),
+            })
+
+    context = {
+        "student": student,
+        "ledger": ledger,
+        "form": form,
+        "unpaid_entries": unpaid_entries,
+        "student_total_dues": student_total_dues,
+        "family": family,
+        "family_total_dues": family_total_dues,
+        "family_siblings_summary": family_siblings_summary,
+    }
+    return render(request, "finance/collect_fee.html", context)
 
 
 @login_required
@@ -276,18 +306,67 @@ def fee_adjust(request, student_id):
 @login_required
 def fee_receipt(request, pk):
     """
-    Printable Fee Receipt view (FR-5.9, FR-8.4).
+    Printable Fee Receipt view (FR-5.9, FR-8.4) with Month Balance Left,
+    Student Total Remaining Dues, and Full Family Household Dues Breakdown.
     """
     receipt = get_object_or_404(
-        FeePaymentReceipt.objects.select_related("student", "student__current_class"),
+        FeePaymentReceipt.objects.select_related(
+            "student", "student__current_class", "student__current_section", "student__family"
+        ),
         pk=pk,
     )
     month_entries = receipt.month_entries.select_related("ledger", "ledger__student").order_by("month")
-    return render(
-        request,
-        "finance/fee_receipt.html",
-        {"receipt": receipt, "month_entries": month_entries},
-    )
+
+    # 1. Remaining dues for the specific months covered on this receipt
+    this_receipt_months_dues_left = sum(m.balance for m in month_entries)
+
+    # 2. Total remaining dues for this student across ALL months in active session
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    student_total_dues_left = Decimal("0.00")
+    student_unpaid_months = []
+    if active_session:
+        student_ledger = StudentFeeLedger.objects.filter(
+            student=receipt.student, academic_session=active_session
+        ).first()
+        if student_ledger:
+            st_entries = list(student_ledger.monthly_entries.order_by("month"))
+            student_total_dues_left = max(Decimal("0.00"), st_entries[-1].balance if st_entries else Decimal("0.00"))
+            student_unpaid_months = [e for e in st_entries if e.balance > 0]
+
+    # 3. Total remaining dues for the FULL FAMILY / HOUSEHOLD across all sibling students
+    family = receipt.student.family
+    family_total_dues_left = Decimal("0.00")
+    family_siblings_summary = []
+    if family and active_session:
+        for sib in family.students.filter(status="Active").select_related("current_class", "current_section"):
+            sib_ledger = StudentFeeLedger.objects.filter(student=sib, academic_session=active_session).first()
+            if sib_ledger:
+                sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
+                sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
+                sib_unpaid = [f"{e.get_month_display()} (PKR {max(Decimal('0.00'), e.total_amount - (e.paid_amount or Decimal('0.00'))):,.0f})" for e in sib_entries if e.balance > 0]
+            else:
+                sib_dues = Decimal("0.00")
+                sib_unpaid = []
+            family_total_dues_left += sib_dues
+            family_siblings_summary.append({
+                "student": sib,
+                "dues": sib_dues,
+                "unpaid_months": sib_unpaid,
+                "is_current": (sib.id == receipt.student.id),
+            })
+
+    context = {
+        "receipt": receipt,
+        "month_entries": month_entries,
+        "this_receipt_months_dues_left": this_receipt_months_dues_left,
+        "student_total_dues_left": student_total_dues_left,
+        "student_unpaid_months": student_unpaid_months,
+        "family": family,
+        "family_total_dues_left": family_total_dues_left,
+        "family_siblings_summary": family_siblings_summary,
+        "active_session": active_session,
+    }
+    return render(request, "finance/fee_receipt.html", context)
 
 
 @login_required
@@ -313,9 +392,10 @@ def defaulters_list(request):
         for s in students:
             ledger = StudentFeeLedger.objects.filter(student=s, academic_session=active_session).first()
             if ledger:
-                unpaid_entries = [e for e in ledger.monthly_entries.all() if e.balance > 0]
-                if unpaid_entries:
-                    student_dues = sum(e.balance for e in unpaid_entries)
+                entries = list(ledger.monthly_entries.order_by("month"))
+                student_dues = max(Decimal("0.00"), entries[-1].balance if entries else Decimal("0.00"))
+                if student_dues > 0:
+                    unpaid_entries = [e for e in entries if e.balance > 0]
                     total_school_dues += student_dues
                     defaulters.append({
                         "student": s,

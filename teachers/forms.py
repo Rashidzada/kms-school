@@ -51,12 +51,24 @@ class MonthlySalaryBillForm(forms.ModelForm):
             "days_present",
             "allowances",
             "deductions",
+            "paid_amount",
             "is_paid",
             "payment_date",
             "voucher_no",
         ]
         widgets = {
             "payment_date": forms.DateInput(attrs={"type": "date"}),
+            "days_present": forms.NumberInput(attrs={"min": 0, "max": 30, "id": "id_days_present"}),
+            "allowances": forms.NumberInput(attrs={"step": "0.01", "id": "id_allowances"}),
+            "deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_deductions"}),
+            "paid_amount": forms.NumberInput(attrs={"step": "0.01", "id": "id_paid_amount"}),
+        }
+        labels = {
+            "days_present": "Days Present in Month (out of 30)",
+            "allowances": "Additional Allowances (PKR)",
+            "deductions": "Total Deductions / Salary Cuts (PKR)",
+            "paid_amount": "Amount Paid / Disbursed (PKR)",
+            "is_paid": "Mark Fully Paid (Cleared)",
         }
 
 

@@ -223,13 +223,24 @@ def export_salary_bills_excel(request):
 @login_required
 def salary_bill_detail(request, pk):
     """
-    Printable Salary Bill / Slip detail view (FR-6.7, FR-8.4).
+    Printable Salary Bill / Slip detail view (FR-6.7, FR-8.4) formatted as
+    a Dual-Copy voucher (Office Copy & Teacher Copy) matching institutional layout.
     """
     bill = get_object_or_404(
         MonthlySalaryBill.objects.select_related("teacher", "teacher__salary_scale"),
         pk=pk,
     )
-    return render(request, "teachers/salary_bill_detail.html", {"bill": bill})
+    context = {
+        "bill": bill,
+        "today": timezone.now().date(),
+        "principal_name": "Farman Ali",
+        "principal_contact": "0344-9631323",
+        "vp_name": "Umar Saeed",
+        "vp_contact": "0345-3407095",
+        "admin_name": "Rashid Zada",
+        "admin_contact": "0347-0983567",
+    }
+    return render(request, "teachers/salary_bill_detail.html", context)
 
 
 @login_required

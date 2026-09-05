@@ -4,209 +4,455 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Salary Slip | {{ bill.teacher.full_name }} ({{ bill.month_name }} {{ bill.year }})</title>
+  <title>Salary Voucher - {{ bill.teacher.full_name }} ({{ bill.month_name }} {{ bill.year }})</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body {
-      background: #f7fafc;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      padding: 30px;
+    @page {
+      size: A4 portrait;
+      margin: 4mm 6mm;
     }
-    .slip-container {
-      max-width: 750px;
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #000;
+      margin: 0;
+      padding: 10px 0;
+      font-size: 10.5px;
+      line-height: 1.25;
+    }
+    .print-page {
+      max-width: 800px;
       margin: 0 auto;
       background: #fff;
-      padding: 35px;
-      border: 2px solid #cbd5e0;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .slip-header {
-      border-bottom: 2px solid #1a365d;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+    .voucher-copy {
+      border: 1.5px solid #000;
+      padding: 7px 12px;
+      background: #fff;
+      position: relative;
+    }
+    .voucher-header {
+      border-bottom: 1.5px solid #000;
+      padding-bottom: 4px;
+      margin-bottom: 5px;
+      position: relative;
+    }
+    .copy-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      border: 1.5px solid #000;
+      padding: 1.5px 7px;
+      font-weight: 800;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: #fff;
+    }
+    .school-name {
+      font-size: 14.5px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .school-sub {
+      font-size: 8.5px;
+      color: #333;
+    }
+    .meta-table {
+      width: 100%;
+      margin-bottom: 5px;
+      font-size: 10px;
+    }
+    .meta-table td {
+      padding: 1px 3px;
+      vertical-align: middle;
+    }
+    .particulars-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 4px;
+      font-size: 10px;
+    }
+    .particulars-table th, .particulars-table td {
+      border: 1px solid #000;
+      padding: 2px 5px;
+    }
+    .particulars-table th {
+      background-color: #f8f9fa;
+      font-weight: 700;
       text-align: center;
     }
-    .slip-title {
-      font-size: 16pt;
-      font-weight: bold;
-      color: #1a365d;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .particulars-table .num-col {
+      width: 38px;
+      text-align: center;
     }
-    .signature-box {
-      margin-top: 50px;
+    .particulars-table .amt-col {
+      width: 120px;
+      text-align: right;
+      font-weight: 700;
+      padding-right: 8px;
+    }
+    .particulars-table .total-row {
+      font-weight: 800;
+      background-color: #fcfcfc;
+    }
+    .status-strip {
       display: flex;
       justify-content: space-between;
+      font-size: 9.5px;
+      margin-bottom: 3px;
+      padding: 1px 2px;
+    }
+    .dues-strip {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 14px;
+      margin-bottom: 5px;
+      padding: 0 15px;
+    }
+    .sig-line {
+      border-top: 1px solid #000;
+      width: 160px;
       text-align: center;
+      padding-top: 2px;
+      font-size: 9px;
+      font-weight: 700;
     }
-    .signature-line {
-      width: 180px;
-      border-top: 1px solid #333;
-      padding-top: 5px;
-      font-size: 10pt;
+    .contact-line {
+      text-align: center;
+      font-size: 8.5px;
+      color: #111;
+      margin-bottom: 1.5px;
+    }
+    .dev-line {
+      text-align: center;
+      font-size: 7.5px;
+      color: #555;
+      font-style: italic;
+    }
+    .cut-line {
+      text-align: center;
+      font-size: 9px;
       font-weight: bold;
+      color: #666;
+      margin: 6px 0;
+      position: relative;
+      letter-spacing: 1.5px;
     }
+    .cut-line::before, .cut-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 44%;
+      border-top: 1px dashed #666;
+    }
+    .cut-line::before { left: 0; }
+    .cut-line::after { right: 0; }
+
     @media print {
       body {
-        background: #fff;
-        padding: 0;
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
       .no-print {
         display: none !important;
       }
-      .slip-container {
-        box-shadow: none;
-        border: 1px solid #000;
-        margin: 0;
-        max-width: 100%;
+      .print-page {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .voucher-copy {
+        page-break-inside: avoid;
+      }
+      .cut-line {
+        margin: 5px 0;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- Floating Controls (Hidden on Print) -->
   <div class="text-center mb-3 no-print">
-    <button onclick="window.print()" class="btn btn-primary px-4 font-weight-bold">
-      <i class="fas fa-print me-2"></i> Print Salary Slip
-    </button>
+    <div class="btn-group shadow-sm">
+      <button onclick="window.print()" class="btn btn-success fw-bold px-4">
+        <i class="fas fa-print me-2"></i> Print Dual-Copy Salary Voucher (A4)
+      </button>
+      <a href="{% url 'salary_bill_update' bill.pk %}" class="btn btn-outline-primary">
+        <i class="fas fa-edit me-1"></i> Edit Salary Bill
+      </a>
+      <a href="{% url 'salary_bill_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back to Salary Bills
+      </a>
+    </div>
+    <div class="small text-muted mt-1">
+      <i class="fas fa-info-circle me-1"></i> Formatted for 1-page A4 printing: <strong>OFFICE COPY</strong> (top) & <strong>STAFF COPY</strong> (bottom).
+    </div>
   </div>
 
-  <div class="slip-container">
-    <div class="slip-header">
-      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-        {% if school_setting.logo %}
-          <img src="{{ school_setting.logo.url }}" alt="Logo" style="width: 65px; height: 65px; border-radius: 50%;">
-        {% else %}
-          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="width: 65px; height: 65px; border-radius: 50%;">
-        {% endif %}
-        <div>
-          <h3 class="mb-0 fw-bold" style="color: #1a365d;">{{ school_setting.name }}</h3>
-          <div class="small text-muted">{{ school_setting.address }} | {{ school_setting.contact }}</div>
-        </div>
-      </div>
-      <div class="slip-title">Monthly Salary Slip</div>
-      <div class="text-muted small">For the Month of: <strong>{{ bill.month_name }} {{ bill.year }}</strong></div>
-    </div>
+  <div class="print-page">
 
-    <!-- Teacher & Payment Info -->
-    <div class="row g-3 mb-4 small">
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
-          <tr>
-            <th class="text-muted" style="width: 35%;">Staff ID:</th>
-            <td class="fw-bold">{{ bill.teacher.teacher_id }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Staff Name:</th>
-            <td class="fw-bold">{{ bill.teacher.full_name }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Designation:</th>
-            <td>{{ bill.teacher.designation }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Salary Scale:</th>
-            <td>{{ bill.teacher.salary_scale.name|default:"Custom" }}</td>
-          </tr>
-        </table>
+    <!-- ==================== 1. OFFICE COPY (TOP HALF) ==================== -->
+    <div class="voucher-copy">
+      <div class="voucher-header text-center">
+        <div class="copy-badge">OFFICE COPY</div>
+        <h4 class="school-name">{{ school_setting.name }}</h4>
+        <div class="school-sub">{{ school_setting.address }}</div>
       </div>
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
+
+      <table class="meta-table">
+        <tr>
+          <td style="width: 55%;"><strong>Date:</strong> {% if bill.payment_date %}{{ bill.payment_date|date:"Y-m-d" }}{% else %}{{ today|date:"Y-m-d" }}{% endif %}</td>
+          <td style="width: 45%; text-align: right;"><strong>Staff ID:</strong> {{ bill.teacher.teacher_id }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Faculty / Staff Name:</strong> <span class="text-uppercase fw-bold">{{ bill.teacher.full_name }}</span></td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Father / Husband Name:</strong> <span class="text-uppercase">{{ bill.teacher.father_name|default:"---" }}</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Designation:</strong> {{ bill.teacher.designation }}
+            &nbsp;|&nbsp; <strong>Month:</strong> {{ bill.month_name }} {{ bill.year }}
+          </td>
+          <td style="text-align: right;"><strong>Bill / Voucher #:</strong> SAL-{{ bill.id }}</td>
+        </tr>
+      </table>
+
+      <!-- 3-Column Particulars Table -->
+      <table class="particulars-table">
+        <thead>
           <tr>
-            <th class="text-muted" style="width: 35%;">Voucher #:</th>
-            <td class="fw-bold">{{ bill.voucher_no|default:"Pending" }}</td>
+            <th class="num-col">S.No</th>
+            <th style="text-align: left; padding-left: 8px;">Particulars</th>
+            <th class="amt-col">Amount (Rs.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num-col">1</td>
+            <td>Basic Pay</td>
+            <td class="amt-col">{{ bill.base_pay|floatformat:0|intcomma }}</td>
           </tr>
           <tr>
-            <th class="text-muted">Payment Date:</th>
-            <td>{{ bill.payment_date|date:"d M Y"|default:"Not Yet Disbursed" }}</td>
+            <td class="num-col">2</td>
+            <td>Allowances (Medical + Conveyance + Other)</td>
+            <td class="amt-col">{% if bill.allowances > 0 %}{{ bill.allowances|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">3</td>
+            <td><strong>Gross Monthly Earnings</strong></td>
+            <td class="amt-col">{{ bill.gross_pay|floatformat:0|intcomma }}</td>
           </tr>
           <tr>
-            <th class="text-muted">Days Present:</th>
-            <td>{{ bill.days_present }} Days</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Status:</th>
+            <td class="num-col">4</td>
             <td>
-              {% if bill.is_paid %}
-                <span class="badge bg-success">PAID</span>
-              {% else %}
-                <span class="badge bg-warning text-dark">UNPAID</span>
+              Absence Deduction
+              {% if bill.absent_days > 0 %}
+                ({{ bill.absent_days }} absent days @ Rs. {{ bill.daily_rate|floatformat:0 }}/day)
               {% endif %}
             </td>
+            <td class="amt-col">{% if bill.auto_absent_deduction > 0 %}{{ bill.auto_absent_deduction|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
           </tr>
-        </table>
+          <tr>
+            <td class="num-col">5</td>
+            <td>Other Deductions / Advances / Penalties</td>
+            <td class="amt-col">{% if bill.other_deductions > 0 %}{{ bill.other_deductions|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">6</td>
+            <td><strong>Total Deductions</strong></td>
+            <td class="amt-col">{{ bill.deductions|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">7</td>
+            <td><strong>Net Payable Monthly Salary</strong></td>
+            <td class="amt-col">{{ bill.net_payable|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">8</td>
+            <td><strong>Amount Disbursed / Paid</strong></td>
+            <td class="amt-col">{{ bill.actual_paid|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row" style="background-color: #f1f5f9;">
+            <td class="num-col">9</td>
+            <td><strong>Remaining Balance Left (Unpaid)</strong></td>
+            <td class="amt-col">{{ bill.balance_left|floatformat:0|intcomma }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Status & Attendance Breakdown -->
+      <div class="status-strip">
+        <div><strong>Days Present:</strong> {{ bill.days_present }} / 30 Days</div>
+        <div><strong>Absent Days:</strong> {{ bill.absent_days }} Days</div>
+        <div><strong>Status:</strong> <span class="fw-bold">{{ bill.payment_status|upper }}</span></div>
+        <div><strong>Payment Date:</strong> {{ bill.payment_date|date:"Y-m-d"|default:"Pending" }}</div>
       </div>
+      <div class="dues-strip">
+        Remaining Salary Dues to Staff: Rs. {{ bill.balance_left|floatformat:0|intcomma }}
+        {% if bill.voucher_no %}&nbsp;|&nbsp; Voucher Ref: {{ bill.voucher_no }}{% endif %}
+      </div>
+
+      <!-- Signatures -->
+      <div class="signature-row">
+        <div class="sig-line">Staff Member Signature</div>
+        <div class="sig-line">Principal / Accountant Stamp</div>
+      </div>
+
+      <!-- Institutional Contacts -->
+      <div class="contact-line">
+        <strong>Principal:</strong> {{ principal_name }} ({{ principal_contact }}) &nbsp;|&nbsp;
+        <strong>Vice Principal:</strong> {{ vp_name }} ({{ vp_contact }}) &nbsp;|&nbsp;
+        <strong>Admin Contact:</strong> {{ admin_name }} ({{ admin_contact }})
+      </div>
+      <div class="dev-line">Need software like this? Contact Rashid Zada (Full Stack Developer) - WhatsApp: 0347-0983567</div>
     </div>
 
-    <!-- Earnings & Deductions Breakdown -->
-    <table class="table table-bordered mb-4">
-      <thead class="table-light small text-uppercase">
+
+    <!-- ==================== PERFORATED CUT LINE ==================== -->
+    <div class="cut-line">
+      <span>✂ ----------------- CUT HERE ----------------- ✂</span>
+    </div>
+
+
+    <!-- ==================== 2. TEACHER / STAFF COPY (BOTTOM HALF) ==================== -->
+    <div class="voucher-copy">
+      <div class="voucher-header text-center">
+        <div class="copy-badge">STAFF COPY</div>
+        <h4 class="school-name">{{ school_setting.name }}</h4>
+        <div class="school-sub">{{ school_setting.address }}</div>
+      </div>
+
+      <table class="meta-table">
         <tr>
-          <th>Earnings Description</th>
-          <th class="text-end">Amount (PKR)</th>
-          <th>Deductions Description</th>
-          <th class="text-end">Amount (PKR)</th>
+          <td style="width: 55%;"><strong>Date:</strong> {% if bill.payment_date %}{{ bill.payment_date|date:"Y-m-d" }}{% else %}{{ today|date:"Y-m-d" }}{% endif %}</td>
+          <td style="width: 45%; text-align: right;"><strong>Staff ID:</strong> {{ bill.teacher.teacher_id }}</td>
         </tr>
-      </thead>
-      <tbody>
         <tr>
-          <td>Basic Pay</td>
-          <td class="text-end fw-bold">{{ bill.base_pay|floatformat:2|intcomma }}</td>
+          <td colspan="2"><strong>Faculty / Staff Name:</strong> <span class="text-uppercase fw-bold">{{ bill.teacher.full_name }}</span></td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Father / Husband Name:</strong> <span class="text-uppercase">{{ bill.teacher.father_name|default:"---" }}</span></td>
+        </tr>
+        <tr>
           <td>
-            Absence Deductions
-            {% if bill.absent_days > 0 %}
-              <small class="text-muted d-block">({{ bill.absent_days }} days absent @ PKR {{ bill.base_pay|floatformat:0 }} / 30)</small>
-            {% endif %}
+            <strong>Designation:</strong> {{ bill.teacher.designation }}
+            &nbsp;|&nbsp; <strong>Month:</strong> {{ bill.month_name }} {{ bill.year }}
           </td>
-          <td class="text-end text-danger">{{ bill.auto_absent_deduction|floatformat:2|intcomma }}</td>
+          <td style="text-align: right;"><strong>Bill / Voucher #:</strong> SAL-{{ bill.id }}</td>
         </tr>
-        <tr>
-          <td>Allowances (Medical + Conveyance + Other)</td>
-          <td class="text-end fw-bold">{{ bill.allowances|floatformat:2|intcomma }}</td>
-          <td>Other Deductions / Cuts</td>
-          <td class="text-end text-danger">{{ bill.other_deductions|floatformat:2|intcomma }}</td>
-        </tr>
-      </tbody>
-      <tfoot class="table-light">
-        <tr>
-          <th>Gross Earnings:</th>
-          <th class="text-end text-primary">PKR {{ bill.gross_pay|floatformat:2|intcomma }}</th>
-          <th>Total Deductions:</th>
-          <th class="text-end text-danger">PKR {{ bill.deductions|floatformat:2|intcomma }}</th>
-        </tr>
-        <tr class="table-light">
-          <th colspan="2" class="text-uppercase">Net Monthly Salary:</th>
-          <th colspan="2" class="text-end fw-bold text-dark">PKR {{ bill.net_payable|floatformat:2|intcomma }}</th>
-        </tr>
-        <tr class="table-light">
-          <th colspan="2" class="text-uppercase text-success">Total Amount Paid / Disbursed:</th>
-          <th colspan="2" class="text-end text-success fw-bold">PKR {{ bill.actual_paid|floatformat:2|intcomma }}</th>
-        </tr>
-        <tr class="{% if bill.balance_left > 0 %}table-warning{% else %}table-success{% endif %} h5 mb-0">
-          <th colspan="2" class="text-uppercase">Remaining Balance Left for Teacher:</th>
-          <th colspan="2" class="text-end fw-bold {% if bill.balance_left > 0 %}text-danger{% else %}text-success{% endif %}">
-            PKR {{ bill.balance_left|floatformat:2|intcomma }}
-            {% if bill.balance_left == 0 %}
-              <span class="badge bg-success ms-2 fs-6">Fully Cleared</span>
-            {% else %}
-              <span class="badge bg-danger ms-2 fs-6">Dues Remaining</span>
-            {% endif %}
-          </th>
-        </tr>
-      </tfoot>
-    </table>
+      </table>
 
-    <div class="signature-box">
-      <div>
-        <div class="signature-line">Staff Member Signature</div>
+      <!-- 3-Column Particulars Table -->
+      <table class="particulars-table">
+        <thead>
+          <tr>
+            <th class="num-col">S.No</th>
+            <th style="text-align: left; padding-left: 8px;">Particulars</th>
+            <th class="amt-col">Amount (Rs.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num-col">1</td>
+            <td>Basic Pay</td>
+            <td class="amt-col">{{ bill.base_pay|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr>
+            <td class="num-col">2</td>
+            <td>Allowances (Medical + Conveyance + Other)</td>
+            <td class="amt-col">{% if bill.allowances > 0 %}{{ bill.allowances|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">3</td>
+            <td><strong>Gross Monthly Earnings</strong></td>
+            <td class="amt-col">{{ bill.gross_pay|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr>
+            <td class="num-col">4</td>
+            <td>
+              Absence Deduction
+              {% if bill.absent_days > 0 %}
+                ({{ bill.absent_days }} absent days @ Rs. {{ bill.daily_rate|floatformat:0 }}/day)
+              {% endif %}
+            </td>
+            <td class="amt-col">{% if bill.auto_absent_deduction > 0 %}{{ bill.auto_absent_deduction|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr>
+            <td class="num-col">5</td>
+            <td>Other Deductions / Advances / Penalties</td>
+            <td class="amt-col">{% if bill.other_deductions > 0 %}{{ bill.other_deductions|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">6</td>
+            <td><strong>Total Deductions</strong></td>
+            <td class="amt-col">{{ bill.deductions|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">7</td>
+            <td><strong>Net Payable Monthly Salary</strong></td>
+            <td class="amt-col">{{ bill.net_payable|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">8</td>
+            <td><strong>Amount Disbursed / Paid</strong></td>
+            <td class="amt-col">{{ bill.actual_paid|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row" style="background-color: #f1f5f9;">
+            <td class="num-col">9</td>
+            <td><strong>Remaining Balance Left (Unpaid)</strong></td>
+            <td class="amt-col">{{ bill.balance_left|floatformat:0|intcomma }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Status & Attendance Breakdown -->
+      <div class="status-strip">
+        <div><strong>Days Present:</strong> {{ bill.days_present }} / 30 Days</div>
+        <div><strong>Absent Days:</strong> {{ bill.absent_days }} Days</div>
+        <div><strong>Status:</strong> <span class="fw-bold">{{ bill.payment_status|upper }}</span></div>
+        <div><strong>Payment Date:</strong> {{ bill.payment_date|date:"Y-m-d"|default:"Pending" }}</div>
       </div>
-      <div>
-        <div class="signature-line">Accountant / Cashier</div>
+      <div class="dues-strip">
+        Remaining Salary Dues to Staff: Rs. {{ bill.balance_left|floatformat:0|intcomma }}
+        {% if bill.voucher_no %}&nbsp;|&nbsp; Voucher Ref: {{ bill.voucher_no }}{% endif %}
       </div>
-      <div>
-        <div class="signature-line">Principal Signature</div>
+
+      <!-- Signatures -->
+      <div class="signature-row">
+        <div class="sig-line">Staff Member Signature</div>
+        <div class="sig-line">Principal / Accountant Stamp</div>
       </div>
+
+      <!-- Institutional Contacts -->
+      <div class="contact-line">
+        <strong>Principal:</strong> {{ principal_name }} ({{ principal_contact }}) &nbsp;|&nbsp;
+        <strong>Vice Principal:</strong> {{ vp_name }} ({{ vp_contact }}) &nbsp;|&nbsp;
+        <strong>Admin Contact:</strong> {{ admin_name }} ({{ admin_contact }})
+      </div>
+      <div class="dev-line">Need software like this? Contact Rashid Zada (Full Stack Developer) - WhatsApp: 0347-0983567</div>
     </div>
+
   </div>
+
 </body>
 </html>
+

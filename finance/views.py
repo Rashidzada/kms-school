@@ -355,6 +355,15 @@ def fee_receipt(request, pk):
                 "is_current": (sib.id == receipt.student.id),
             })
 
+    # 4. Aggregated particulars for the voucher table
+    tuition_fee_sum = sum((m.monthly_fee or Decimal("0.00")) for m in month_entries)
+    exam_fee_sum = sum((m.exam_fee or Decimal("0.00")) for m in month_entries)
+    other_charges_sum = sum((m.other_charges or Decimal("0.00")) for m in month_entries)
+    arrears_sum = sum((m.arrears or Decimal("0.00")) for m in month_entries)
+    total_billed_sum = sum((m.total_amount or Decimal("0.00")) for m in month_entries)
+    months_covered_names = ", ".join([m.get_month_display() for m in month_entries])
+    fee_status = "CLEARED" if this_receipt_months_dues_left <= 0 else "PARTIAL"
+
     context = {
         "receipt": receipt,
         "month_entries": month_entries,
@@ -365,6 +374,19 @@ def fee_receipt(request, pk):
         "family_total_dues_left": family_total_dues_left,
         "family_siblings_summary": family_siblings_summary,
         "active_session": active_session,
+        "tuition_fee_sum": tuition_fee_sum,
+        "exam_fee_sum": exam_fee_sum,
+        "other_charges_sum": other_charges_sum,
+        "arrears_sum": arrears_sum,
+        "total_billed_sum": total_billed_sum,
+        "months_covered_names": months_covered_names,
+        "fee_status": fee_status,
+        "principal_name": "Farman Ali",
+        "principal_contact": "0344-9631323",
+        "vp_name": "Umar Saeed",
+        "vp_contact": "0345-3407095",
+        "admin_name": "Rashid Zada",
+        "admin_contact": "0347-0983567",
     }
     return render(request, "finance/fee_receipt.html", context)
 

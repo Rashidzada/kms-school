@@ -4,257 +4,445 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Fee Receipt {{ receipt.receipt_no }} | {{ school_setting.name }}</title>
+  <title>Fee Voucher {{ receipt.receipt_no }} - {{ receipt.student.full_name }}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body {
-      background: #f7fafc;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      padding: 30px;
+    @page {
+      size: A4 portrait;
+      margin: 4mm 6mm;
     }
-    .receipt-box {
-      max-width: 720px;
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #000;
+      margin: 0;
+      padding: 10px 0;
+      font-size: 10.5px;
+      line-height: 1.25;
+    }
+    .print-page {
+      max-width: 800px;
       margin: 0 auto;
       background: #fff;
-      padding: 35px;
-      border: 2px solid #cbd5e0;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .voucher-copy {
+      border: 1.5px solid #000;
+      padding: 7px 12px;
+      background: #fff;
       position: relative;
     }
-    .receipt-header {
-      border-bottom: 2px solid #1a365d;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+    .voucher-header {
+      border-bottom: 1.5px solid #000;
+      padding-bottom: 4px;
+      margin-bottom: 5px;
+      position: relative;
+    }
+    .copy-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      border: 1.5px solid #000;
+      padding: 1.5px 7px;
+      font-weight: 800;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: #fff;
+    }
+    .school-name {
+      font-size: 14.5px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .school-sub {
+      font-size: 8.5px;
+      color: #333;
+    }
+    .meta-table {
+      width: 100%;
+      margin-bottom: 5px;
+      font-size: 10px;
+    }
+    .meta-table td {
+      padding: 1px 3px;
+      vertical-align: middle;
+    }
+    .particulars-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 4px;
+      font-size: 10px;
+    }
+    .particulars-table th, .particulars-table td {
+      border: 1px solid #000;
+      padding: 2px 5px;
+    }
+    .particulars-table th {
+      background-color: #f8f9fa;
+      font-weight: 700;
       text-align: center;
     }
-    .receipt-title {
-      font-size: 16pt;
-      font-weight: bold;
-      color: #1a365d;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .particulars-table .num-col {
+      width: 38px;
+      text-align: center;
     }
-    .signature-area {
-      margin-top: 50px;
+    .particulars-table .amt-col {
+      width: 120px;
+      text-align: right;
+      font-weight: 700;
+      padding-right: 8px;
+    }
+    .particulars-table .total-row {
+      font-weight: 800;
+      background-color: #fcfcfc;
+    }
+    .status-strip {
       display: flex;
       justify-content: space-between;
-      text-align: center;
+      font-size: 9.5px;
+      margin-bottom: 3px;
+      padding: 1px 2px;
+    }
+    .dues-strip {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 14px;
+      margin-bottom: 5px;
+      padding: 0 15px;
     }
     .sig-line {
-      width: 180px;
-      border-top: 1px solid #333;
-      padding-top: 5px;
-      font-size: 10pt;
-      font-weight: bold;
+      border-top: 1px solid #000;
+      width: 160px;
+      text-align: center;
+      padding-top: 2px;
+      font-size: 9px;
+      font-weight: 700;
     }
+    .terms-notice {
+      text-align: center;
+      font-weight: 800;
+      font-size: 8.5px;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .contact-line {
+      text-align: center;
+      font-size: 8.5px;
+      color: #111;
+      margin-bottom: 1.5px;
+    }
+    .dev-line {
+      text-align: center;
+      font-size: 7.5px;
+      color: #555;
+      font-style: italic;
+    }
+    .cut-line {
+      text-align: center;
+      font-size: 9px;
+      font-weight: bold;
+      color: #666;
+      margin: 6px 0;
+      position: relative;
+      letter-spacing: 1.5px;
+    }
+    .cut-line::before, .cut-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 44%;
+      border-top: 1px dashed #666;
+    }
+    .cut-line::before { left: 0; }
+    .cut-line::after { right: 0; }
+
     @media print {
       body {
-        background: #fff;
-        padding: 0;
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
       .no-print {
         display: none !important;
       }
-      .receipt-box {
-        box-shadow: none;
-        border: 1px solid #000;
-        margin: 0;
-        max-width: 100%;
+      .print-page {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .voucher-copy {
+        page-break-inside: avoid;
+      }
+      .cut-line {
+        margin: 5px 0;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- Floating Print Controls (Hidden on Print) -->
   <div class="text-center mb-3 no-print">
-    <button onclick="window.print()" class="btn btn-primary px-4 font-weight-bold">
-      <i class="fas fa-print me-2"></i> Print Fee Receipt
-    </button>
+    <div class="btn-group shadow-sm">
+      <button onclick="window.print()" class="btn btn-success fw-bold px-4">
+        <i class="fas fa-print me-2"></i> Print Dual-Copy Voucher (A4)
+      </button>
+      <a href="{% url 'collect_fee' receipt.student.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Back to Collect Fee
+      </a>
+      <a href="{% url 'student_detail' receipt.student.pk %}" class="btn btn-outline-primary">
+        <i class="fas fa-user me-1"></i> Student Profile
+      </a>
+    </div>
+    <div class="small text-muted mt-1">
+      <i class="fas fa-info-circle me-1"></i> Formatted for 1-page A4 printing: <strong>OFFICE COPY</strong> (top) & <strong>STUDENT COPY</strong> (bottom).
+    </div>
   </div>
 
-  <div class="receipt-box">
-    <div class="receipt-header">
-      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-        {% if school_setting.logo %}
-          <img src="{{ school_setting.logo.url }}" alt="Logo" style="width: 65px; height: 65px; border-radius: 50%;">
-        {% else %}
-          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="width: 65px; height: 65px; border-radius: 50%;">
+  <div class="print-page">
+
+    <!-- ==================== 1. OFFICE COPY (TOP HALF) ==================== -->
+    <div class="voucher-copy">
+      <div class="voucher-header text-center">
+        <div class="copy-badge">OFFICE COPY</div>
+        <h4 class="school-name">{{ school_setting.name }}</h4>
+        <div class="school-sub">{{ school_setting.address }}</div>
+      </div>
+
+      <table class="meta-table">
+        <tr>
+          <td style="width: 55%;"><strong>Date:</strong> {{ receipt.payment_date|date:"Y-m-d" }}</td>
+          <td style="width: 45%; text-align: right;"><strong>Candidate / Adm No:</strong> {{ receipt.student.admission_no }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Student Name:</strong> <span class="text-uppercase fw-bold">{{ receipt.student.full_name }}</span></td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Father Name:</strong> <span class="text-uppercase">{{ receipt.student.father_name }}</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Class & Section:</strong> {{ receipt.student.current_class.name }} - {{ receipt.student.current_section.name }}
+            &nbsp;|&nbsp; <strong>Session:</strong> {{ active_session.name }}
+          </td>
+          <td style="text-align: right;"><strong>Receipt #:</strong> {{ receipt.receipt_no }}</td>
+        </tr>
+      </table>
+
+      <!-- 3-Column Particulars Table -->
+      <table class="particulars-table">
+        <thead>
+          <tr>
+            <th class="num-col">S.No</th>
+            <th style="text-align: left; padding-left: 8px;">Particulars</th>
+            <th class="amt-col">Amount (Rs.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num-col">1</td>
+            <td>ID Card / Registration Fee</td>
+            <td class="amt-col">---</td>
+          </tr>
+          <tr>
+            <td class="num-col">2</td>
+            <td>Tuition Fee ({{ months_covered_names }})</td>
+            <td class="amt-col">{{ tuition_fee_sum|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr>
+            <td class="num-col">3</td>
+            <td>DMC / Examination Fee</td>
+            <td class="amt-col">{% if exam_fee_sum > 0 %}{{ exam_fee_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr>
+            <td class="num-col">4</td>
+            <td>Fund / Other Charges</td>
+            <td class="amt-col">{% if other_charges_sum > 0 %}{{ other_charges_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr>
+            <td class="num-col">5</td>
+            <td>Previous Arrears</td>
+            <td class="amt-col">{% if arrears_sum > 0 %}{{ arrears_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">6</td>
+            <td><strong>Total Billed</strong></td>
+            <td class="amt-col">{{ total_billed_sum|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">7</td>
+            <td><strong>Paid Amount</strong></td>
+            <td class="amt-col">{{ receipt.amount_paid|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row" style="background-color: #f1f5f9;">
+            <td class="num-col">8</td>
+            <td><strong>Remaining Dues (This Month)</strong></td>
+            <td class="amt-col">{{ this_receipt_months_dues_left|floatformat:0|intcomma }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Status & Dues Breakdown -->
+      <div class="status-strip">
+        <div><strong>Months Covered:</strong> {{ months_covered_names }}</div>
+        <div><strong>Status:</strong> <span class="fw-bold">{{ fee_status }}</span></div>
+        <div><strong>Due Date:</strong> {{ receipt.payment_date|date:"Y-m-d" }}</div>
+      </div>
+      <div class="dues-strip">
+        Student Total Remaining Dues: Rs. {{ student_total_dues_left|floatformat:0|intcomma }}
+        {% if family and family_total_dues_left > 0 %}
+          &nbsp;|&nbsp; Full Family Dues: Rs. {{ family_total_dues_left|floatformat:0|intcomma }} ({{ family_siblings_summary|length }} students)
         {% endif %}
-        <div>
-          <h3 class="mb-0 fw-bold" style="color: #1a365d;">{{ school_setting.name }}</h3>
-          <div class="small text-muted">{{ school_setting.address }} | {{ school_setting.contact }}</div>
-        </div>
       </div>
-      <div class="receipt-title">Official Fee Payment Receipt</div>
+
+      <!-- Signatures -->
+      <div class="signature-row">
+        <div class="sig-line">Student / Parent Sign</div>
+        <div class="sig-line">Accountant Stamp</div>
+      </div>
+
+      <!-- Footer Policy & Contacts -->
+      <div class="terms-notice">FEE ONCE PAID WILL NOT BE RETURNED IN ANY CASE</div>
+      <div class="contact-line">
+        <strong>Principal:</strong> {{ principal_name }} ({{ principal_contact }}) &nbsp;|&nbsp;
+        <strong>Vice Principal:</strong> {{ vp_name }} ({{ vp_contact }}) &nbsp;|&nbsp;
+        <strong>Admin Contact:</strong> {{ admin_name }} ({{ admin_contact }})
+      </div>
+      <div class="dev-line">Need software like this? Contact Rashid Zada (Full Stack Developer) - WhatsApp: 0347-0983567</div>
     </div>
 
-    <!-- Receipt Meta -->
-    <div class="row g-3 mb-4 small">
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
-          <tr>
-            <th class="text-muted" style="width: 38%;">Receipt #:</th>
-            <td class="fw-bold text-primary">{{ receipt.receipt_no }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Student Name:</th>
-            <td class="fw-bold">{{ receipt.student.full_name }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Admission #:</th>
-            <td>{{ receipt.student.admission_no }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Class & Section:</th>
-            <td>{{ receipt.student.current_class.name }} - {{ receipt.student.current_section.name }}</td>
-          </tr>
-          {% if family %}
-            <tr>
-              <th class="text-muted">Family Household:</th>
-              <td class="fw-bold text-dark">{{ family.family_id }} ({{ family.father_guardian_name }})</td>
-            </tr>
-          {% endif %}
-        </table>
-      </div>
-      <div class="col-6">
-        <table class="table table-sm table-borderless mb-0">
-          <tr>
-            <th class="text-muted" style="width: 38%;">Payment Date:</th>
-            <td class="fw-bold">{{ receipt.payment_date|date:"d F, Y" }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Father's Name:</th>
-            <td>{{ receipt.student.father_name }}</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Payment Mode:</th>
-            <td>Cash at Counter</td>
-          </tr>
-          <tr>
-            <th class="text-muted">Remarks:</th>
-            <td>{{ receipt.remarks|default:"Fee Cleared" }}</td>
-          </tr>
-        </table>
-      </div>
+
+    <!-- ==================== PERFORATED CUT LINE ==================== -->
+    <div class="cut-line">
+      <span>✂ ----------------- CUT HERE ----------------- ✂</span>
     </div>
 
-    <!-- Months Covered Table with Detailed Balances -->
-    <table class="table table-bordered mb-3 small text-center align-middle">
-      <thead class="table-light">
+
+    <!-- ==================== 2. STUDENT COPY (BOTTOM HALF) ==================== -->
+    <div class="voucher-copy">
+      <div class="voucher-header text-center">
+        <div class="copy-badge">STUDENT COPY</div>
+        <h4 class="school-name">{{ school_setting.name }}</h4>
+        <div class="school-sub">{{ school_setting.address }}</div>
+      </div>
+
+      <table class="meta-table">
         <tr>
-          <th style="width: 5%;">#</th>
-          <th>Student Covered</th>
-          <th>Month</th>
-          <th>Total Billed</th>
-          <th>Amount Paid</th>
-          <th>Month Balance Left</th>
-          <th>Status</th>
+          <td style="width: 55%;"><strong>Date:</strong> {{ receipt.payment_date|date:"Y-m-d" }}</td>
+          <td style="width: 45%; text-align: right;"><strong>Candidate / Adm No:</strong> {{ receipt.student.admission_no }}</td>
         </tr>
-      </thead>
-      <tbody>
-        {% for m in month_entries %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td class="fw-bold">{{ m.ledger.student.full_name }}</td>
-            <td class="fw-bold text-dark">{{ m.get_month_display }}</td>
-            <td>PKR {{ m.total_amount|floatformat:0|intcomma }}</td>
-            <td class="fw-bold text-success">PKR {{ m.paid_amount|floatformat:2|intcomma }}</td>
-            <td class="fw-bold {% if m.balance > 0 %}text-danger{% else %}text-success{% endif %}">
-              {% if m.balance > 0 %}
-                PKR {{ m.balance|floatformat:2|intcomma }}
-              {% else %}
-                <span class="text-success"><i class="fas fa-check-circle me-1"></i>PKR 0.00</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if m.is_paid %}
-                <span class="badge bg-success">Cleared</span>
-              {% else %}
-                <span class="badge bg-warning text-dark">Partial</span>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot class="table-light h6 mb-0">
         <tr>
-          <th colspan="4" class="text-end text-uppercase">Payment Received:</th>
-          <th class="text-success fw-bold">PKR {{ receipt.amount_paid|floatformat:2|intcomma }}</th>
-          <th class="{% if this_receipt_months_dues_left > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">
-            {% if this_receipt_months_dues_left > 0 %}
-              PKR {{ this_receipt_months_dues_left|floatformat:2|intcomma }}
-            {% else %}
-              PKR 0.00
-            {% endif %}
-          </th>
-          <th></th>
+          <td colspan="2"><strong>Student Name:</strong> <span class="text-uppercase fw-bold">{{ receipt.student.full_name }}</span></td>
         </tr>
-      </tfoot>
-    </table>
+        <tr>
+          <td colspan="2"><strong>Father Name:</strong> <span class="text-uppercase">{{ receipt.student.father_name }}</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Class & Section:</strong> {{ receipt.student.current_class.name }} - {{ receipt.student.current_section.name }}
+            &nbsp;|&nbsp; <strong>Session:</strong> {{ active_session.name }}
+          </td>
+          <td style="text-align: right;"><strong>Receipt #:</strong> {{ receipt.receipt_no }}</td>
+        </tr>
+      </table>
 
-    <!-- Financial Dues & Full Family Balance Summary Box -->
-    <div class="card bg-light border p-3 mb-4 small">
-      <div class="row g-3">
-        <!-- Student All-Months Dues -->
-        <div class="col-md-6 border-end">
-          <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Student Total Outstanding Dues (All Months)</span>
-          <h5 class="fw-bold mb-1 {% if student_total_dues_left > 0 %}text-danger{% else %}text-success{% endif %}">
-            PKR {{ student_total_dues_left|floatformat:2|intcomma }}
-            {% if student_total_dues_left == 0 %}
-              <span class="badge bg-success ms-2 fs-6">All Fees Cleared</span>
-            {% else %}
-              <span class="badge bg-danger ms-2 fs-6">Dues Remaining</span>
-            {% endif %}
-          </h5>
-          {% if student_unpaid_months %}
-            <div class="text-muted" style="font-size: 0.75rem;">
-              <strong>Unpaid / Partial Months:</strong>
-              {% for u in student_unpaid_months %}
-                <span class="badge bg-white text-danger border me-1">{{ u.get_month_display }}: PKR {{ u.balance|floatformat:0 }}</span>
-              {% endfor %}
-            </div>
-          {% else %}
-            <small class="text-success"><i class="fas fa-check-circle me-1"></i> No remaining dues for this academic session.</small>
-          {% endif %}
-        </div>
+      <!-- 3-Column Particulars Table -->
+      <table class="particulars-table">
+        <thead>
+          <tr>
+            <th class="num-col">S.No</th>
+            <th style="text-align: left; padding-left: 8px;">Particulars</th>
+            <th class="amt-col">Amount (Rs.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num-col">1</td>
+            <td>ID Card / Registration Fee</td>
+            <td class="amt-col">---</td>
+          </tr>
+          <tr>
+            <td class="num-col">2</td>
+            <td>Tuition Fee ({{ months_covered_names }})</td>
+            <td class="amt-col">{{ tuition_fee_sum|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr>
+            <td class="num-col">3</td>
+            <td>DMC / Examination Fee</td>
+            <td class="amt-col">{% if exam_fee_sum > 0 %}{{ exam_fee_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr>
+            <td class="num-col">4</td>
+            <td>Fund / Other Charges</td>
+            <td class="amt-col">{% if other_charges_sum > 0 %}{{ other_charges_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr>
+            <td class="num-col">5</td>
+            <td>Previous Arrears</td>
+            <td class="amt-col">{% if arrears_sum > 0 %}{{ arrears_sum|floatformat:0|intcomma }}{% else %}---{% endif %}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">6</td>
+            <td><strong>Total Billed</strong></td>
+            <td class="amt-col">{{ total_billed_sum|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="num-col">7</td>
+            <td><strong>Paid Amount</strong></td>
+            <td class="amt-col">{{ receipt.amount_paid|floatformat:0|intcomma }}</td>
+          </tr>
+          <tr class="total-row" style="background-color: #f1f5f9;">
+            <td class="num-col">8</td>
+            <td><strong>Remaining Dues (This Month)</strong></td>
+            <td class="amt-col">{{ this_receipt_months_dues_left|floatformat:0|intcomma }}</td>
+          </tr>
+        </tbody>
+      </table>
 
-        <!-- Full Family / Household Dues -->
-        <div class="col-md-6">
-          <span class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.72rem;">Full Family / Household Dues Balance</span>
-          {% if family %}
-            <h5 class="fw-bold mb-1 {% if family_total_dues_left > 0 %}text-danger{% else %}text-success{% endif %}">
-              PKR {{ family_total_dues_left|floatformat:2|intcomma }}
-              <span class="badge bg-info text-dark ms-2 fs-6">{{ family.family_id }}</span>
-            </h5>
-            <div style="font-size: 0.75rem;" class="mt-1">
-              <strong>Sibling Breakdown:</strong>
-              <div class="d-flex flex-wrap gap-1 mt-1">
-                {% for sib in family_siblings_summary %}
-                  <span class="badge bg-white text-dark border p-1">
-                    {{ sib.student.full_name }} ({{ sib.student.current_class.name }}):
-                    <strong class="{% if sib.dues > 0 %}text-danger{% else %}text-success{% endif %}">
-                      PKR {{ sib.dues|floatformat:0|intcomma }}
-                    </strong>
-                  </span>
-                {% endfor %}
-              </div>
-            </div>
-          {% else %}
-            <h6 class="fw-bold text-muted mb-1">Single Student Account</h6>
-            <small class="text-muted" style="font-size: 0.75rem;">No sibling household accounts linked to this admission.</small>
-          {% endif %}
-        </div>
+      <!-- Status & Dues Breakdown -->
+      <div class="status-strip">
+        <div><strong>Months Covered:</strong> {{ months_covered_names }}</div>
+        <div><strong>Status:</strong> <span class="fw-bold">{{ fee_status }}</span></div>
+        <div><strong>Due Date:</strong> {{ receipt.payment_date|date:"Y-m-d" }}</div>
       </div>
+      <div class="dues-strip">
+        Student Total Remaining Dues: Rs. {{ student_total_dues_left|floatformat:0|intcomma }}
+        {% if family and family_total_dues_left > 0 %}
+          &nbsp;|&nbsp; Full Family Dues: Rs. {{ family_total_dues_left|floatformat:0|intcomma }} ({{ family_siblings_summary|length }} students)
+        {% endif %}
+      </div>
+
+      <!-- Signatures -->
+      <div class="signature-row">
+        <div class="sig-line">Student / Parent Sign</div>
+        <div class="sig-line">Accountant Stamp</div>
+      </div>
+
+      <!-- Footer Policy & Contacts -->
+      <div class="terms-notice">FEE ONCE PAID WILL NOT BE RETURNED IN ANY CASE</div>
+      <div class="contact-line">
+        <strong>Principal:</strong> {{ principal_name }} ({{ principal_contact }}) &nbsp;|&nbsp;
+        <strong>Vice Principal:</strong> {{ vp_name }} ({{ vp_contact }}) &nbsp;|&nbsp;
+        <strong>Admin Contact:</strong> {{ admin_name }} ({{ admin_contact }})
+      </div>
+      <div class="dev-line">Need software like this? Contact Rashid Zada (Full Stack Developer) - WhatsApp: 0347-0983567</div>
     </div>
 
-    <div class="signature-area">
-      <div>
-        <div class="sig-line">Depositor / Parent Signature</div>
-      </div>
-      <div>
-        <div class="sig-line">Cashier / Accounts Officer</div>
-      </div>
-    </div>
   </div>
+
 </body>
 </html>

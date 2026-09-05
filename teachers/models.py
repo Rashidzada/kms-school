@@ -131,6 +131,12 @@ class MonthlySalaryBill(models.Model):
         return max(0, 30 - int(self.days_present or 30))
 
     @property
+    def daily_rate(self):
+        if self.base_pay and self.base_pay > 0:
+            return (self.base_pay / Decimal("30.0")).quantize(Decimal("0.01"))
+        return Decimal("0.00")
+
+    @property
     def auto_absent_deduction(self):
         if self.base_pay and self.base_pay > 0 and self.absent_days > 0:
             daily_rate = self.base_pay / Decimal("30.0")

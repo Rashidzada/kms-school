@@ -126,7 +126,10 @@
                 <a href="{% url 'salary_bill_detail' b.pk %}" class="btn btn-outline-secondary" title="Print Pay Slip" target="_blank">
                   <i class="fas fa-print"></i>
                 </a>
-                <a href="{% url 'salary_bill_update' b.pk %}" class="btn btn-outline-success" title="Edit / Pay / Deduct">
+                <a href="{{ b.whatsapp_url }}" class="btn btn-outline-success" title="Send WhatsApp Salary Slip to {{ b.teacher.full_name }} ({{ b.teacher.contact_number }})" target="_blank">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="{% url 'salary_bill_update' b.pk %}" class="btn btn-outline-primary" title="Edit / Pay / Deduct">
                   <i class="fas fa-edit"></i>
                 </a>
               </div>

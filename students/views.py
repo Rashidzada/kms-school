@@ -9,6 +9,7 @@ from django.utils import timezone
 from finance.models import StudentFeeLedger
 from finance.utils import apply_withdrawal_stop, initialize_ledger_months, roll_over_arrears
 from school.models import AcademicSession, ClassLevel, Section
+from school.whatsapp_utils import build_student_dues_reminder_msg
 from .forms import FamilyHouseholdForm, SinglePromoteForm, StudentForm, StudentWithdrawForm
 from .models import FamilyHousehold, PromotionHistory, Student
 
@@ -289,6 +290,15 @@ def student_detail(request, pk):
                 "is_current": (sib.id == student.id),
             })
 
+    pending_str = ", ".join([p["month_name"] for p in pending_months_list]) if pending_months_list else "All Cleared"
+    whatsapp_data = build_student_dues_reminder_msg(
+        student=student,
+        student_total_dues=student_total_dues,
+        pending_months_summary=pending_str,
+        family_total_dues=family_total_dues,
+        family_count=len(family_siblings_summary),
+    )
+
     context = {
         "student": student,
         "promotions": promotions,
@@ -301,6 +311,7 @@ def student_detail(request, pk):
         "family": family,
         "family_total_dues": family_total_dues,
         "family_siblings_summary": family_siblings_summary,
+        "whatsapp_data": whatsapp_data,
     }
     return render(request, "students/student_detail.html", context)
 

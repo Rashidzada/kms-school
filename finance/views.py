@@ -11,6 +11,11 @@ from students.models import FamilyHousehold, Student
 from .forms import FamilyFeePaymentForm, FeeAdjustmentForm, FeeCollectForm
 from .models import FeePaymentReceipt, StudentFeeLedger, StudentFeeMonthEntry
 from .utils import initialize_ledger_months, recalculate_ledger_arrears
+from school.whatsapp_utils import (
+    build_student_fee_receipt_msg,
+    build_student_dues_reminder_msg,
+    build_family_dues_reminder_msg,
+)
 
 
 @login_required
@@ -364,6 +369,21 @@ def fee_receipt(request, pk):
     months_covered_names = ", ".join([m.get_month_display() for m in month_entries])
     fee_status = "CLEARED" if this_receipt_months_dues_left <= 0 else "PARTIAL"
 
+    whatsapp_data = build_student_fee_receipt_msg(
+        receipt=receipt,
+        student=receipt.student,
+        months_covered_names=months_covered_names,
+        total_billed_sum=total_billed_sum,
+        this_receipt_months_dues_left=this_receipt_months_dues_left,
+        student_total_dues_left=student_total_dues_left,
+        family_total_dues_left=family_total_dues_left,
+        family_count=len(family_siblings_summary),
+        principal_name="Farman Ali",
+        principal_contact="0344-9631323",
+        vp_name="Umar Saeed",
+        vp_contact="0345-3407095",
+    )
+
     context = {
         "receipt": receipt,
         "month_entries": month_entries,
@@ -389,6 +409,7 @@ def fee_receipt(request, pk):
         "developer_contact": "0347-0983567",
         "admin_name": "Rashid Zada",
         "admin_contact": "0347-0983567",
+        "whatsapp_data": whatsapp_data,
     }
     return render(request, "finance/fee_receipt.html", context)
 
@@ -421,11 +442,20 @@ def defaulters_list(request):
                 if student_dues > 0:
                     unpaid_entries = [e for e in entries if e.balance > 0]
                     total_school_dues += student_dues
+                    unpaid_str = ", ".join([e.get_month_display() for e in unpaid_entries])
+                    wa_data = build_student_dues_reminder_msg(
+                        student=s,
+                        student_total_dues=student_dues,
+                        pending_months_summary=unpaid_str,
+                    )
                     defaulters.append({
                         "student": s,
                         "unpaid_months_count": len(unpaid_entries),
                         "total_dues": student_dues,
                         "unpaid_entries": unpaid_entries,
+                        "whatsapp_url": wa_data["url"],
+                        "whatsapp_text": wa_data["text"],
+                        "clean_phone": wa_data["clean_phone"],
                     })
 
     # Sort highest-due first
@@ -472,11 +502,20 @@ def family_dues(request):
                             unpaid_count += 1
 
         grand_total_family_dues += fam_dues
+        wa_data = build_family_dues_reminder_msg(
+            family=fam,
+            fam_students=fam_students,
+            total_dues=fam_dues,
+            unpaid_months_count=unpaid_count,
+        )
         family_records.append({
             "family": fam,
             "students": fam_students,
             "total_dues": fam_dues,
             "unpaid_count": unpaid_count,
+            "whatsapp_url": wa_data["url"],
+            "whatsapp_text": wa_data["text"],
+            "clean_phone": wa_data["clean_phone"],
         })
 
     family_records.sort(key=lambda x: x["total_dues"], reverse=True)

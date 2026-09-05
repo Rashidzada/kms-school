@@ -188,11 +188,17 @@
 </head>
 <body>
 
-  <!-- Floating Controls (Hidden on Print) -->
+  <!-- Floating Controls & WhatsApp (Hidden on Print) -->
   <div class="text-center mb-3 no-print">
     <div class="btn-group shadow-sm">
-      <button onclick="window.print()" class="btn btn-success fw-bold px-4">
-        <i class="fas fa-print me-2"></i> Print Dual-Copy Salary Voucher (A4)
+      <button onclick="window.print()" class="btn btn-primary fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print Salary Slip (A4)
+      </button>
+      <a href="{{ whatsapp_data.url }}" target="_blank" class="btn btn-success fw-bold px-3" title="Send salary slip to Teacher WhatsApp ({{ whatsapp_data.raw_phone }})">
+        <i class="fab fa-whatsapp me-1"></i> Send WhatsApp to Teacher
+      </a>
+      <button type="button" class="btn btn-outline-success" onclick="copyWhatsAppMsg()" title="Copy WhatsApp message text">
+        <i class="fas fa-copy me-1"></i> <span id="copyBtnText">Copy Msg</span>
       </button>
       <a href="{% url 'salary_bill_update' bill.pk %}" class="btn btn-outline-primary">
         <i class="fas fa-edit me-1"></i> Edit Salary Bill
@@ -203,8 +209,23 @@
     </div>
     <div class="small text-muted mt-1">
       <i class="fas fa-info-circle me-1"></i> Formatted for 1-page A4 printing: <strong>OFFICE COPY</strong> (top) & <strong>STAFF COPY</strong> (bottom).
+      {% if whatsapp_data.raw_phone %}
+        &nbsp;|&nbsp; Teacher WhatsApp: <strong class="text-success">{{ whatsapp_data.raw_phone }}</strong>
+      {% endif %}
     </div>
   </div>
+
+  <textarea id="whatsappMsgContent" style="display: none;">{{ whatsapp_data.text }}</textarea>
+  <script>
+    function copyWhatsAppMsg() {
+      const text = document.getElementById('whatsappMsgContent').value;
+      navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('copyBtnText');
+        btnText.innerText = 'Copied!';
+        setTimeout(() => { btnText.innerText = 'Copy Msg'; }, 2500);
+      });
+    }
+  </script>
 
   <div class="print-page">
 

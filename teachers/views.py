@@ -21,6 +21,7 @@ from .forms import (
     TeacherForm,
 )
 from .models import MonthlySalaryBill, SalaryScale, Teacher
+from school.whatsapp_utils import build_teacher_salary_slip_msg
 
 
 @login_required
@@ -133,6 +134,9 @@ def salary_bill_list(request):
     total_paid = sum(b.actual_paid for b in bills)
     total_balance_left = sum(b.balance_left for b in bills)
 
+    for b in bills:
+        b.whatsapp_url = build_teacher_salary_slip_msg(b)["url"]
+
     import calendar
     context = {
         "bills": bills,
@@ -223,12 +227,18 @@ def export_salary_bills_excel(request):
 @login_required
 def salary_bill_detail(request, pk):
     """
-    Printable Salary Bill / Slip detail view (FR-6.7, FR-8.4) formatted as
-    a Dual-Copy voucher (Office Copy & Teacher Copy) matching institutional layout.
+    Printable Salary Slip Detail View (FR-6.7).
     """
     bill = get_object_or_404(
         MonthlySalaryBill.objects.select_related("teacher", "teacher__salary_scale"),
         pk=pk,
+    )
+    whatsapp_data = build_teacher_salary_slip_msg(
+        bill,
+        principal_name="Farman Ali",
+        principal_contact="0344-9631323",
+        vp_name="Umar Saeed",
+        vp_contact="0345-3407095",
     )
     context = {
         "bill": bill,
@@ -241,6 +251,7 @@ def salary_bill_detail(request, pk):
         "developer_contact": "0347-0983567",
         "admin_name": "Rashid Zada",
         "admin_contact": "0347-0983567",
+        "whatsapp_data": whatsapp_data,
     }
     return render(request, "teachers/salary_bill_detail.html", context)
 

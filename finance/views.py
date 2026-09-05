@@ -109,35 +109,38 @@ def collect_fee(request, student_id):
                     f"Amount paid ({amount_paid}) cannot exceed total outstanding balance of selected months ({total_outstanding}).",
                 )
             else:
-                with transaction.atomic():
-                    receipt = FeePaymentReceipt.objects.create(
-                        payment_date=payment_date,
-                        amount_paid=amount_paid,
-                        student=student,
-                        remarks=remarks,
-                    )
+                try:
+                    with transaction.atomic():
+                        receipt = FeePaymentReceipt.objects.create(
+                            payment_date=payment_date,
+                            amount_paid=amount_paid,
+                            student=student,
+                            remarks=remarks,
+                        )
 
-                    remaining = amount_paid
-                    for entry in selected_months:
-                        if remaining <= 0:
-                            break
-                        due = entry.balance
-                        pay = min(due, remaining)
-                        entry.paid_amount += pay
-                        entry.last_payment_date = payment_date
-                        entry.last_receipt_no = receipt.receipt_no
-                        entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
-                        receipt.month_entries.add(entry)
-                        remaining -= pay
+                        remaining = amount_paid
+                        for entry in selected_months:
+                            if remaining <= 0:
+                                break
+                            due = entry.balance
+                            pay = min(due, remaining)
+                            entry.paid_amount += pay
+                            entry.last_payment_date = payment_date
+                            entry.last_receipt_no = receipt.receipt_no
+                            entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
+                            receipt.month_entries.add(entry)
+                            remaining -= pay
 
-                    if remaining > 0:
-                        receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
-                        receipt.save(update_fields=["remarks"])
+                        if remaining > 0:
+                            receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
+                            receipt.save(update_fields=["remarks"])
 
-                    recalculate_ledger_arrears(ledger)
+                        recalculate_ledger_arrears(ledger)
 
-                messages.success(request, f"Fee payment recorded with Receipt No. {receipt.receipt_no}.")
-                return redirect("fee_receipt", pk=receipt.pk)
+                    messages.success(request, f"Fee payment recorded with Receipt No. {receipt.receipt_no}.")
+                    return redirect("fee_receipt", pk=receipt.pk)
+                except Exception as e:
+                    messages.error(request, f"Unable to record fee payment: {str(e)}. Please check details and try again.")
     else:
         form = FeeCollectForm(
             ledger,
@@ -213,39 +216,42 @@ def family_payment(request, household_id):
                     messages.error(request, "No active students found in this family.")
                     return redirect("family_list")
 
-                with transaction.atomic():
-                    combined_remarks = f"Family Payment: {family.family_id} ({family.father_guardian_name}). {remarks}".strip()
-                    receipt = FeePaymentReceipt.objects.create(
-                        payment_date=payment_date,
-                        amount_paid=amount_paid,
-                        student=first_student,
-                        remarks=combined_remarks,
-                    )
+                try:
+                    with transaction.atomic():
+                        combined_remarks = f"Family Payment: {family.family_id} ({family.father_guardian_name}). {remarks}".strip()
+                        receipt = FeePaymentReceipt.objects.create(
+                            payment_date=payment_date,
+                            amount_paid=amount_paid,
+                            student=first_student,
+                            remarks=combined_remarks,
+                        )
 
-                    remaining = amount_paid
-                    affected_ledgers = set()
-                    for entry in selected_months:
-                        if remaining <= 0:
-                            break
-                        due = entry.balance
-                        pay = min(due, remaining)
-                        entry.paid_amount += pay
-                        entry.last_payment_date = payment_date
-                        entry.last_receipt_no = receipt.receipt_no
-                        entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
-                        receipt.month_entries.add(entry)
-                        affected_ledgers.add(entry.ledger)
-                        remaining -= pay
+                        remaining = amount_paid
+                        affected_ledgers = set()
+                        for entry in selected_months:
+                            if remaining <= 0:
+                                break
+                            due = entry.balance
+                            pay = min(due, remaining)
+                            entry.paid_amount += pay
+                            entry.last_payment_date = payment_date
+                            entry.last_receipt_no = receipt.receipt_no
+                            entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
+                            receipt.month_entries.add(entry)
+                            affected_ledgers.add(entry.ledger)
+                            remaining -= pay
 
-                    if remaining > 0:
-                        receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
-                        receipt.save(update_fields=["remarks"])
+                        if remaining > 0:
+                            receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
+                            receipt.save(update_fields=["remarks"])
 
-                    for ledg in affected_ledgers:
-                        recalculate_ledger_arrears(ledg)
+                        for ledg in affected_ledgers:
+                            recalculate_ledger_arrears(ledg)
 
-                messages.success(request, f"Family payment recorded with Receipt No. {receipt.receipt_no}.")
-                return redirect("fee_receipt", pk=receipt.pk)
+                    messages.success(request, f"Family payment recorded with Receipt No. {receipt.receipt_no}.")
+                    return redirect("fee_receipt", pk=receipt.pk)
+                except Exception as e:
+                    messages.error(request, f"Unable to process family payment: {str(e)}. Please check details and try again.")
     else:
         form = FamilyFeePaymentForm(
             family,

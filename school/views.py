@@ -379,3 +379,17 @@ def excel_data_hub(request):
     }
     return render(request, "school/excel_hub.html", context)
 
+
+def custom_page_not_found(request, exception=None):
+    """
+    Custom 404 handler for missing pages.
+    """
+    return render(request, "404.html", status=404)
+
+
+def custom_server_error(request):
+    """
+    Custom 500 handler for unexpected server errors.
+    """
+    return render(request, "500.html", status=500)
+

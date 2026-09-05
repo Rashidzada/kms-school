@@ -109,13 +109,37 @@ class FeePaymentReceipt(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.receipt_no:
+            import re
             from school.models import SchoolSetting
 
+            # 1. Inspect all existing receipt numbers to find the true numeric maximum
+            existing_numbers = []
+            for r in FeePaymentReceipt.objects.values_list("receipt_no", flat=True):
+                if r:
+                    nums = re.findall(r"\d+", str(r))
+                    if nums:
+                        try:
+                            existing_numbers.append(int(nums[-1]))
+                        except ValueError:
+                            pass
+
             setting = SchoolSetting.objects.select_for_update().first()
+            prefix = setting.receipt_no_prefix if setting else "REC-"
+            setting_num = setting.last_receipt_no if setting else 1000
+
+            highest_num = max([setting_num] + existing_numbers) if existing_numbers else setting_num
+            next_num = highest_num + 1
+
+            # Collision check loop to guarantee absolute uniqueness
+            candidate = f"{prefix}{next_num}"
+            while FeePaymentReceipt.objects.filter(receipt_no=candidate).exists():
+                next_num += 1
+                candidate = f"{prefix}{next_num}"
+
+            self.receipt_no = candidate
+
             if setting:
-                setting.last_receipt_no += 1
+                setting.last_receipt_no = next_num
                 setting.save(update_fields=["last_receipt_no"])
-                self.receipt_no = f"{setting.receipt_no_prefix}{setting.last_receipt_no}"
-            else:
-                self.receipt_no = f"REC-{uuid.uuid4().hex[:6].upper()}"
+
         super().save(*args, **kwargs)

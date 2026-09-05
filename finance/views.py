@@ -385,6 +385,8 @@ def fee_receipt(request, pk):
         "principal_contact": "0344-9631323",
         "vp_name": "Umar Saeed",
         "vp_contact": "0345-3407095",
+        "developer_name": "Rashid Zada",
+        "developer_contact": "0347-0983567",
         "admin_name": "Rashid Zada",
         "admin_contact": "0347-0983567",
     }

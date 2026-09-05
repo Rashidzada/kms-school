@@ -152,7 +152,7 @@ echo ===========================================================================
 echo.
 echo    Kohisar Model School ^& College (KMS) System is fully configured!
 echo.
-echo    PORTAL URL:       http://127.0.0.1:8001/
+echo    PORTAL URL:       http://127.0.0.1:8000/
 echo    ADMIN USERNAME:   admin
 echo    ADMIN PASSWORD:   admin123
 echo.

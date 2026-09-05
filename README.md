@@ -1,7 +1,7 @@
 # kms-school — Kohisar Model School & College (KMS) ERP System
 
-[![Institution](https://img.shields.io/badge/Institution-Kohisar%20Model%20School%20%26%20College-1a365d.svg)](http://127.0.0.1:8001/)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](http://127.0.0.1:8001/)
+[![Institution](https://img.shields.io/badge/Institution-Kohisar%20Model%20School%20%26%20College-1a365d.svg)](http://127.0.0.1:8000/)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](http://127.0.0.1:8000/)
 [![Engine](https://img.shields.io/badge/Database-PostgreSQL%2018-blue.svg)](https://www.postgresql.org/)
 
 A comprehensive, production-grade **Student Information, Fee Ledger, Payroll & Accounts ERP System** custom-engineered for **Kohisar Model School & College, Qalagay, Swat** according to the 26-page Institutional Software Requirements Specification (SRS v1.0).
@@ -61,9 +61,9 @@ A comprehensive, production-grade **Student Information, Fee Ledger, Payroll & A
 Double-click the **`Kohisar Model School (KMS)`** shortcut on your Desktop, or double-click **`kms_run.bat`**.
 The system will automatically:
 1. Verify and launch the PostgreSQL database service.
-2. Free network port 8001.
+2. Free network port 8000.
 3. Automatically launch your default web browser to:  
-   👉 **`http://127.0.0.1:8001/`**
+   👉 **`http://127.0.0.1:8000/`**
 
 ### Default Administrator Credentials:
 - **Username:** `admin`

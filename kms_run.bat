@@ -62,24 +62,24 @@ if not exist "%PROJECT_DIR%\venv\Scripts\python.exe" (
 echo     [OK] Virtual Environment ready.
 echo.
 
-:: 3. Check Port 8001 & Free if Stale Process Exists
-echo [*] Preparing Port 8001 for KMS Web Portal...
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8001" ^| findstr "LISTENING"') do (
-    echo     [!] Freeing existing process on port 8001 [PID: %%a]...
+:: 3. Check Port 8000 & Free if Stale Process Exists
+echo [*] Preparing Port 8000 for KMS Web Portal...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do (
+    echo     [!] Freeing existing process on port 8000 [PID: %%a]...
     taskkill /F /PID %%a >nul 2>&1
 )
-echo     [OK] Port 8001 is ready.
+echo     [OK] Port 8000 is ready.
 echo.
 
 :: 4. Launch Browser Automatically (Delayed by 2 seconds)
-start "" cmd /c "timeout /t 2 /nobreak >nul & start http://127.0.0.1:8001/"
+start "" cmd /c "timeout /t 2 /nobreak >nul & start http://127.0.0.1:8000/"
 
 :: 5. Display Portal Details
 echo ==============================================================================
 echo    APPLICATION LAUNCHED SUCCESSFULLY
 echo ==============================================================================
 echo.
-echo    URL:              http://127.0.0.1:8001/
+echo    URL:              http://127.0.0.1:8000/
 echo    Admin Username:   admin
 echo    Admin Password:   admin123
 echo    Database Engine:  PostgreSQL (kms_db)
@@ -90,7 +90,7 @@ echo ===========================================================================
 echo.
 
 :: 6. Run Django Development Server
-"%PROJECT_DIR%\venv\Scripts\python.exe" manage.py runserver 127.0.0.1:8001
+"%PROJECT_DIR%\venv\Scripts\python.exe" manage.py runserver 127.0.0.1:8000
 
 if %ERRORLEVEL% neq 0 (
     color 4F

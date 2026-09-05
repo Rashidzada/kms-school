@@ -4,7 +4,7 @@
 > **Institution:** Kohisar Model School & College, Qalagay, Swat  
 > **Database:** PostgreSQL 18 (`kms_db`)  
 > **Web Framework:** Django 6.1.1 (Python 3.11 - 3.14 compatible)  
-> **Default Port:** `8001` (`http://127.0.0.1:8001/`)
+> **Default Port:** `8000` (`http://127.0.0.1:8000/`)
 
 ---
 
@@ -116,9 +116,9 @@ Every day when school staff want to use the system:
    *(Or double-click `kms_run.bat` inside the folder).*
 2. The launcher will automatically:
    - Verify that PostgreSQL is running (and start it automatically if stopped).
-   - Free Port 8001 if previously bound.
+   - Free Port 8000 if previously bound.
    - Automatically open Google Chrome / Edge to:
-     **`http://127.0.0.1:8001/`**
+     **`http://127.0.0.1:8000/`**
 3. **Login Details:**
    - **Username:** `admin`
    - **Password:** `admin123`
@@ -149,13 +149,13 @@ If Kohisar Model School wants other computers in the school (e.g. Principal Offi
    - Open Command Prompt and type: `ipconfig`
    - Look for IPv4 Address (e.g. `192.168.1.50`).
 2. In `kms_run.bat`, change:
-   `manage.py runserver 127.0.0.1:8001`
+   `manage.py runserver 127.0.0.1:8000`
    to:
-   `manage.py runserver 0.0.0.0:8001`
+   `manage.py runserver 0.0.0.0:8000`
 3. In `school_app/settings.py`, ensure:
    `ALLOWED_HOSTS = ['*']`
 4. Other staff members on the school Wi-Fi or LAN cable can access the system by opening their browser and going to:
-   `http://192.168.1.50:8001/`
+   `http://192.168.1.50:8000/`
 
 ---
 
@@ -166,5 +166,5 @@ If Kohisar Model School wants other computers in the school (e.g. Principal Offi
 | **`python is not recognized as an internal or external command`** | Python was installed without the PATH environment variable. | Re-run the Python installer, select **Modify**, and make sure **"Add python.exe to PATH"** is checked. Restart the computer. |
 | **`Could not connect to PostgreSQL server`** | PostgreSQL service is stopped or port is blocked. | Open Windows Start menu, search for **Services**, locate **postgresql-x64-XX**, right click, and select **Start**. |
 | **`Password authentication failed for user postgres`** | Client typed a different password during PostgreSQL installation. | Open `school_app/settings.py`, locate `DATABASES['default']['PASSWORD']`, change `'postgres'` to the custom password used during install, and save. |
-| **`Port 8001 is already in use`** | A previous instance is still running. | Double-click `kms_run.bat`. It has built-in auto-kill logic that detects and frees port 8001 automatically. |
+| **`Port 8000 is already in use`** | A previous instance is still running. | Double-click `kms_run.bat`. It has built-in auto-kill logic that detects and frees port 8000 automatically. |
 | **Web page shows `This site can't be reached`** | Server window was closed. | Double-click the Desktop shortcut `Kohisar Model School (KMS)` to restart the server. |

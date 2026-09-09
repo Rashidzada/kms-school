@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detailed Marks Certificate (DMC) - {{ student.full_name }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #f8fafc;
+      color: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+    .dmc-card {
+      background: #fff;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 35px 40px;
+      border: 3px double #1a365d;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .school-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #1a365d;
+      margin-bottom: 2px;
+    }
+    .dmc-header {
+      border-bottom: 2px solid #1a365d;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .dmc-badge {
+      display: inline-block;
+      background: #1a365d;
+      color: #fff;
+      font-weight: 700;
+      padding: 4px 18px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.95rem;
+      margin-top: 5px;
+    }
+    .student-info-table td {
+      padding: 4px 8px;
+      font-size: 0.95rem;
+    }
+    .marks-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #1a365d;
+      margin-top: 15px;
+    }
+    .marks-table th, .marks-table td {
+      border: 1px solid #1a365d;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    .marks-table th {
+      background-color: #2b6cb0;
+      color: #fff;
+      font-weight: 700;
+    }
+    .sig-line {
+      border-top: 1.5px solid #000;
+      margin-top: 45px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .dmc-card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        padding: 10mm 12mm !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .marks-table th {
+        background-color: #eee !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container text-center mb-3 no-print" style="max-width: 800px;">
+  <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm border">
+    <div>
+      <span class="fw-bold text-dark">Student DMC:</span>
+      <span class="badge bg-primary fs-6">{{ student.full_name }} • {{ student.admission_no }}</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-primary fw-bold px-4">
+        <i class="fas fa-print me-1"></i> Print Report Card (DMC)
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="dmc-card">
+  <!-- Header -->
+  <div class="row align-items-center dmc-header">
+    <div class="col-2 text-center">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" style="width: 75px; height: 75px; object-fit: contain; border-radius: 50%;">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="width: 75px; height: 75px; object-fit: contain; border-radius: 50%;">
+      {% endif %}
+    </div>
+    <div class="col-10 text-center">
+      <h3 class="school-title">KOHISAR MODEL SCHOOL & COLLEGE</h3>
+      <div class="small text-muted">{{ school_setting.address|default:"Qalagay, Tehsil Barikot, District Swat" }}</div>
+      <div class="dmc-badge">DETAILED MARKS CERTIFICATE</div>
+      <div class="fw-bold text-dark mt-1">{{ exam.name|upper }}</div>
+    </div>
+  </div>
+
+  <!-- Student Bio Details -->
+  <div class="row mb-3">
+    <div class="col-9">
+      <table class="w-100 student-info-table">
+        <tr>
+          <td style="width: 130px;" class="fw-bold">Student Name:</td>
+          <td class="fw-bold text-primary">{{ student.full_name|upper }}</td>
+          <td style="width: 120px;" class="fw-bold">Admission #:</td>
+          <td><code>{{ student.admission_no }}</code></td>
+        </tr>
+        <tr>
+          <td class="fw-bold">Father's Name:</td>
+          <td>{{ student.father_name|upper }}</td>
+          <td class="fw-bold">Class / Grade:</td>
+          <td class="fw-bold">{{ class_level.name }}</td>
+        </tr>
+        <tr>
+          <td class="fw-bold">Academic Session:</td>
+          <td>{{ exam.session.name }}</td>
+          <td class="fw-bold">Section:</td>
+          <td>{{ student.current_section.name|default:"A" }}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-3 text-center">
+      {% if student.profile_picture %}
+        <img src="{{ student.profile_picture.url }}" alt="Photo" style="width: 80px; height: 95px; object-fit: cover; border: 1px solid #ccc; padding: 2px;">
+      {% else %}
+        <div style="width: 80px; height: 95px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; margin: auto; font-size: 10px; color: #999;">
+          Affix Photo
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Marks Breakdown Table -->
+  <table class="marks-table">
+    <thead>
+      <tr>
+        <th style="width: 50px;">S#</th>
+        <th class="text-start">Subject</th>
+        <th style="width: 100px;">Total Marks</th>
+        <th style="width: 100px;">Passing Marks</th>
+        <th style="width: 110px;">Obtained Marks</th>
+        <th style="width: 90px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sm in student_rec.subject_marks %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td class="text-start fw-bold">{{ sm.class_subject.subject.name }}</td>
+        <td>{{ sm.class_subject.total_marks|floatformat:0 }}</td>
+        <td>{{ sm.class_subject.passing_marks|floatformat:0 }}</td>
+        <td class="fw-bold {% if sm.score_display == 'A' %}text-danger{% endif %}">
+          {% if sm.score_display == 'A' %}Absent{% else %}{{ sm.score_display }}{% endif %}
+        </td>
+        <td>
+          {% if sm.score_display == 'A' or sm.score_display < sm.class_subject.passing_marks %}
+            <span class="text-danger fw-bold">Fail</span>
+          {% else %}
+            <span class="text-success fw-bold">Pass</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      <!-- Totals Row -->
+      <tr style="background-color: #f8fafc; font-weight: 800; border-top: 2px solid #1a365d;">
+        <td colspan="2" class="text-start fs-6">GRAND TOTAL</td>
+        <td>{{ grand_total_max }}</td>
+        <td>-</td>
+        <td class="fs-6 text-primary">{{ student_rec.obtained_total }}</td>
+        <td>
+          {% if student_rec.status == "Pass" %}
+            <span class="text-success">PASS</span>
+          {% else %}
+            <span class="text-danger">FAIL</span>
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Overall Evaluation Summary -->
+  <div class="row g-2 mt-3 p-2 border rounded bg-light text-center">
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Percentage</div>
+      <div class="fs-5 fw-bold text-dark">{{ student_rec.percentage|default:"-" }}%</div>
+    </div>
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Class Position</div>
+      <div class="fs-5 fw-bold text-primary">{{ student_rec.position_display|default:"-" }}</div>
+    </div>
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Overall Grade</div>
+      <div class="fs-5 fw-bold text-success">{{ student_rec.grade|default:"-" }}</div>
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="row mt-4 pt-2">
+    <div class="col-4">
+      <div class="sig-line">Class Teacher</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Controller Examinations</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Principal / Stamp</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

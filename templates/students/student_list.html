@@ -233,6 +233,9 @@
                 <a href="{% url 'student_detail' s.pk %}" class="btn btn-outline-secondary" title="View Profile">
                   <i class="fas fa-eye"></i>
                 </a>
+                <a href="{% url 'student_roll_number_slip' s.pk %}" class="btn btn-outline-dark" title="Print Roll Number Slip" target="_blank">
+                  <i class="fas fa-id-badge"></i>
+                </a>
                 <a href="{% url 'student_update' s.pk %}" class="btn btn-outline-secondary" title="Edit Student">
                   <i class="fas fa-edit"></i>
                 </a>

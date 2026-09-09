@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Examinations & Results Hub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-graduation-cap me-2 text-primary"></i> Examinations & Results Hub
+    </h3>
+    <p class="text-muted small mb-0">
+      Manage institutional exams, dynamic class subjects, teacher award lists, and master class result sheets.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'blank_marks_sheet' %}" class="btn btn-outline-primary fw-bold shadow-sm">
+      <i class="fas fa-file-alt me-1"></i> Blank Marks Sheet
+    </a>
+    <a href="{% url 'roll_number_slips' %}" class="btn btn-dark fw-bold shadow-sm">
+      <i class="fas fa-id-badge me-1"></i> Roll Number Slips
+    </a>
+    <a href="{% url 'class_marks_entry_grid' %}" class="btn btn-warning text-dark fw-bold shadow-sm">
+      <i class="fas fa-edit me-1"></i> Enter Marks Grid
+    </a>
+    <a href="{% url 'exam_create' %}" class="btn btn-primary fw-bold shadow-sm">
+      <i class="fas fa-plus me-1"></i> New Examination
+    </a>
+    <a href="{% url 'subject_manage' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+      <i class="fas fa-sliders-h me-1"></i> Class Subjects Setup
+    </a>
+  </div>
+</div>
+
+<!-- Quick Statistics -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-primary text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Active Exams</div>
+          <h3 class="fw-bold mb-0">{{ total_exams }}</h3>
+          <span class="small text-white-50">{{ active_session.name|default:"Active Session" }}</span>
+        </div>
+        <i class="fas fa-file-alt fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-success text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Master Subjects</div>
+          <h3 class="fw-bold mb-0">{{ total_subjects }}</h3>
+          <span class="small text-white-50">Curriculum Catalog</span>
+        </div>
+        <i class="fas fa-book-open fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-info text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Academic Classes</div>
+          <h3 class="fw-bold mb-0">{{ classes.count }}</h3>
+          <span class="small text-white-50">Nursery to 12th Grade</span>
+        </div>
+        <i class="fas fa-school fa-2x opacity-50"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card border-0 shadow-sm bg-dark text-white p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-white-50 text-uppercase fw-bold">Recorded Marks</div>
+          <h3 class="fw-bold mb-0">{{ total_marks_recorded }}</h3>
+          <span class="small text-white-50">Student Paper Entries</span>
+        </div>
+        <i class="fas fa-check-double fa-2x text-warning opacity-75"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Modules Cards -->
+<div class="row g-4 mb-4">
+  <!-- 1. Master Class Result Sheet (Image 1) -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-top border-primary border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-primary-subtle text-primary p-3 rounded-circle me-3">
+            <i class="fas fa-table fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Master Class Result Sheet</h5>
+            <span class="badge bg-primary">Format 1 • All Subjects Grid</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Full class multi-subject result matrix matching official school format. Includes dynamic subject columns with max marks (e.g. <code>Eng (75)</code>, <code>Urdu (75)</code>...), automated <strong>Grand Total</strong>, <strong>Percentage (%age)</strong>, <strong>Class Position</strong>, and <strong>Grade</strong>.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'class_result_sheet' %}" class="btn btn-primary fw-bold flex-grow-1">
+            <i class="fas fa-eye me-1"></i> Open Result Sheet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Subject Paper Award List (Image 2) -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-top border-success border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-success-subtle text-success p-3 rounded-circle me-3">
+            <i class="fas fa-clipboard-list fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Subject Paper Award List</h5>
+            <span class="badge bg-success">Format 2 • Teacher's Marks Sheet</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Single-subject paper mark sheet for teachers with columns: <code>S#no</code>, <code>NAME</code>, <code>F/NAME</code>, <code>T/ MARKS</code>, <code>O/MARKS</code>. Download pre-filled Excel templates for Google Sheets, import completed marks, or enter marks directly online.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'subject_award_sheet' %}" class="btn btn-success fw-bold flex-grow-1">
+            <i class="fas fa-pen-alt me-1"></i> Open Award Sheet & Marks Entry
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Flexible Subject Configuration -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-top border-warning border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-warning-subtle text-warning p-3 rounded-circle me-3">
+            <i class="fas fa-cogs fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Flexible Class Subjects Setup</h5>
+            <span class="badge bg-warning text-dark">Increase / Decrease Subjects</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Customize curriculum for any grade (KG, Primary, Middle, High School, College). Add or remove subjects from any class, set maximum marks (e.g. 75, 50, 100), passing marks, and result column ordering.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'subject_manage' %}" class="btn btn-warning text-dark fw-bold flex-grow-1">
+            <i class="fas fa-sliders-h me-1"></i> Configure Class Subjects
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Examination Terms Management -->
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-top border-info border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-info-subtle text-info p-3 rounded-circle me-3">
+            <i class="fas fa-calendar-check fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Examination Terms</h5>
+            <span class="badge bg-info text-dark">Term & Session Management</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Manage exam terms like <em>First Term Examination</em>, <em>Mid-Term Examination</em>, and <em>Annual Examination</em>. Set exam dates and active status.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'exam_list' %}" class="btn btn-info text-dark fw-bold flex-grow-1">
+            <i class="fas fa-list me-1"></i> View All Examinations
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Roll Number Slips (Bulk / Full School) -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-dark border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-dark text-white p-3 rounded-circle me-3">
+            <i class="fas fa-id-badge fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Roll Number Slips</h5>
+            <span class="badge bg-dark">Admit Cards & Rules</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Print exam admit cards for a single class or <strong>Full School (All Classes)</strong>. Includes circular school logo, candidate photo box, subjects list, and mandatory hall rules (bring own pen, strict anti-cheating policy).
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'roll_number_slips' %}" class="btn btn-dark fw-bold flex-grow-1">
+            <i class="fas fa-id-badge me-1"></i> Print Roll No Slips
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Enter Marks Grid (Fast Spreadsheet) -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-warning border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-warning-subtle text-warning p-3 rounded-circle me-3">
+            <i class="fas fa-edit fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Enter Marks Grid</h5>
+            <span class="badge bg-warning text-dark">Fast Spreadsheet UX</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Quickly enter marks for all students across all subjects on a single screen. Features keyboard arrow/Enter navigation, live calculated total/%age/grade, and 1-click batch save.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'class_marks_entry_grid' %}" class="btn btn-warning text-dark fw-bold flex-grow-1">
+            <i class="fas fa-edit me-1"></i> Open Marks Grid
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Bulk DMCs / Report Cards -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-secondary border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-secondary-subtle text-secondary p-3 rounded-circle me-3">
+            <i class="fas fa-id-card fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Bulk Result Cards (DMC)</h5>
+            <span class="badge bg-secondary">Detailed Marks Certificates</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Batch print individual Detailed Marks Certificates (DMCs) for entire classes with automated page breaks, school logo, percentage, position rank, and principal signatures.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'bulk_dmc_print' %}" class="btn btn-secondary fw-bold flex-grow-1">
+            <i class="fas fa-print me-1"></i> Print Bulk DMCs
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Blank Marks Collection Sheet (For Teachers) -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-success border-3">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-success-subtle text-success p-3 rounded-circle me-3">
+            <i class="fas fa-file-alt fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Blank Marks Sheet</h5>
+            <span class="badge bg-success">Teacher Collection List</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Print or download blank student marks award sheets for any class with all subjects. Cells are completely blank (no dashes) with comfortable writing space for teachers to handwrite marks or distribute.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'blank_marks_sheet' %}" class="btn btn-success fw-bold flex-grow-1">
+            <i class="fas fa-print me-1"></i> Open Blank Sheet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

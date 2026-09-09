@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Award List - {{ subject.name }} - {{ class_level.name }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #f8fafc;
+      color: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+    .sheet-paper {
+      background: #fff;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .school-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #000;
+    }
+    .sheet-subtitle {
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 6px;
+    }
+    .school-logo {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    .award-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000;
+      margin-top: 10px;
+    }
+    .award-table th, .award-table td {
+      border: 1.5px solid #000;
+      padding: 6px 10px;
+      font-size: 0.95rem;
+    }
+    .award-table th {
+      background-color: #f1f3f5;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .signature-row {
+      margin-top: 40px;
+      padding-top: 10px;
+    }
+    .sig-line {
+      border-top: 1.5px solid #000;
+      margin-top: 45px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .sheet-paper {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 10mm 12mm !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .award-table th {
+        background-color: #eee !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Control Bar (Screen only) -->
+<div class="container text-center mb-3 no-print" style="max-width: 900px;">
+  <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm border">
+    <div>
+      <span class="fw-bold text-dark me-2">Subject Paper Award List:</span>
+      <span class="badge bg-primary fs-6">{{ subject.name }} • {{ class_level.name }}</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-primary fw-bold px-4">
+        <i class="fas fa-print me-1"></i> Print Award Sheet
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Printable Paper Layout matching Image 2 -->
+<div class="sheet-paper">
+  <!-- Header matching Image 2 -->
+  <div class="row align-items-center mb-2">
+    <div class="col-auto text-center ps-2">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo">
+      {% endif %}
+    </div>
+    <div class="col-10 text-center">
+      <h3 class="school-title">KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT</h3>
+      <div class="sheet-subtitle">
+        LIST FOR <span style="text-decoration: underline; font-weight:800;">&nbsp;{{ subject.name|upper }}&nbsp;</span> PAPER CLASS <span style="text-decoration: underline; font-weight:800;">&nbsp;{{ class_level.name|upper }}{% if section %} (SEC {{ section.name }}){% endif %}&nbsp;</span> &nbsp; {{ exam.name|upper }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Table matching Image 2 Columns -->
+  <table class="award-table">
+    <thead>
+      <tr>
+        <th style="width: 55px;">S#no</th>
+        <th>NAME</th>
+        <th>F/NAME</th>
+        <th style="width: 100px;">T/ MARKS</th>
+        <th style="width: 110px;">O/MARKS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in student_rows %}
+      <tr>
+        <td class="text-center fw-bold">{{ row.sr_no }}</td>
+        <td class="fw-bold">{{ row.student.full_name|upper }}</td>
+        <td>{{ row.student.father_name|upper }}</td>
+        <td class="text-center fw-bold">{{ row.total_marks }}</td>
+        <td class="text-center fw-bold">
+          {% if row.is_absent %}
+            ABSENT
+          {% else %}
+            {{ row.obtained_marks }}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center py-4">No student records found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Footer Signatures matching Image 2 -->
+  <div class="row signature-row">
+    <div class="col-4">
+      <div class="sig-line">Subject Teacher</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Incharge Examinations</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Principal / Director</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

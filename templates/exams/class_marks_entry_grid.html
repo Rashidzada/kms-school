@@ -1,0 +1,465 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Enter Student Marks Grid (All Subjects){% endblock %}
+
+{% block extra_css %}
+<style>
+  .grid-input {
+    width: 68px;
+    height: 32px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: all 0.15s ease-in-out;
+  }
+  .grid-input:focus {
+    border-color: #2b6cb0;
+    background-color: #ebf8ff;
+    box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.3);
+    outline: none;
+  }
+  .grid-input.is-absent {
+    background-color: #fed7d7 !important;
+    color: #c53030 !important;
+    border-color: #feb2b2 !important;
+  }
+  .grid-input.is-invalid-max {
+    background-color: #fff5f5 !important;
+    border-color: #e53e3e !important;
+    color: #e53e3e !important;
+  }
+  .table-grid th, .table-grid td {
+    padding: 6px 6px;
+    vertical-align: middle;
+  }
+  .sticky-col-1 {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 2;
+  }
+  .sticky-col-2 {
+    position: sticky;
+    left: 45px;
+    background-color: #fff;
+    z-index: 2;
+  }
+  .sticky-col-3 {
+    position: sticky;
+    left: 125px;
+    background-color: #fff;
+    z-index: 2;
+  }
+  thead .sticky-col-1, thead .sticky-col-2, thead .sticky-col-3 {
+    background-color: #212529 !important;
+    z-index: 3;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Header & Action Buttons -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-edit text-primary me-2"></i> Enter Class Marks Grid
+    </h3>
+    <p class="text-muted small mb-0">
+      Spreadsheet-style live data entry across all subjects simultaneously. Navigate with <kbd>Enter</kbd> / arrow keys.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'class_result_sheet' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-outline-primary fw-bold shadow-sm">
+      <i class="fas fa-table me-1"></i> View Result Sheet
+    </a>
+    <a href="{% url 'export_class_template_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-outline-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Download Class Excel Template
+    </a>
+    <button type="button" class="btn btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#bulkImportModal">
+      <i class="fas fa-file-upload me-1"></i> Bulk Import Excel
+    </button>
+    <a href="{% url 'blank_marks_sheet' %}?class_id={{ selected_class.id }}&exam_id={{ selected_exam.id }}&section_id={{ selected_section.id|default:'' }}" target="_blank" class="btn btn-outline-info text-dark fw-bold shadow-sm">
+      <i class="fas fa-file-alt me-1"></i> Blank Marks Sheet
+    </a>
+    <a href="{% url 'bulk_dmc_print' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" target="_blank" class="btn btn-dark fw-bold shadow-sm">
+      <i class="fas fa-print me-1"></i> Bulk Print Result Cards (DMC)
+    </a>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card shadow-sm border-0 mb-3 bg-light">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Examination Term</label>
+        <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for ex in exams %}
+          <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+            {{ ex.name }} ({{ ex.session.name }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Class</label>
+        <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for c in classes %}
+          <option value="{{ c.id }}" {% if selected_class.id == c.id %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Section</label>
+        <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Sections</option>
+          {% for sec in sections %}
+          <option value="{{ sec.id }}" {% if selected_section.id == sec.id %}selected{% endif %}>
+            Section {{ sec.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-1 col-sm-6">
+        <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">
+          <i class="fas fa-filter"></i> Load
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Main Marks Grid Form -->
+<form method="post" id="gridMarksForm">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save_grid_marks">
+  <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+  <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+  <input type="hidden" name="section_id" value="{{ selected_section.id|default:'' }}">
+
+  <div class="card shadow-sm border-0 mb-4">
+    <!-- Header Banner with Logo -->
+    <div class="card-header bg-white py-3 border-bottom text-center">
+      <div class="d-flex align-items-center justify-content-center gap-3">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" style="height: 50px; width: 50px; object-fit: contain; border-radius: 50%;">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="height: 50px; width: 50px; object-fit: contain; border-radius: 50%;">
+        {% endif %}
+        <div>
+          <h6 class="fw-bold text-uppercase text-secondary mb-0" style="letter-spacing: 1px;">
+            KOHISAR MODEL SCHOOL & COLLEGE QALAGAY SWAT
+          </h6>
+          <h4 class="fw-bold text-dark mb-0">
+            Enter Marks For Class <span class="text-primary text-decoration-underline">{{ selected_class.name }}</span> {% if selected_section %}(Section {{ selected_section.name }}){% endif %} — <span class="text-primary">{{ selected_exam.name }}</span>
+          </h4>
+        </div>
+      </div>
+      <div class="mt-2 d-flex justify-content-center gap-2">
+        <span class="badge bg-primary px-3 py-1 fs-6">Configured Subjects: {{ class_subjects|length }}</span>
+        <span class="badge bg-info text-dark px-3 py-1 fs-6">Grand Total Max: {{ grand_total_max }}</span>
+        <span class="badge bg-secondary px-3 py-1 fs-6">Active Students: {{ total_students }}</span>
+      </div>
+    </div>
+
+    <!-- Live Instructions Bar -->
+    <div class="bg-light p-2 px-3 border-bottom d-flex justify-content-between align-items-center small">
+      <div>
+        <span class="text-muted"><i class="fas fa-keyboard text-primary me-1"></i> Quick Keys:</span>
+        <kbd>Enter</kbd> / <kbd>↓</kbd> next student &nbsp;|&nbsp;
+        <kbd>Tab</kbd> / <kbd>→</kbd> next subject &nbsp;|&nbsp;
+        <kbd>A</kbd> mark absent &nbsp;|&nbsp;
+        <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> Highlighted red</span> if marks exceed max limit.
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm fw-bold px-4 shadow-sm">
+          <i class="fas fa-save me-1"></i> Save All Marks
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 650px; overflow-y: auto;">
+        <table class="table table-bordered table-hover align-middle mb-0 text-center table-grid" id="marksEntryGridTable" style="font-size: 0.88rem;">
+          <thead class="table-dark sticky-top">
+            <tr>
+              <th style="width: 45px;" class="sticky-col-1">#</th>
+              <th style="width: 80px;" class="sticky-col-2">Adm #</th>
+              <th class="text-start sticky-col-3" style="min-width: 140px;">Student Name</th>
+              <th class="text-start" style="min-width: 130px;">Father Name</th>
+              <!-- Dynamic Subject Input Columns -->
+              {% for cs in class_subjects %}
+              <th style="min-width: 75px;" class="bg-primary-subtle text-dark border-dark">
+                <span class="d-block fw-bold">{{ cs.subject.short_name }}</span>
+                <span class="small text-muted fw-normal">Max: {{ cs.total_marks|floatformat:0 }}</span>
+              </th>
+              {% endfor %}
+              <th style="min-width: 75px;" class="bg-info-subtle text-dark fw-bold">Live Total</th>
+              <th style="min-width: 65px;">Live %</th>
+              <th style="min-width: 55px;">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in student_grid_rows %}
+            <tr id="row-{{ row.student.id }}" data-student-id="{{ row.student.id }}">
+              <td class="fw-bold text-muted sticky-col-1">{{ row.sr_no }}</td>
+              <td class="sticky-col-2"><code>{{ row.student.admission_no }}</code></td>
+              <td class="text-start fw-bold text-dark sticky-col-3">
+                {{ row.student.full_name }}
+              </td>
+              <td class="text-start text-muted">
+                {{ row.student.father_name }}
+              </td>
+              <!-- Subject Inputs -->
+              {% for sub in row.subjects %}
+              <td class="p-1">
+                <input type="text"
+                       name="mark_{{ row.student.id }}_{{ sub.class_subject.subject.id }}"
+                       value="{{ sub.score }}"
+                       class="grid-input {% if sub.is_absent %}is-absent{% endif %}"
+                       data-row="{{ row.sr_no }}"
+                       data-col="{{ forloop.counter }}"
+                       data-student-id="{{ row.student.id }}"
+                       data-subject-id="{{ sub.class_subject.subject.id }}"
+                       data-max="{{ sub.max_marks }}"
+                       autocomplete="off"
+                       placeholder="-">
+              </td>
+              {% endfor %}
+              <!-- Live Total -->
+              <td class="fw-bold fs-6 text-primary row-live-total" id="live-total-{{ row.student.id }}">
+                {{ row.row_total }}
+              </td>
+              <!-- Live % -->
+              <td class="fw-bold row-live-pct" id="live-pct-{{ row.student.id }}">
+                -
+              </td>
+              <!-- Live Grade -->
+              <td class="fw-bold row-live-grade" id="live-grade-{{ row.student.id }}">
+                -
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="{{ class_subjects|length|add:7 }}" class="text-center py-5 text-muted">
+                <i class="fas fa-users fa-3x mb-3 opacity-50 d-block"></i>
+                <h5>No active students found in {{ selected_class.name }}</h5>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Save Footer -->
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 border-top sticky-bottom">
+      <div class="text-muted small">
+        <span class="fw-bold text-dark">Grand Total Maximum: {{ grand_total_max }}</span> &nbsp;|&nbsp;
+        <span>All changes will be updated across Class Result Sheets, Award Lists, and Student DMCs simultaneously.</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg fw-bold px-5 shadow">
+          <i class="fas fa-save me-1"></i> Save All Marks
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- MODAL: Bulk Import Multi-Subject Excel File -->
+<div class="modal fade" id="bulkImportModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_class_result_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+        <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Multi-Subject Excel
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div class="alert alert-info small mb-3">
+            <i class="fas fa-info-circle me-1"></i> Upload the multi-subject Excel spreadsheet for <strong>{{ selected_class.name }}</strong> ({{ selected_exam.name }}). The system will automatically detect every subject column and update student marks.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select Completed Excel File (.xlsx)</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <small class="text-muted">Supports spreadsheet created from our Class Excel Template.</small>
+          </div>
+
+          <div class="card bg-light border-0 p-3 mb-2">
+            <h6 class="fw-bold mb-1 small text-dark"><i class="fas fa-download me-1 text-success"></i> Don't have the template yet?</h6>
+            <p class="small text-muted mb-2">Download the pre-filled template with all student names and subject headers ready for Google Sheets or offline filling.</p>
+            <a href="{% url 'export_class_template_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-sm btn-outline-success fw-bold">
+              Download {{ selected_class.name }} Multi-Subject Template (.xlsx)
+            </a>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success fw-bold px-4">
+            <i class="fas fa-upload me-1"></i> Upload & Import All Marks
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard Navigation & Live Calculation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const grandTotalMax = {{ grand_total_max|default:1 }};
+  const inputs = document.querySelectorAll('.grid-input');
+
+  // Recalculate row live totals on startup
+  document.querySelectorAll('tr[data-student-id]').forEach(function(row) {
+    updateRowLiveStats(row, grandTotalMax);
+  });
+
+  // Handle Input Changes & Keyboard Navigation
+  inputs.forEach(function(input) {
+    input.addEventListener('input', function() {
+      const val = this.value.trim().toUpperCase();
+      const max = parseFloat(this.dataset.max) || 100;
+
+      // Handle absent
+      if (val === 'A') {
+        this.classList.add('is-absent');
+        this.classList.remove('is-invalid-max');
+      } else {
+        this.classList.remove('is-absent');
+        const num = parseFloat(val);
+        if (!isNaN(num) && num > max) {
+          this.classList.add('is-invalid-max');
+        } else {
+          this.classList.remove('is-invalid-max');
+        }
+      }
+
+      const row = this.closest('tr');
+      updateRowLiveStats(row, grandTotalMax);
+    });
+
+    // Keyboard Navigation
+    input.addEventListener('keydown', function(e) {
+      const curRow = parseInt(this.dataset.row);
+      const curCol = parseInt(this.dataset.col);
+
+      if (e.key === 'Enter' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        // Move to next student in same subject column
+        const nextInput = document.querySelector(`.grid-input[data-row="${curRow + 1}"][data-col="${curCol}"]`);
+        if (nextInput) {
+          nextInput.focus();
+          nextInput.select();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Move to previous student in same subject column
+        const prevInput = document.querySelector(`.grid-input[data-row="${curRow - 1}"][data-col="${curCol}"]`);
+        if (prevInput) {
+          prevInput.focus();
+          prevInput.select();
+        }
+      } else if (e.key === 'ArrowRight' && (this.selectionEnd === this.value.length || this.value === '')) {
+        // Move to next subject column for this student
+        const rightInput = document.querySelector(`.grid-input[data-row="${curRow}"][data-col="${curCol + 1}"]`);
+        if (rightInput) {
+          e.preventDefault();
+          rightInput.focus();
+          rightInput.select();
+        }
+      } else if (e.key === 'ArrowLeft' && (this.selectionStart === 0 || this.value === '')) {
+        // Move to previous subject column for this student
+        const leftInput = document.querySelector(`.grid-input[data-row="${curRow}"][data-col="${curCol - 1}"]`);
+        if (leftInput) {
+          e.preventDefault();
+          leftInput.focus();
+          leftInput.select();
+        }
+      }
+    });
+  });
+
+  function updateRowLiveStats(row, totalMax) {
+    const studentId = row.dataset.studentId;
+    const rowInputs = row.querySelectorAll('.grid-input');
+    let totalObt = 0;
+    let hasMarks = false;
+    let hasFail = false;
+    let allAbsent = true;
+
+    rowInputs.forEach(function(inp) {
+      const v = inp.value.trim().toUpperCase();
+      if (v === 'A') {
+        hasMarks = true;
+        hasFail = true;
+      } else if (v !== '') {
+        const num = parseFloat(v);
+        if (!isNaN(num)) {
+          totalObt += num;
+          hasMarks = true;
+          allAbsent = false;
+          const max = parseFloat(inp.dataset.max) || 100;
+          const pass = max * 0.33; // 33% passing
+          if (num < pass) hasFail = true;
+        }
+      }
+    });
+
+    const totalEl = document.getElementById('live-total-' + studentId);
+    const pctEl = document.getElementById('live-pct-' + studentId);
+    const gradeEl = document.getElementById('live-grade-' + studentId);
+
+    if (hasMarks && !allAbsent && totalMax > 0) {
+      totalEl.textContent = Math.round(totalObt * 10) / 10;
+      const pct = Math.round((totalObt / totalMax) * 1000) / 10;
+      pctEl.textContent = pct + '%';
+
+      // Compute grade
+      let grade = 'Fail';
+      if (!hasFail) {
+        if (pct >= 80) grade = 'A+';
+        else if (pct >= 70) grade = 'A';
+        else if (pct >= 60) grade = 'B';
+        else if (pct >= 50) grade = 'C';
+        else if (pct >= 40) grade = 'D';
+        else if (pct >= 33) grade = 'E';
+      }
+
+      gradeEl.textContent = grade;
+      if (grade === 'A+' || grade === 'A') {
+        gradeEl.className = 'fw-bold text-success';
+      } else if (grade === 'Fail') {
+        gradeEl.className = 'fw-bold text-danger';
+      } else {
+        gradeEl.className = 'fw-bold text-primary';
+      }
+    } else {
+      totalEl.textContent = hasMarks ? (allAbsent ? 'A' : Math.round(totalObt)) : '-';
+      pctEl.textContent = '-';
+      gradeEl.textContent = '-';
+      gradeEl.className = 'fw-bold text-muted';
+    }
+  }
+});
+</script>
+{% endblock %}

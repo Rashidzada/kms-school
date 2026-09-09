@@ -830,7 +830,8 @@ def import_students_excel(request):
         return redirect("student_list")
 
     active_session = AcademicSession.objects.filter(is_active=True).first()
-    success_count = 0
+    created_count = 0
+    updated_count = 0
     row_errors = []
 
     def parse_date(val):
@@ -901,27 +902,57 @@ def import_students_excel(request):
             status_raw = str(r.get("status__active_withdrawn_", "") or r.get("status", "Active")).strip().capitalize()
             status = "Withdrawn" if "withdrawn" in status_raw.lower() else "Active"
 
-            # Admission number
-            adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_no", "")).strip()
-            if adm_no and Student.objects.filter(admission_no=adm_no).exists():
-                adm_no = ""  # Force auto-generation if duplicate exists
-
-            student = Student(
-                full_name=full_name,
-                father_name=father_name,
-                gender=gender,
-                dob=dob or date(2015, 1, 1),
-                current_class=class_obj,
-                current_section=section_obj,
-                family=family,
-                contact_number=contact,
-                residence=residence,
-                status=status,
-                admission_date=adm_date,
-            )
+            # Check for existing student by admission number or name+father+class (Prevent Duplicates)
+            adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_number", "")).strip()
+            student = None
             if adm_no:
-                student.admission_no = adm_no
-            student.save()
+                student = Student.objects.filter(admission_no__iexact=adm_no).first()
+            if not student and full_name and father_name and class_obj:
+                student = Student.objects.filter(
+                    full_name__iexact=full_name,
+                    father_name__iexact=father_name,
+                    current_class=class_obj,
+                ).first()
+
+            if student:
+                # Update existing student - DO NOT DUPLICATE
+                student.full_name = full_name
+                student.father_name = father_name
+                student.gender = gender
+                if dob:
+                    student.dob = dob
+                if class_obj:
+                    student.current_class = class_obj
+                if section_obj:
+                    student.current_section = section_obj
+                if family:
+                    student.family = family
+                if contact:
+                    student.contact_number = contact
+                if residence:
+                    student.residence = residence
+                student.status = status
+                student.save()
+                updated_count += 1
+            else:
+                # Create new student
+                student = Student(
+                    full_name=full_name,
+                    father_name=father_name,
+                    gender=gender,
+                    dob=dob or date(2015, 1, 1),
+                    current_class=class_obj,
+                    current_section=section_obj,
+                    family=family,
+                    contact_number=contact,
+                    residence=residence,
+                    status=status,
+                    admission_date=adm_date,
+                )
+                if adm_no and not Student.objects.filter(admission_no=adm_no).exists():
+                    student.admission_no = adm_no
+                student.save()
+                created_count += 1
 
             # Initialize 12-month Fee Ledger if active session exists
             if active_session and class_obj:
@@ -931,12 +962,14 @@ def import_students_excel(request):
                 )
                 initialize_ledger_months(ledger, student, class_obj.monthly_fee)
 
-            success_count += 1
-
-    if success_count > 0:
-        messages.success(request, f"Excel Import Completed! Successfully imported {success_count} student records with automated 12-month fee ledgers.")
+    total_processed = created_count + updated_count
+    if total_processed > 0:
+        messages.success(
+            request,
+            f"Excel Import Completed! Created {created_count} new student(s), updated {updated_count} existing record(s) with no duplicates."
+        )
     if row_errors:
-        messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+        messages.warning(request, f"Some rows had warnings: {'; '.join(row_errors[:5])}")
 
     return redirect("student_list")
 

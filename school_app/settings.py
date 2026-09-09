@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "teachers",
     "finance",
     "accounts",
+    "exams",
 ]
 
 MIDDLEWARE = [

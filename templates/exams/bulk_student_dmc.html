@@ -1,0 +1,276 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulk Result Cards (DMC) - {{ class_level.name }} - {{ exam.name }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #f1f5f9;
+      color: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px 0;
+    }
+    .dmc-card {
+      background: #fff;
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      padding: 35px 40px;
+      border: 3px double #1a365d;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .school-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #1a365d;
+      margin-bottom: 2px;
+    }
+    .dmc-header {
+      border-bottom: 2px solid #1a365d;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .dmc-badge {
+      display: inline-block;
+      background: #1a365d;
+      color: #fff;
+      font-weight: 700;
+      padding: 4px 18px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+    .student-info-table td {
+      padding: 3px 8px;
+      font-size: 0.92rem;
+    }
+    .marks-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #1a365d;
+      margin-top: 12px;
+    }
+    .marks-table th, .marks-table td {
+      border: 1px solid #1a365d;
+      padding: 5px 8px;
+      text-align: center;
+      font-size: 0.88rem;
+    }
+    .marks-table th {
+      background-color: #2b6cb0;
+      color: #fff;
+      font-weight: 700;
+    }
+    .sig-line {
+      border-top: 1.5px solid #000;
+      margin-top: 40px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .dmc-card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        padding: 8mm 10mm !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+      .marks-table th {
+        background-color: #eee !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Sticky Control Bar for Screen -->
+<div class="container text-center mb-4 no-print" style="max-width: 800px;">
+  <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm border">
+    <div>
+      <span class="fw-bold text-dark me-2">Bulk DMC Printing:</span>
+      <span class="badge bg-primary fs-6">{{ class_level.name }} • {{ exam.name }}</span>
+      <span class="badge bg-success ms-1">{{ student_records|length }} Cards</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-primary fw-bold px-4 shadow-sm">
+        <i class="fas fa-print me-1"></i> Print All Result Cards ({{ student_records|length }})
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loop Through Each Student Record -->
+{% for rec in student_records %}
+<div class="dmc-card">
+  <!-- Card Header with Logo -->
+  <div class="row align-items-center dmc-header">
+    <div class="col-2 text-center">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" style="width: 75px; height: 75px; object-fit: contain; border-radius: 50%;">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="width: 75px; height: 75px; object-fit: contain; border-radius: 50%;">
+      {% endif %}
+    </div>
+    <div class="col-10 text-center">
+      <h3 class="school-title">KOHISAR MODEL SCHOOL & COLLEGE</h3>
+      <div class="small text-muted">{{ school_setting.address|default:"Qalagay, Tehsil Barikot, District Swat" }}</div>
+      <div class="dmc-badge">DETAILED MARKS CERTIFICATE</div>
+      <div class="fw-bold text-dark mt-1">{{ exam.name|upper }}</div>
+    </div>
+  </div>
+
+  <!-- Student Bio Information -->
+  <div class="row mb-2">
+    <div class="col-9">
+      <table class="w-100 student-info-table">
+        <tr>
+          <td style="width: 120px;" class="fw-bold">Student Name:</td>
+          <td class="fw-bold text-primary">{{ rec.student.full_name|upper }}</td>
+          <td style="width: 110px;" class="fw-bold">Admission #:</td>
+          <td><code>{{ rec.student.admission_no }}</code></td>
+        </tr>
+        <tr>
+          <td class="fw-bold">Father's Name:</td>
+          <td>{{ rec.student.father_name|upper }}</td>
+          <td class="fw-bold">Class / Grade:</td>
+          <td class="fw-bold">{{ class_level.name }}</td>
+        </tr>
+        <tr>
+          <td class="fw-bold">Academic Session:</td>
+          <td>{{ exam.session.name }}</td>
+          <td class="fw-bold">Section:</td>
+          <td>{{ rec.student.current_section.name|default:"A" }}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-3 text-center">
+      {% if rec.student.profile_picture %}
+        <img src="{{ rec.student.profile_picture.url }}" alt="Photo" style="width: 75px; height: 90px; object-fit: cover; border: 1px solid #ccc; padding: 2px;">
+      {% else %}
+        <div style="width: 75px; height: 90px; border: 1px dashed #bbb; display: flex; align-items: center; justify-content: center; margin: auto; font-size: 10px; color: #999;">
+          Affix Photo
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Marks Breakdown Table -->
+  <table class="marks-table">
+    <thead>
+      <tr>
+        <th style="width: 45px;">S#</th>
+        <th class="text-start">Subject</th>
+        <th style="width: 90px;">Total Marks</th>
+        <th style="width: 90px;">Passing Marks</th>
+        <th style="width: 100px;">Obtained Marks</th>
+        <th style="width: 85px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sm in rec.subject_marks %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td class="text-start fw-bold">{{ sm.class_subject.subject.name }}</td>
+        <td>{{ sm.class_subject.total_marks|floatformat:0 }}</td>
+        <td>{{ sm.class_subject.passing_marks|floatformat:0 }}</td>
+        <td class="fw-bold {% if sm.score_display == 'A' %}text-danger{% endif %}">
+          {% if sm.score_display == 'A' %}Absent{% else %}{{ sm.score_display }}{% endif %}
+        </td>
+        <td>
+          {% if sm.score_display == 'A' or sm.score_display < sm.class_subject.passing_marks %}
+            <span class="text-danger fw-bold">Fail</span>
+          {% elif sm.score_display == '-' %}
+            <span class="text-muted">-</span>
+          {% else %}
+            <span class="text-success fw-bold">Pass</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      <!-- Grand Total Row -->
+      <tr style="background-color: #f8fafc; font-weight: 800; border-top: 2px solid #1a365d;">
+        <td colspan="2" class="text-start fs-6">GRAND TOTAL</td>
+        <td>{{ grand_total_max }}</td>
+        <td>-</td>
+        <td class="fs-6 text-primary">{{ rec.obtained_total }}</td>
+        <td>
+          {% if rec.status == "Pass" %}
+            <span class="text-success">PASS</span>
+          {% elif rec.status == "Fail" %}
+            <span class="text-danger">FAIL</span>
+          {% else %}
+            <span class="text-muted">PENDING</span>
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Evaluation Statistics -->
+  <div class="row g-2 mt-2 p-2 border rounded bg-light text-center">
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Percentage</div>
+      <div class="fs-5 fw-bold text-dark">
+        {% if rec.percentage is not None %}{{ rec.percentage }}%{% else %}-{% endif %}
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Class Position</div>
+      <div class="fs-5 fw-bold text-primary">{{ rec.position_display|default:"-" }}</div>
+    </div>
+    <div class="col-4">
+      <div class="small text-muted text-uppercase fw-bold">Overall Grade</div>
+      <div class="fs-5 fw-bold text-success">{{ rec.grade|default:"-" }}</div>
+    </div>
+  </div>
+
+  <!-- Signatures Footer -->
+  <div class="row mt-3 pt-1">
+    <div class="col-4">
+      <div class="sig-line">Class Teacher</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Controller Examinations</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Principal / Seal</div>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="container text-center py-5">
+  <h5>No student records available for {{ class_level.name }} in {{ exam.name }}.</h5>
+</div>
+{% endfor %}
+
+</body>
+</html>

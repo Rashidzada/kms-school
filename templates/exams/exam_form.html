@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-calendar-plus me-2"></i> {{ title }}</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-bold">Examination Title</label>
+            {{ form.name }}
+            <small class="text-muted">e.g. First Term Examination 2026, Mid-Term Exam 2026, Annual Examination 2026</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Academic Session</label>
+            {{ form.session }}
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Start Date</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">End Date</label>
+              {{ form.end_date }}
+            </div>
+          </div>
+          <div class="form-check mb-4">
+            {{ form.is_active }}
+            <label class="form-check-label fw-bold" for="{{ form.is_active.id_for_label }}">
+              Set as Active Examination
+            </label>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'exam_list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary fw-bold px-4">
+              <i class="fas fa-save me-1"></i> Save Examination
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -245,6 +245,55 @@
         </li>
       </ul>
 
+      <div class="sidebar-section-title">Examinations & Results</div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a href="{% url 'exam_dashboard' %}" class="nav-link">
+            <i class="fas fa-graduation-cap"></i> Exams Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'class_result_sheet' %}" class="nav-link">
+            <i class="fas fa-table"></i> Class Result Sheet (F-1)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'class_marks_entry_grid' %}" class="nav-link">
+            <i class="fas fa-edit"></i> Enter Marks Grid
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'subject_award_sheet' %}" class="nav-link">
+            <i class="fas fa-clipboard-check"></i> Subject Award List (F-2)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'blank_marks_sheet' %}" class="nav-link">
+            <i class="fas fa-file-alt"></i> Blank Marks Sheet
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'bulk_dmc_print' %}" class="nav-link">
+            <i class="fas fa-id-card"></i> Bulk Result Cards (DMC)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'roll_number_slips' %}" class="nav-link">
+            <i class="fas fa-id-badge"></i> Roll Number Slips
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'subject_manage' %}" class="nav-link">
+            <i class="fas fa-sliders-h"></i> Class Subjects Setup
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'exam_list' %}" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> Exam Terms
+          </a>
+        </li>
+      </ul>
+
       <div class="sidebar-section-title">Teachers & Staff</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
@@ -392,6 +441,7 @@
       </header>
 
       <!-- Print Header (Hidden on screen, visible on print) -->
+      {% block print_header %}
       <div class="print-header">
         <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
           {% if school_setting.logo %}
@@ -406,6 +456,7 @@
           </div>
         </div>
       </div>
+      {% endblock %}
 
       <!-- Main Page Content -->
       <main class="main-content">

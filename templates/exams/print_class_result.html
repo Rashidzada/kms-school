@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result Sheet - {{ class_level.name }} - {{ exam.name }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #f8fafc;
+      color: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 15px;
+    }
+    .sheet-paper {
+      background: #fff;
+      width: 100%;
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 20px 25px;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .school-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      color: #000;
+    }
+    .sheet-subtitle {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      color: #222;
+    }
+    .school-logo {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000;
+    }
+    .result-table th, .result-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      font-size: 0.85rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .result-table th {
+      background-color: #e9ecef;
+      font-weight: 700;
+      color: #000;
+      padding: 6px 4px;
+    }
+    .result-table td.text-left {
+      text-align: left;
+      padding-left: 8px;
+    }
+    .sig-line {
+      border-top: 1.5px solid #000;
+      margin-top: 35px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .sheet-paper {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 5mm !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .result-table th {
+        background-color: #e9ecef !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      @page {
+        size: A4 landscape;
+        margin: 6mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Control Bar (Screen only) -->
+<div class="container text-center mb-3 no-print" style="max-width: 1250px;">
+  <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm border">
+    <div>
+      <span class="fw-bold text-dark me-2">Class Result Sheet:</span>
+      <span class="badge bg-primary fs-6">{{ class_level.name }} • {{ exam.name }}</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-primary fw-bold px-4">
+        <i class="fas fa-print me-1"></i> Print Landscape Sheet
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-secondary">
+        <i class="fas fa-times me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Landscape Result Paper matching Image 1 -->
+<div class="sheet-paper">
+  <!-- Header matching Image 1 -->
+  <div class="row align-items-center mb-2">
+    <div class="col-auto text-center ps-3">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo">
+      {% endif %}
+    </div>
+    <div class="col text-center pe-4">
+      <h3 class="school-title">KOHISAR MODEL SCHOOL & COLLEGE QALAGAY SWAT</h3>
+      <div class="sheet-subtitle">
+        Result Sheet For Class: <span style="text-decoration: underline; font-weight: 800;">&nbsp;{{ class_level.name|upper }}{% if section %} (SEC {{ section.name }}){% endif %}&nbsp;</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="font-weight: 800;">{{ exam.name|upper }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table matching Image 1 Structure -->
+  <table class="result-table">
+    <thead>
+      <tr>
+        <th style="width: 35px;">Sr No</th>
+        <th class="text-left" style="min-width: 130px;">Name</th>
+        <th class="text-left" style="min-width: 130px;">Father's Name</th>
+        <!-- Dynamic Subjects matching Image 1 -->
+        {% for cs in class_subjects %}
+        <th style="min-width: 50px;">
+          {{ cs.subject.short_name }}<br>
+          <small>({{ cs.total_marks|floatformat:0 }})</small>
+        </th>
+        {% endfor %}
+        <!-- Grand Total matching Image 1: G.Total (650) -->
+        <th style="min-width: 65px; font-weight: 800;">
+          G.Total<br>
+          <small>({{ grand_total_max }})</small>
+        </th>
+        <th style="width: 55px;">%age</th>
+        <th style="width: 65px;">Position</th>
+        <th style="width: 50px;">Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rec in student_records %}
+      <tr>
+        <td class="fw-bold">{{ rec.sr_no }}</td>
+        <td class="text-left fw-bold">{{ rec.student.full_name|upper }}</td>
+        <td class="text-left">{{ rec.student.father_name|upper }}</td>
+        <!-- Marks -->
+        {% for sm in rec.subject_marks %}
+        <td>
+          {% if sm.score_display == 'A' %}
+            <strong>A</strong>
+          {% elif sm.score_display and sm.score_display != '-' %}
+            {{ sm.score_display }}
+          {% endif %}
+        </td>
+        {% endfor %}
+        <!-- Grand Total -->
+        <td class="fw-bold">
+          {% if rec.has_any_mark %}
+            {{ rec.obtained_total }}
+          {% endif %}
+        </td>
+        <!-- %age -->
+        <td>
+          {% if rec.percentage is not None and rec.has_any_mark %}
+            {{ rec.percentage }}%
+          {% endif %}
+        </td>
+        <!-- Position -->
+        <td class="fw-bold">
+          {% if rec.position_display and rec.position_display != '-' %}
+            {{ rec.position_display }}
+          {% endif %}
+        </td>
+        <!-- Grade -->
+        <td class="fw-bold">
+          {% if rec.grade and rec.grade != '-' %}
+            {{ rec.grade }}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{{ class_subjects|length|add:7 }}" class="py-4">No student records found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Statistics & Signatures Footer -->
+  <div class="row mt-3 text-center" style="font-size: 0.85rem;">
+    <div class="col-12 text-start mb-2 border-top pt-2">
+      <strong>Total Students:</strong> {{ stats.total_enrolled }} &nbsp;|&nbsp;
+      <strong>Appeared:</strong> {{ stats.total_appeared }} &nbsp;|&nbsp;
+      <strong>Passed:</strong> {{ stats.passed_count }} &nbsp;|&nbsp;
+      <strong>Failed:</strong> {{ stats.failed_count }} &nbsp;|&nbsp;
+      <strong>Pass %:</strong> {{ stats.pass_percentage }}% &nbsp;|&nbsp;
+      <strong>Highest Marks:</strong> {{ stats.highest_marks }} / {{ grand_total_max }}
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Class Teacher Signature</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Incharge Examinations</div>
+    </div>
+    <div class="col-4">
+      <div class="sig-line">Principal / Controller</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

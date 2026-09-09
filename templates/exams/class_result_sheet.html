@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Master Class Result Sheet (Format 1){% endblock %}
+
+{% block content %}
+<!-- Top Header & Action Buttons -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-table text-primary me-2"></i> Master Class Result Sheet
+    </h3>
+    <p class="text-muted small mb-0">
+      Format 1: Dynamic multi-subject class result matrix with automated Grand Total, %age, Position, and Grade.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if selected_exam and selected_class %}
+    <a href="{% url 'class_marks_entry_grid' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-warning text-dark fw-bold shadow-sm">
+      <i class="fas fa-edit me-1"></i> Enter / Edit Marks Grid
+    </a>
+    <a href="{% url 'export_class_result_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-outline-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Export to Excel
+    </a>
+    <button type="button" class="btn btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#bulkImportModal">
+      <i class="fas fa-file-upload me-1"></i> Bulk Import Excel
+    </button>
+    <a href="{% url 'print_class_result_sheet' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" target="_blank" class="btn btn-primary fw-bold shadow-sm">
+      <i class="fas fa-print me-1"></i> Print Result Sheet
+    </a>
+    <a href="{% url 'bulk_dmc_print' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" target="_blank" class="btn btn-dark fw-bold shadow-sm">
+      <i class="fas fa-id-card me-1"></i> Bulk Print DMCs
+    </a>
+    <a href="{% url 'roll_number_slips' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}" target="_blank" class="btn btn-outline-dark fw-bold shadow-sm">
+      <i class="fas fa-id-badge me-1"></i> Roll No Slips
+    </a>
+    <a href="{% url 'blank_marks_sheet' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" target="_blank" class="btn btn-outline-primary fw-bold shadow-sm">
+      <i class="fas fa-file-alt me-1"></i> Blank Marks Sheet
+    </a>
+    <a href="{% url 'subject_manage' %}?class_id={{ selected_class.id }}" class="btn btn-outline-secondary fw-bold shadow-sm">
+      <i class="fas fa-sliders-h me-1"></i> Configure Subjects
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card shadow-sm border-0 mb-4 bg-light">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Examination Term</label>
+        <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for ex in exams %}
+          <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+            {{ ex.name }} ({{ ex.session.name }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Class</label>
+        <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for c in classes %}
+          <option value="{{ c.id }}" {% if selected_class.id == c.id %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Section</label>
+        <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Sections</option>
+          {% for sec in sections %}
+          <option value="{{ sec.id }}" {% if selected_section.id == sec.id %}selected{% endif %}>
+            Section {{ sec.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-1 col-sm-6">
+        <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">
+          <i class="fas fa-filter"></i> Load
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if not class_subjects %}
+<div class="alert alert-warning shadow-sm border-0 p-4 text-center">
+  <i class="fas fa-exclamation-triangle fa-2x mb-2 d-block text-warning"></i>
+  <h5 class="fw-bold">No subjects configured for {{ selected_class.name }}!</h5>
+  <p class="mb-3 text-muted">Please configure the subjects and their maximum marks first.</p>
+  <a href="{% url 'subject_manage' %}?class_id={{ selected_class.id }}" class="btn btn-warning text-dark fw-bold">
+    <i class="fas fa-sliders-h me-1"></i> Setup Subjects for {{ selected_class.name }}
+  </a>
+</div>
+{% else %}
+
+<!-- Result Sheet Card matching Image 1 -->
+<div class="card shadow-sm border-0 mb-4">
+  <!-- Title Header matching Image 1 -->
+  <div class="card-header bg-white py-3 border-bottom text-center">
+    <div class="d-flex align-items-center justify-content-center gap-3">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" style="height: 55px; width: 55px; object-fit: contain; border-radius: 50%;">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="height: 55px; width: 55px; object-fit: contain; border-radius: 50%;">
+      {% endif %}
+      <div>
+        <h6 class="fw-bold text-uppercase text-secondary mb-1" style="letter-spacing: 1px;">
+          KOHISAR MODEL SCHOOL & COLLEGE QALAGAY SWAT
+        </h6>
+        <h4 class="fw-bold text-dark mb-0">
+          Result Sheet For Class <span class="text-primary text-decoration-underline">{{ selected_class.name }}</span> {% if selected_section %}(Section {{ selected_section.name }}){% endif %} — <span class="text-primary">{{ selected_exam.name }}</span>
+        </h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0 text-center" style="font-size: 0.88rem;">
+        <thead class="table-dark" style="border-bottom: 2px solid #000;">
+          <tr>
+            <th style="width: 45px;">Sr No</th>
+            <th style="width: 80px;">Adm #</th>
+            <th class="text-start" style="min-width: 140px;">Name</th>
+            <th class="text-start" style="min-width: 140px;">Father's Name</th>
+            <!-- Dynamic Subject Columns matching Image 1: Eng (75), Urdu (75)... -->
+            {% for cs in class_subjects %}
+            <th style="min-width: 65px;" class="bg-primary-subtle text-dark border-dark">
+              <span class="d-block fw-bold">{{ cs.subject.short_name }}</span>
+              <span class="small fw-normal text-muted">({{ cs.total_marks|floatformat:0 }})</span>
+            </th>
+            {% endfor %}
+            <!-- Grand Total matching Image 1: G.Total (650) -->
+            <th style="min-width: 80px;" class="bg-info-subtle text-dark fw-bold border-dark">
+              <span class="d-block">G.Total</span>
+              <span class="small fw-normal text-muted">({{ grand_total_max }})</span>
+            </th>
+            <th style="min-width: 65px;">%age</th>
+            <th style="min-width: 75px;">Position</th>
+            <th style="min-width: 60px;">Grade</th>
+            <th style="min-width: 70px;">Status</th>
+            <th style="width: 60px;" class="no-print">DMC</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in student_records %}
+          <tr {% if rec.status == "Fail" %}class="table-danger-subtle"{% endif %}>
+            <td class="fw-bold text-muted">{{ rec.sr_no }}</td>
+            <td><code>{{ rec.student.admission_no }}</code></td>
+            <td class="text-start fw-bold text-dark">
+              {{ rec.student.full_name }}
+            </td>
+            <td class="text-start text-muted">
+              {{ rec.student.father_name }}
+            </td>
+            <!-- Subject Marks -->
+            {% for sm in rec.subject_marks %}
+            <td class="{% if sm.score_display == 'A' %}text-danger fw-bold bg-danger-subtle{% endif %}">
+              {% if sm.score_display and sm.score_display != '-' %}
+                {{ sm.score_display }}
+              {% endif %}
+            </td>
+            {% endfor %}
+            <!-- Grand Total -->
+            <td class="fw-bold fs-6 text-primary">
+              {% if rec.has_any_mark %}
+                {{ rec.obtained_total }}
+              {% endif %}
+            </td>
+            <!-- %age -->
+            <td class="fw-bold">
+              {% if rec.percentage is not None and rec.has_any_mark %}
+                {{ rec.percentage }}%
+              {% endif %}
+            </td>
+            <!-- Position -->
+            <td>
+              {% if rec.position == 1 %}
+                <span class="badge bg-warning text-dark px-2 py-1 shadow-sm"><i class="fas fa-trophy me-1"></i> 1st</span>
+              {% elif rec.position == 2 %}
+                <span class="badge bg-secondary text-white px-2 py-1 shadow-sm"><i class="fas fa-medal me-1"></i> 2nd</span>
+              {% elif rec.position == 3 %}
+                <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: #cd7f32;"><i class="fas fa-award me-1"></i> 3rd</span>
+              {% elif rec.position_display and rec.position_display != '-' %}
+                <span class="fw-bold text-secondary">{{ rec.position_display }}</span>
+              {% endif %}
+            </td>
+            <!-- Grade -->
+            <td>
+              {% if rec.has_any_mark %}
+                {% if rec.grade == "A+" %}
+                  <span class="badge bg-success fw-bold px-2 py-1">A+</span>
+                {% elif rec.grade == "A" %}
+                  <span class="badge bg-primary fw-bold px-2 py-1">A</span>
+                {% elif rec.grade == "B" %}
+                  <span class="badge bg-info text-dark fw-bold px-2 py-1">B</span>
+                {% elif rec.grade == "C" %}
+                  <span class="badge bg-warning text-dark fw-bold px-2 py-1">C</span>
+                {% elif rec.grade == "D" or rec.grade == "E" %}
+                  <span class="badge bg-secondary fw-bold px-2 py-1">{{ rec.grade }}</span>
+                {% elif rec.grade == "Fail" %}
+                  <span class="badge bg-danger fw-bold px-2 py-1">Fail</span>
+                {% endif %}
+              {% endif %}
+            </td>
+            <!-- Status -->
+            <td>
+              {% if rec.status == "Pass" %}
+                <span class="badge bg-success-subtle text-success border border-success px-2">Pass</span>
+              {% elif rec.status == "Fail" %}
+                <span class="badge bg-danger-subtle text-danger border border-danger px-2">Fail</span>
+              {% else %}
+                <span class="badge bg-light text-muted border px-2">Pending</span>
+              {% endif %}
+            </td>
+            <!-- Actions: Roll No Slip & DMC -->
+            <td class="no-print">
+              <div class="d-flex gap-1 justify-content-center">
+                <a href="{% url 'student_roll_number_slip_exam' rec.student.id selected_exam.id %}" target="_blank" class="btn btn-sm btn-outline-dark p-1" title="Print Student Roll Number Slip">
+                  <i class="fas fa-id-badge"></i>
+                </a>
+                <a href="{% url 'student_dmc' rec.student.id selected_exam.id %}" target="_blank" class="btn btn-sm btn-outline-primary p-1" title="View Student DMC Report Card">
+                  <i class="fas fa-id-card"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ class_subjects|length|add:9 }}" class="text-center py-5 text-muted">
+              <i class="fas fa-graduation-cap fa-3x mb-3 opacity-50 d-block"></i>
+              <h5>No active students found in {{ selected_class.name }}</h5>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Summary Statistics Box -->
+  {% if stats.total_enrolled > 0 %}
+  <div class="card-footer bg-light p-3 border-top">
+    <div class="row g-3 text-center align-items-center">
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Enrolled</div>
+        <div class="fs-5 fw-bold text-dark">{{ stats.total_enrolled }}</div>
+      </div>
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Appeared</div>
+        <div class="fs-5 fw-bold text-primary">{{ stats.total_appeared }}</div>
+      </div>
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Passed</div>
+        <div class="fs-5 fw-bold text-success">{{ stats.passed_count }}</div>
+      </div>
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Failed</div>
+        <div class="fs-5 fw-bold text-danger">{{ stats.failed_count }}</div>
+      </div>
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Pass %</div>
+        <div class="fs-5 fw-bold text-info">{{ stats.pass_percentage }}%</div>
+      </div>
+      <div class="col-md-2 col-4">
+        <div class="small text-muted text-uppercase fw-bold">Highest Marks</div>
+        <div class="fs-5 fw-bold text-warning text-dark">{{ stats.highest_marks }} / {{ grand_total_max }}</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endif %}
+
+<!-- MODAL: Bulk Import Multi-Subject Excel File -->
+<div class="modal fade" id="bulkImportModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_class_result_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+        <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Multi-Subject Excel
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div class="alert alert-info small mb-3">
+            <i class="fas fa-info-circle me-1"></i> Upload the multi-subject Excel spreadsheet for <strong>{{ selected_class.name }}</strong> ({{ selected_exam.name }}). All subject columns will be parsed and student marks saved.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select Completed Excel File (.xlsx)</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+          </div>
+
+          <div class="card bg-light border-0 p-3 mb-2">
+            <h6 class="fw-bold mb-1 small text-dark"><i class="fas fa-download me-1 text-success"></i> Download Blank Template</h6>
+            <p class="small text-muted mb-2">Get the pre-formatted Excel template with student names and subject columns for Google Sheets or offline entry.</p>
+            <a href="{% url 'export_class_template_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-sm btn-outline-success fw-bold">
+              Download {{ selected_class.name }} Template (.xlsx)
+            </a>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success fw-bold px-4">
+            <i class="fas fa-upload me-1"></i> Upload & Import Marks
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

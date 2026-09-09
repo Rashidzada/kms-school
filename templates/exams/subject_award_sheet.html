@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subject Paper Award List (Format 2){% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-clipboard-check text-success me-2"></i> Subject Paper Award List
+    </h3>
+    <p class="text-muted small mb-0">
+      Format 2: Teacher's subject mark sheet. Download Excel for Google Sheets or enter marks directly online.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if selected_exam and selected_class and selected_subject %}
+    <a href="{% url 'export_subject_award_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}&subject_id={{ selected_subject.id }}" class="btn btn-outline-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Download Excel Template
+    </a>
+    <button type="button" class="btn btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadExcelModal">
+      <i class="fas fa-file-upload me-1"></i> Upload / Import Excel
+    </button>
+    <a href="{% url 'print_subject_award_sheet' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}&subject_id={{ selected_subject.id }}" target="_blank" class="btn btn-primary fw-bold shadow-sm">
+      <i class="fas fa-print me-1"></i> Print Award Sheet
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card shadow-sm border-0 mb-4 bg-light">
+  <div class="card-body p-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Examination Term</label>
+        <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for ex in exams %}
+          <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+            {{ ex.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Class</label>
+        <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for c in classes %}
+          <option value="{{ c.id }}" {% if selected_class.id == c.id %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Section</label>
+        <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Sections</option>
+          {% for sec in sections %}
+          <option value="{{ sec.id }}" {% if selected_section.id == sec.id %}selected{% endif %}>
+            Section {{ sec.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-bold mb-1">Subject Paper</label>
+        <select name="subject_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          {% for cs in class_subjects %}
+          <option value="{{ cs.subject.id }}" {% if selected_subject.id == cs.subject.id %}selected{% endif %}>
+            {{ cs.subject.name }} (Max: {{ cs.total_marks|floatformat:0 }})
+          </option>
+          {% empty %}
+          <option value="">No subjects configured</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-1 col-sm-12">
+        <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">
+          <i class="fas fa-filter"></i> Load
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if not class_subjects %}
+<div class="alert alert-warning shadow-sm border-0 p-4 text-center">
+  <i class="fas fa-exclamation-triangle fa-2x mb-2 d-block text-warning"></i>
+  <h5 class="fw-bold">No subjects configured for {{ selected_class.name }}!</h5>
+  <p class="mb-3 text-muted">You must assign subjects to this class before entering marks.</p>
+  <a href="{% url 'subject_manage' %}?class_id={{ selected_class.id }}" class="btn btn-warning text-dark fw-bold">
+    <i class="fas fa-sliders-h me-1"></i> Configure Subjects for {{ selected_class.name }}
+  </a>
+</div>
+{% elif not selected_subject %}
+<div class="alert alert-info shadow-sm border-0 p-3">
+  Please select a subject from the dropdown above to view or enter student marks.
+</div>
+{% else %}
+
+<!-- Table Container Matching Image 2 Format -->
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="save_marks">
+
+  <div class="card shadow-sm border-0 mb-4">
+    <!-- Sheet Title Header Banner -->
+    <div class="card-header bg-white py-3 border-bottom text-center">
+      <div class="d-flex align-items-center justify-content-center gap-3">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" style="height: 55px; width: 55px; object-fit: contain; border-radius: 50%;">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="height: 55px; width: 55px; object-fit: contain; border-radius: 50%;">
+        {% endif %}
+        <div>
+          <h6 class="fw-bold text-uppercase text-secondary mb-1" style="letter-spacing: 1px;">
+            KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT
+          </h6>
+          <h5 class="fw-bold text-dark mb-0">
+            LIST FOR <span class="text-primary text-uppercase">{{ selected_subject.name }}</span> PAPER CLASS <span class="text-primary text-uppercase">{{ selected_class.name }}</span> {% if selected_section %}(SECTION {{ selected_section.name }}){% endif %} — {{ selected_exam.name }}
+          </h5>
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="badge bg-primary px-3 py-1 fs-6">Maximum Marks (T/MARKS): {{ default_total_marks }}</span>
+        <span class="badge bg-secondary px-3 py-1 fs-6">Enrolled Students: {{ total_students }}</span>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle mb-0 text-center" id="awardSheetTable">
+          <thead class="table-light">
+            <tr style="border-bottom: 2px solid #2B6CB0;">
+              <th style="width: 70px;">S#no</th>
+              <th style="width: 130px;">Admission #</th>
+              <th class="text-start">NAME</th>
+              <th class="text-start">F/NAME</th>
+              <th style="width: 120px;">T/ MARKS</th>
+              <th style="width: 160px;" class="bg-warning-subtle">O/MARKS</th>
+              <th style="width: 110px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in student_rows %}
+            <tr id="row-{{ row.student.id }}">
+              <td class="fw-bold text-muted">{{ row.sr_no }}</td>
+              <td><code>{{ row.student.admission_no }}</code></td>
+              <td class="text-start fw-bold text-dark">
+                {{ row.student.full_name }}
+              </td>
+              <td class="text-start text-muted">
+                {{ row.student.father_name }}
+              </td>
+              <td class="fw-bold text-secondary">
+                {{ row.total_marks }}
+              </td>
+              <td class="bg-warning-subtle p-2">
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                         name="obtained_{{ row.student.id }}"
+                         id="obt_{{ row.student.id }}"
+                         value="{% if not row.is_absent %}{{ row.obtained_marks }}{% endif %}"
+                         class="form-control form-control-sm text-center fw-bold score-input"
+                         placeholder="Marks"
+                         data-max="{{ row.total_marks }}"
+                         {% if row.is_absent %}disabled{% endif %}
+                         style="font-size: 1rem;">
+                  <button type="button"
+                          class="btn btn-outline-danger btn-sm absent-toggle {% if row.is_absent %}active bg-danger text-white{% endif %}"
+                          onclick="toggleAbsent('{{ row.student.id }}')"
+                          title="Toggle Absent">
+                    A
+                  </button>
+                  <input type="hidden" name="absent_{{ row.student.id }}" id="absent_input_{{ row.student.id }}" value="{% if row.is_absent %}1{% else %}0{% endif %}">
+                </div>
+              </td>
+              <td>
+                {% if row.is_absent %}
+                  <span class="badge bg-danger">Absent</span>
+                {% elif row.obtained_marks != "" %}
+                  <span class="badge bg-success">Recorded</span>
+                {% else %}
+                  <span class="badge bg-light text-muted border">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fas fa-user-graduate fa-3x mb-3 opacity-50 d-block"></i>
+                <h5>No active students found in {{ selected_class.name }}</h5>
+                <p class="small">Check the student directory or admission records.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if student_rows %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 border-top">
+      <div class="small text-muted">
+        <i class="fas fa-keyboard me-1 text-primary"></i> Tip: Use <kbd>Tab</kbd> or <kbd>Enter</kbd> to quickly jump between students. Click <strong>"A"</strong> to mark absent.
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary fw-bold px-4 py-2 shadow-sm">
+          <i class="fas fa-save me-1"></i> Save All Marks
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</form>
+
+{% endif %}
+
+<!-- MODAL: Upload Excel Marks (Teacher Import) -->
+<div class="modal fade" id="uploadExcelModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_subject_award_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+        <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+        <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="fas fa-file-excel me-2"></i> Import Marks from Excel / Google Sheets
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div class="alert alert-info small mb-3">
+            <i class="fas fa-info-circle me-1"></i> Upload the Excel spreadsheet filled by the teacher for <strong>{{ selected_subject.name }}</strong> in <strong>{{ selected_class.name }}</strong>. Marks will be matched automatically by Admission # or Name.
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select Excel Spreadsheet (.xlsx)</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx, .xls" required>
+            <small class="text-muted">Must contain columns: Admission #, NAME, F/NAME, and O/MARKS.</small>
+          </div>
+
+          <div class="card bg-light border-0 p-3 mb-2">
+            <h6 class="fw-bold mb-1 small text-dark"><i class="fas fa-download me-1 text-success"></i> Need the Excel template first?</h6>
+            <p class="small text-muted mb-2">Download the blank or pre-populated student list template to share with the teacher or upload to Google Sheets.</p>
+            <a href="{% url 'export_subject_award_excel' %}?exam_id={{ selected_exam.id }}&class_id={{ selected_class.id }}&section_id={{ selected_section.id|default:'' }}&subject_id={{ selected_subject.id }}" class="btn btn-sm btn-outline-success fw-bold">
+              Download {{ selected_subject.name }} Template (.xlsx)
+            </a>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success fw-bold px-4">
+            <i class="fas fa-upload me-1"></i> Upload & Import Marks
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleAbsent(studentId) {
+  const obtInput = document.getElementById('obt_' + studentId);
+  const absentInput = document.getElementById('absent_input_' + studentId);
+  const btn = event.currentTarget;
+
+  if (absentInput.value === "1") {
+    // Unmark absent
+    absentInput.value = "0";
+    obtInput.disabled = false;
+    obtInput.placeholder = "Marks";
+    btn.classList.remove('active', 'bg-danger', 'text-white');
+    obtInput.focus();
+  } else {
+    // Mark absent
+    absentInput.value = "1";
+    obtInput.value = "";
+    obtInput.disabled = true;
+    obtInput.placeholder = "ABSENT";
+    btn.classList.add('active', 'bg-danger', 'text-white');
+  }
+}
+</script>
+{% endblock %}

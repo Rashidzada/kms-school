@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blank Marks Collection Sheet — {{ selected_class.name }}{% endblock %}
+
+{% block print_header %}
+<!-- Suppress base.html generic print-header to ensure clean landscape print -->
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sheet-wrapper {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .school-logo-img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+  .sheet-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a365d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .sheet-badge {
+    display: inline-block;
+    background: #1a365d;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    padding: 2px 14px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .blank-sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #1a365d;
+    font-size: 0.82rem;
+    margin-top: 14px;
+  }
+  .blank-sheet-table th {
+    background-color: #2b6cb0;
+    color: #fff;
+    font-weight: 700;
+    border: 1px solid #1a365d;
+    padding: 6px 6px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .blank-sheet-table td {
+    border: 1px solid #a0aec0;
+    padding: 6px 6px;
+    vertical-align: middle;
+    height: 32px; /* Generous height for teachers to handwrite marks */
+  }
+  .blank-mark-cell {
+    background-color: #fff !important;
+    min-width: 55px;
+    text-align: center;
+  }
+  .sig-block {
+    border-top: 1px solid #2d3748;
+    margin-top: 30px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    padding-top: 4px;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  @media print {
+    #sidebar, .topbar, .no-print, .btn, .card-filters, .print-header, header, nav {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 10pt;
+    }
+    #wrapper, #content-wrapper, .main-content {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      display: block !important;
+    }
+    .sheet-wrapper {
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .blank-sheet-table {
+      border: 1.5px solid #000 !important;
+      page-break-inside: auto !important;
+    }
+    .blank-sheet-table th {
+      background-color: #edf2f7 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .blank-sheet-table td {
+      border: 1px solid #000 !important;
+      height: 34px !important; /* Writing space on paper */
+    }
+    .blank-mark-cell {
+      background-color: #fff !important;
+    }
+    tr {
+      page-break-inside: avoid !important;
+      page-break-after: auto !important;
+    }
+    .sig-block {
+      border-top: 1px solid #000 !important;
+      margin-top: 24px !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sheet-wrapper">
+  <!-- Screen Header & Filters Bar (Hidden on Print) -->
+  <div class="card shadow-sm border-0 mb-3 bg-light no-print">
+    <div class="card-body p-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+          <h4 class="fw-bold mb-0 text-dark">
+            <i class="fas fa-edit text-primary me-2"></i> Blank Marks Collection Sheet
+          </h4>
+          <span class="text-muted small">
+            Clean, empty marks table across all subjects. Print or export to Excel to give to teachers to collect marks with ease.
+          </span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <button onclick="window.print()" class="btn btn-primary fw-bold shadow-sm">
+            <i class="fas fa-print me-1"></i> Print Blank Sheet (Landscape)
+          </button>
+          <a href="{% url 'export_blank_marks_excel' %}?class_id={{ selected_class.id }}&exam_id={{ selected_exam.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-success fw-bold shadow-sm">
+            <i class="fas fa-file-excel me-1"></i> Download Blank Excel
+          </a>
+          <a href="{% url 'class_marks_entry_grid' %}?class_id={{ selected_class.id }}&exam_id={{ selected_exam.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-warning text-dark fw-bold shadow-sm">
+            <i class="fas fa-keyboard me-1"></i> Enter Marks Online
+          </a>
+          <a href="{% url 'class_result_sheet' %}?class_id={{ selected_class.id }}&exam_id={{ selected_exam.id }}&section_id={{ selected_section.id|default:'' }}" class="btn btn-outline-dark fw-bold shadow-sm">
+            <i class="fas fa-table me-1"></i> View Result Sheet
+          </a>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4 col-sm-6">
+          <label class="form-label small fw-bold mb-1">Class / Grade</label>
+          <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for c in classes %}
+            <option value="{{ c.id }}" {% if selected_class.id == c.id %}selected{% endif %}>
+              {{ c.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+          <label class="form-label small fw-bold mb-1">Examination Term</label>
+          <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for ex in exams %}
+            <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+              {{ ex.name }} ({{ ex.session.name }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+          <label class="form-label small fw-bold mb-1">Section</label>
+          <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">All Sections</option>
+            {% for sec in sections %}
+            <option value="{{ sec.id }}" {% if selected_section.id == sec.id %}selected{% endif %}>
+              Section {{ sec.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-1 col-sm-6">
+          <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">
+            <i class="fas fa-sync-alt"></i> Load
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Printable Blank Sheet Header -->
+  <div class="row align-items-center pb-2 mb-2 border-bottom border-dark">
+    <div class="col-2 text-center">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo-img">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo-img">
+      {% endif %}
+    </div>
+    <div class="col-8 text-center">
+      <h3 class="sheet-title mb-0">KOHISAR MODEL SCHOOL & COLLEGE</h3>
+      <div class="small text-muted" style="font-size: 0.8rem;">
+        {{ school_setting.address|default:"Qalagay, Tehsil Barikot, District Swat, Khyber Pakhtunkhwa" }}
+      </div>
+      <div class="sheet-badge mt-1">STUDENT MARKS COLLECTION & AWARD SHEET</div>
+      <div class="fw-bold text-dark mt-1" style="font-size: 0.92rem;">
+        CLASS: <u>{{ selected_class.name|upper }}</u>
+        {% if selected_section %}— SECTION: <u>{{ selected_section.name|upper }}</u>{% endif %}
+        | EXAM: <u>{{ selected_exam.name|upper }}</u>
+        | SESSION: <u>{{ selected_exam.session.name }}</u>
+      </div>
+    </div>
+    <div class="col-2 text-end text-muted small pe-3">
+      <div><strong>Students:</strong> {{ total_students }}</div>
+      <div><strong>Subjects:</strong> {{ class_subjects|length }}</div>
+      <div><strong>Grand Max:</strong> {{ grand_total_max }}</div>
+    </div>
+  </div>
+
+  <!-- Blank Multi-Subject Marks Table -->
+  <table class="blank-sheet-table">
+    <thead>
+      <tr>
+        <th style="width: 35px;">S#</th>
+        <th style="width: 85px;">Roll / Adm #</th>
+        <th class="text-start" style="width: 170px;">Student Name</th>
+        <th class="text-start" style="width: 150px;">Father's Name</th>
+        {% for cs in class_subjects %}
+        <th style="min-width: 60px;">
+          {{ cs.subject.short_name }}
+          <div class="small text-white-50" style="font-size: 0.72rem;">({{ cs.total_marks|floatformat:0 }})</div>
+        </th>
+        {% endfor %}
+        <th style="width: 75px;">
+          Obt Total
+          <div class="small text-white-50" style="font-size: 0.72rem;">({{ grand_total_max }})</div>
+        </th>
+        <th style="width: 80px;">Teacher Sign</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td class="text-center fw-bold text-secondary">{{ forloop.counter }}</td>
+        <td class="text-center font-monospace fw-bold">{{ s.admission_no }}</td>
+        <td class="text-start fw-bold text-dark text-nowrap">{{ s.full_name|upper }}</td>
+        <td class="text-start text-dark text-nowrap">{{ s.father_name|upper }}</td>
+        {% for cs in class_subjects %}
+        <!-- Completely blank cell (no dashes, empty for handwriting) -->
+        <td class="blank-mark-cell"></td>
+        {% endfor %}
+        <td class="blank-mark-cell"></td>
+        <td class="blank-mark-cell"></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{{ class_subjects|length|add:6 }}" class="text-center py-5 text-muted">
+          <i class="fas fa-graduation-cap fa-3x mb-2 opacity-50 d-block"></i>
+          <h5>No active students found in {{ selected_class.name }}</h5>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Signature Blocks -->
+  <div class="row pt-4 mt-3">
+    <div class="col-3">
+      <div class="sig-block">Subject / Class Teacher</div>
+    </div>
+    <div class="col-3">
+      <div class="sig-block">Tabulator / Checker</div>
+    </div>
+    <div class="col-3">
+      <div class="sig-block">Incharge Examinations</div>
+    </div>
+    <div class="col-3">
+      <div class="sig-block">Principal / Controller Seal</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

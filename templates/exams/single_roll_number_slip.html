@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Roll Number Slip — {{ student.full_name }} ({{ selected_exam.name }}){% endblock %}
+
+{% block print_header %}
+<!-- Suppress base.html generic print-header to prevent blank first page -->
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     SCREEN DISPLAY STYLING
+     ========================================================================== */
+  .single-slip-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .slip-container {
+    background: #fff;
+    border: 2px solid #1a365d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 25px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .slip-header {
+    border-bottom: 2px solid #1a365d;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .school-logo-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+  .slip-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1a365d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1px;
+    line-height: 1.15;
+  }
+  .admit-badge {
+    display: inline-block;
+    background: #1a365d;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    padding: 2px 14px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .candidate-table td {
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+  .photo-box {
+    width: 82px;
+    height: 98px;
+    border: 2px dashed #718096;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.70rem;
+    color: #718096;
+    background-color: #f7fafc;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .subject-schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #1a365d;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+  }
+  .subject-schedule-table th, .subject-schedule-table td {
+    border: 1px solid #cbd5e0;
+    padding: 3px 6px;
+    text-align: center;
+  }
+  .subject-schedule-table th {
+    background-color: #2b6cb0;
+    color: #fff;
+    font-weight: 700;
+  }
+  .instructions-box {
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    border-left: 4px solid #e53e3e;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    margin-bottom: 8px;
+    line-height: 1.25;
+  }
+  .instructions-box ol {
+    margin-bottom: 0;
+    padding-left: 16px;
+  }
+  .instructions-box li {
+    margin-bottom: 1px;
+  }
+  .sig-block {
+    border-top: 1px solid #2d3748;
+    margin-top: 18px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: center;
+    padding-top: 3px;
+  }
+
+  /* ==========================================================================
+     STRICT EXACT 1-PAGE PRINT STYLING
+     ========================================================================== */
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 6mm 10mm;
+  }
+
+  @media print {
+    /* Hide all non-printable wrappers and generic elements */
+    #sidebar, .topbar, .no-print, .btn, .card-filters, .print-header, header, nav {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      height: 100% !important;
+      font-size: 11pt;
+    }
+    #wrapper, #content-wrapper, .main-content {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      display: block !important;
+    }
+    .single-slip-wrapper {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slip-container {
+      border: 2px solid #000 !important;
+      box-shadow: none !important;
+      padding: 6mm 8mm !important;
+      margin: 0 !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-before: avoid !important;
+      break-before: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    .slip-header {
+      border-bottom: 2px solid #000 !important;
+      padding-bottom: 6px !important;
+      margin-bottom: 8px !important;
+    }
+    .slip-title {
+      color: #000 !important;
+      font-size: 1.2rem !important;
+    }
+    .admit-badge {
+      background: #000 !important;
+      color: #fff !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .badge {
+      border: 1px solid #000 !important;
+      color: #000 !important;
+      background: #fff !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .subject-schedule-table th {
+      background-color: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .subject-schedule-table td {
+      border: 1px solid #333 !important;
+      padding: 2.5px 5px !important;
+    }
+    .instructions-box {
+      border: 1px solid #000 !important;
+      border-left: 3px solid #000 !important;
+      background: #fff !important;
+      padding: 4px 8px !important;
+      font-size: 7pt !important;
+      line-height: 1.2 !important;
+    }
+    .sig-block {
+      border-top: 1px solid #000 !important;
+      margin-top: 14px !important;
+      font-size: 8pt !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="single-slip-wrapper">
+  <!-- Top Action Bar (Screen Only) -->
+  <div class="card shadow-sm border-0 mb-3 bg-light no-print">
+    <div class="card-body p-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h4 class="fw-bold mb-0 text-dark">
+            <i class="fas fa-id-badge text-primary me-2"></i> Student Roll Number Slip
+          </h4>
+          <span class="text-muted small">
+            Candidate: <strong>{{ student.full_name }}</strong> (Adm # {{ student.admission_no }}) — Class: <strong>{{ student.current_class.name }}</strong>
+          </span>
+        </div>
+
+        <!-- Exam Switcher Form -->
+        <form method="get" class="d-flex align-items-center gap-2">
+          <label class="small fw-bold text-nowrap mb-0">Exam Term:</label>
+          <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 220px;">
+            {% for ex in exams %}
+            <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+              {{ ex.name }} ({{ ex.session.name }})
+            </option>
+            {% endfor %}
+          </select>
+        </form>
+
+        <div class="d-flex gap-2">
+          <button onclick="window.print()" class="btn btn-primary fw-bold shadow-sm">
+            <i class="fas fa-print me-1"></i> Print Admit Card (1 Page)
+          </button>
+          {% if student.current_class %}
+          <a href="{% url 'roll_number_slips' %}?exam_id={{ selected_exam.id }}&class_id={{ student.current_class.id }}" class="btn btn-outline-dark fw-bold shadow-sm">
+            <i class="fas fa-users me-1"></i> Class Slips
+          </a>
+          {% endif %}
+          <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="fas fa-user me-1"></i> Profile
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Candidate Roll Number Slip Card (Fits strictly onto 1 page) -->
+  <div class="slip-container">
+    <!-- Slip Header -->
+    <div class="row align-items-center slip-header">
+      <div class="col-2 text-center">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo-img">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo-img">
+        {% endif %}
+      </div>
+      <div class="col-10 text-center">
+        <h4 class="slip-title">KOHISAR MODEL SCHOOL & COLLEGE</h4>
+        <div class="small text-muted" style="font-size: 0.78rem; line-height: 1.2;">
+          {{ school_setting.address|default:"Qalagay, Tehsil Barikot, District Swat, Khyber Pakhtunkhwa" }}
+        </div>
+        <div class="admit-badge mt-1">EXAMINATION ROLL NUMBER SLIP / ADMIT CARD</div>
+        <div class="fw-bold text-dark mt-1" style="font-size: 0.88rem;">
+          {{ selected_exam.name|upper }} — SESSION {{ selected_exam.session.name }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Candidate Information & Photo Grid -->
+    <div class="row align-items-start mb-2">
+      <div class="col-9">
+        <table class="w-100 candidate-table">
+          <tr>
+            <td style="width: 120px;" class="fw-bold text-secondary">ROLL NUMBER:</td>
+            <td>
+              <span class="badge bg-dark fs-6 px-3 py-1 fw-bold font-monospace">{{ slip.roll_no }}</span>
+            </td>
+            <td style="width: 115px;" class="fw-bold text-secondary">ADMISSION #:</td>
+            <td><code>{{ slip.student.admission_no }}</code></td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-secondary">STUDENT NAME:</td>
+            <td class="fw-bold text-primary fs-6">{{ slip.student.full_name|upper }}</td>
+            <td class="fw-bold text-secondary">CLASS / GRADE:</td>
+            <td class="fw-bold text-dark">{{ slip.class_level.name }}</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-secondary">FATHER'S NAME:</td>
+            <td class="fw-bold text-dark">{{ slip.student.father_name|upper }}</td>
+            <td class="fw-bold text-secondary">SECTION:</td>
+            <td>{{ slip.section.name|default:"A" }}</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-secondary">EXAM VENUE:</td>
+            <td colspan="3" class="small text-muted">
+              Kohisar Model School & College Examination Hall, Main Campus Qalagay
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!-- Photo Box -->
+      <div class="col-3 text-center">
+        <div class="photo-box">
+          {% if slip.student.profile_picture %}
+            <img src="{{ slip.student.profile_picture.url }}" alt="{{ slip.student.full_name }}">
+          {% else %}
+            <div class="p-1">
+              <i class="fas fa-camera fa-lg mb-1 d-block opacity-50"></i>
+              <span>Affix Passport Photo</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects / Papers Table -->
+    {% if slip.subjects %}
+    <table class="subject-schedule-table">
+      <thead>
+        <tr>
+          <th style="width: 35px;">S#</th>
+          <th class="text-start">Paper / Subject</th>
+          <th style="width: 80px;">Max Marks</th>
+          <th style="width: 140px;">Exam Date</th>
+          <th style="width: 140px;">Invigilator Sign</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cs in slip.subjects %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="text-start fw-bold">{{ cs.subject.name }} ({{ cs.subject.short_name }})</td>
+          <td>{{ cs.total_marks|floatformat:0 }}</td>
+          <td class="text-muted">As per Date Sheet</td>
+          <td></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Mandatory Exam Instructions (Compact to guarantee 1 page) -->
+    <div class="instructions-box">
+      <strong class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> MANDATORY CANDIDATE RULES & INSTRUCTIONS:</strong>
+      <ol>
+        <li><strong>Bring Own Stationery:</strong> Candidates must bring their own blue/black pen, pencils, sharpener, eraser, and mathematical instruments. <em>Borrowing or sharing any materials inside the exam hall is strictly forbidden.</em></li>
+        <li><strong>Cheating & Electronic Devices Prohibited:</strong> Strict zero-tolerance policy. Mobile phones, smartwatches, digital calculators, unauthorized notes, books, or any chits/written materials are strictly banned. Violations lead to immediate cancellation and expulsion.</li>
+        <li><strong>Punctuality:</strong> Candidates must be seated 15 minutes before the exam begins. No entry 30 minutes after commencement.</li>
+        <li><strong>Hall Discipline:</strong> No candidate may leave the hall before half time. Maintain absolute silence and discipline.</li>
+        <li><strong>Answer Book Details:</strong> Clearly write your Roll Number, Student Name, Father's Name, Class, and Subject on the answer booklet.</li>
+      </ol>
+    </div>
+
+    <!-- Signatures Footer -->
+    <div class="row pt-1">
+      <div class="col-4">
+        <div class="sig-block">Candidate's Signature</div>
+      </div>
+      <div class="col-4">
+        <div class="sig-block">Incharge Examinations</div>
+      </div>
+      <div class="col-4">
+        <div class="sig-block">Principal / Controller Seal</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

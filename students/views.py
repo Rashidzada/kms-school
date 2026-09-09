@@ -847,129 +847,132 @@ def import_students_excel(request):
                 continue
         return None
 
-    with transaction.atomic():
-        for r in records:
-            row_num = r.get("_row_number", "?")
-            full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
-            father_name = str(r.get("father_name__", "") or r.get("father_name", "")).strip()
+    try:
+        with transaction.atomic():
+            for r in records:
+                row_num = r.get("_row_number", "?")
+                full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
+                father_name = str(r.get("father_name__", "") or r.get("father_name", "")).strip()
 
-            if not full_name:
-                row_errors.append(f"Row {row_num}: Missing Full Name.")
-                continue
+                if not full_name:
+                    row_errors.append(f"Row {row_num}: Missing Full Name.")
+                    continue
 
-            # Class matching or auto-creation
-            class_raw = str(r.get("class_name__", "") or r.get("class", "") or r.get("class_name", "")).strip()
-            class_obj = None
-            if class_raw:
-                class_obj = ClassLevel.objects.filter(name__iexact=class_raw).first()
-                if not class_obj:
-                    class_obj = ClassLevel.objects.create(name=class_raw, level="Primary", monthly_fee=Decimal("1500.00"))
+                # Class matching or auto-creation
+                class_raw = str(r.get("class_name__", "") or r.get("class", "") or r.get("class_name", "")).strip()
+                class_obj = None
+                if class_raw:
+                    class_obj = ClassLevel.objects.filter(name__iexact=class_raw).first()
+                    if not class_obj:
+                        class_obj = ClassLevel.objects.create(name=class_raw, level="Primary", monthly_fee=Decimal("1500.00"))
 
-            # Section matching or default
-            section_raw = str(r.get("section__a_b_c_", "") or r.get("section", "A")).strip().upper() or "A"
-            section_obj = None
-            if class_obj:
-                section_obj = Section.objects.filter(class_level=class_obj, name__iexact=section_raw).first()
-                if not section_obj:
-                    section_obj = Section.objects.create(class_level=class_obj, name=section_raw)
-
-            # Gender
-            gender_raw = str(r.get("gender__male_female___", "") or r.get("gender", "Male")).strip().capitalize()
-            gender = gender_raw if gender_raw in ["Male", "Female"] else "Male"
-
-            # Contact & Address
-            contact = str(r.get("contact_number", "") or "").strip()
-            residence = str(r.get("residence_address", "") or r.get("residence", "")).strip()
-
-            # Family matching or creation
-            family = None
-            if father_name:
-                family = FamilyHousehold.objects.filter(father_guardian_name__iexact=father_name).first()
-                if not family and contact:
-                    family = FamilyHousehold.objects.filter(contact_number=contact).first()
-                if not family:
-                    family = FamilyHousehold.objects.create(
-                        father_guardian_name=father_name,
-                        contact_number=contact,
-                        address=residence,
-                    )
-
-            # Dates
-            dob = parse_date(r.get("date_of_birth__yyyy_mm_dd_", None) or r.get("date_of_birth", None))
-            adm_date = parse_date(r.get("admission_date__yyyy_mm_dd_", None) or r.get("admission_date", None)) or timezone.now().date()
-
-            # Status
-            status_raw = str(r.get("status__active_withdrawn_", "") or r.get("status", "Active")).strip().capitalize()
-            status = "Withdrawn" if "withdrawn" in status_raw.lower() else "Active"
-
-            # Check for existing student by admission number or name+father+class (Prevent Duplicates)
-            adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_number", "")).strip()
-            student = None
-            if adm_no:
-                student = Student.objects.filter(admission_no__iexact=adm_no).first()
-            if not student and full_name and father_name and class_obj:
-                student = Student.objects.filter(
-                    full_name__iexact=full_name,
-                    father_name__iexact=father_name,
-                    current_class=class_obj,
-                ).first()
-
-            if student:
-                # Update existing student - DO NOT DUPLICATE
-                student.full_name = full_name
-                student.father_name = father_name
-                student.gender = gender
-                if dob:
-                    student.dob = dob
+                # Section matching or default
+                section_raw = str(r.get("section__a_b_c_", "") or r.get("section", "A")).strip().upper() or "A"
+                section_obj = None
                 if class_obj:
-                    student.current_class = class_obj
-                if section_obj:
-                    student.current_section = section_obj
-                if family:
-                    student.family = family
-                if contact:
-                    student.contact_number = contact
-                if residence:
-                    student.residence = residence
-                student.status = status
-                student.save()
-                updated_count += 1
-            else:
-                # Create new student
-                student = Student(
-                    full_name=full_name,
-                    father_name=father_name,
-                    gender=gender,
-                    dob=dob or date(2015, 1, 1),
-                    current_class=class_obj,
-                    current_section=section_obj,
-                    family=family,
-                    contact_number=contact,
-                    residence=residence,
-                    status=status,
-                    admission_date=adm_date,
-                )
-                if adm_no and not Student.objects.filter(admission_no=adm_no).exists():
-                    student.admission_no = adm_no
-                student.save()
-                created_count += 1
+                    section_obj = Section.objects.filter(class_level=class_obj, name__iexact=section_raw).first()
+                    if not section_obj:
+                        section_obj = Section.objects.create(class_level=class_obj, name=section_raw)
 
-            # Initialize 12-month Fee Ledger if active session exists
-            if active_session and class_obj:
-                ledger, _ = StudentFeeLedger.objects.get_or_create(
-                    student=student,
-                    academic_session=active_session,
-                )
-                initialize_ledger_months(ledger, student, class_obj.monthly_fee)
+                # Gender
+                gender_raw = str(r.get("gender__male_female___", "") or r.get("gender", "Male")).strip().capitalize()
+                gender = gender_raw if gender_raw in ["Male", "Female"] else "Male"
 
-    total_processed = created_count + updated_count
-    if total_processed > 0:
-        messages.success(
-            request,
-            f"Excel Import Completed! Created {created_count} new student(s), updated {updated_count} existing record(s) with no duplicates."
-        )
-    if row_errors:
-        messages.warning(request, f"Some rows had warnings: {'; '.join(row_errors[:5])}")
+                # Contact & Address
+                contact = str(r.get("contact_number", "") or "").strip()
+                residence = str(r.get("residence_address", "") or r.get("residence", "")).strip()
+
+                # Family matching or creation
+                family = None
+                if father_name:
+                    family = FamilyHousehold.objects.filter(father_guardian_name__iexact=father_name).first()
+                    if not family and contact:
+                        family = FamilyHousehold.objects.filter(contact_number=contact).first()
+                    if not family:
+                        family = FamilyHousehold.objects.create(
+                            father_guardian_name=father_name,
+                            contact_number=contact,
+                            address=residence,
+                        )
+
+                # Dates
+                dob = parse_date(r.get("date_of_birth__yyyy_mm_dd_", None) or r.get("date_of_birth", None))
+                adm_date = parse_date(r.get("admission_date__yyyy_mm_dd_", None) or r.get("admission_date", None)) or timezone.now().date()
+
+                # Status
+                status_raw = str(r.get("status__active_withdrawn_", "") or r.get("status", "Active")).strip().capitalize()
+                status = "Withdrawn" if "withdrawn" in status_raw.lower() else "Active"
+
+                # Check for existing student by admission number or name+father+class (Prevent Duplicates)
+                adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_number", "")).strip()
+                student = None
+                if adm_no:
+                    student = Student.objects.filter(admission_no__iexact=adm_no).first()
+                if not student and full_name and father_name and class_obj:
+                    student = Student.objects.filter(
+                        full_name__iexact=full_name,
+                        father_name__iexact=father_name,
+                        current_class=class_obj,
+                    ).first()
+
+                if student:
+                    # Update existing student - DO NOT DUPLICATE
+                    student.full_name = full_name
+                    student.father_name = father_name
+                    student.gender = gender
+                    if dob:
+                        student.dob = dob
+                    if class_obj:
+                        student.current_class = class_obj
+                    if section_obj:
+                        student.current_section = section_obj
+                    if family:
+                        student.family = family
+                    if contact:
+                        student.contact_number = contact
+                    if residence:
+                        student.residence = residence
+                    student.status = status
+                    student.save()
+                    updated_count += 1
+                else:
+                    # Create new student
+                    student = Student(
+                        full_name=full_name,
+                        father_name=father_name,
+                        gender=gender,
+                        dob=dob or date(2015, 1, 1),
+                        current_class=class_obj,
+                        current_section=section_obj,
+                        family=family,
+                        contact_number=contact,
+                        residence=residence,
+                        status=status,
+                        admission_date=adm_date,
+                    )
+                    if adm_no and not Student.objects.filter(admission_no=adm_no).exists():
+                        student.admission_no = adm_no
+                    student.save()
+                    created_count += 1
+
+                # Initialize 12-month Fee Ledger if active session exists
+                if active_session and class_obj:
+                    ledger, _ = StudentFeeLedger.objects.get_or_create(
+                        student=student,
+                        academic_session=active_session,
+                    )
+                    initialize_ledger_months(ledger, student, class_obj.monthly_fee)
+
+        total_processed = created_count + updated_count
+        if total_processed > 0:
+            messages.success(
+                request,
+                f"Excel Import Completed! Created {created_count} new student(s), updated {updated_count} existing record(s) with no duplicates."
+            )
+        if row_errors:
+            messages.warning(request, f"Some rows had warnings: {'; '.join(row_errors[:5])}")
+    except Exception as e:
+        messages.error(request, f"Excel Import Failed: {str(e)}")
 
     return redirect("student_list")
 

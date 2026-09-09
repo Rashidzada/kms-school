@@ -308,48 +308,51 @@ def import_classes_excel(request):
         "higher secondary": "Higher Secondary",
     }
 
-    with transaction.atomic():
-        for r in records:
-            row_num = r.get("_row_number", "?")
-            name = str(r.get("class_name__", "") or r.get("class_name", "") or r.get("name", "")).strip()
+    try:
+        with transaction.atomic():
+            for r in records:
+                row_num = r.get("_row_number", "?")
+                name = str(r.get("class_name__", "") or r.get("class_name", "") or r.get("name", "")).strip()
 
-            if not name:
-                row_errors.append(f"Row {row_num}: Missing Class Name.")
-                continue
+                if not name:
+                    row_errors.append(f"Row {row_num}: Missing Class Name.")
+                    continue
 
-            raw_level = str(r.get("level__prep_kg_primary_middle_high_higher_secondary___", "") or r.get("level", "Primary")).strip().lower()
-            level = valid_levels.get(raw_level, "Primary")
+                raw_level = str(r.get("level__prep_kg_primary_middle_high_higher_secondary___", "") or r.get("level", "Primary")).strip().lower()
+                level = valid_levels.get(raw_level, "Primary")
 
-            fee_raw = r.get("monthly_fee__pkr___", None) or r.get("monthly_fee", 0.0)
-            try:
-                monthly_fee = Decimal(str(fee_raw).strip() or "0.00")
-            except Exception:
-                monthly_fee = Decimal("0.00")
+                fee_raw = r.get("monthly_fee__pkr___", None) or r.get("monthly_fee", 0.0)
+                try:
+                    monthly_fee = Decimal(str(fee_raw).strip() or "0.00")
+                except Exception:
+                    monthly_fee = Decimal("0.00")
 
-            class_obj, created = ClassLevel.objects.get_or_create(
-                name=name,
-                defaults={"level": level, "monthly_fee": monthly_fee},
-            )
-            if not created:
-                class_obj.level = level
-                class_obj.monthly_fee = monthly_fee
-                class_obj.save()
+                class_obj, created = ClassLevel.objects.get_or_create(
+                    name=name,
+                    defaults={"level": level, "monthly_fee": monthly_fee},
+                )
+                if not created:
+                    class_obj.level = level
+                    class_obj.monthly_fee = monthly_fee
+                    class_obj.save()
 
-            # Create sections if provided
-            sec_raw = str(r.get("sections__comma_separated__e_g__a__b__c_", "") or r.get("sections", "")).strip()
-            if sec_raw:
-                section_names = [s.strip().upper() for s in sec_raw.replace(";", ",").split(",") if s.strip()]
-                for sec_name in section_names:
-                    Section.objects.get_or_create(class_level=class_obj, name=sec_name)
-            else:
-                Section.objects.get_or_create(class_level=class_obj, name="A")
+                # Create sections if provided
+                sec_raw = str(r.get("sections__comma_separated__e_g__a__b__c_", "") or r.get("sections", "")).strip()
+                if sec_raw:
+                    section_names = [s.strip().upper() for s in sec_raw.replace(";", ",").split(",") if s.strip()]
+                    for sec_name in section_names:
+                        Section.objects.get_or_create(class_level=class_obj, name=sec_name)
+                else:
+                    Section.objects.get_or_create(class_level=class_obj, name="A")
 
-            success_count += 1
+                success_count += 1
 
-    if success_count > 0:
-        messages.success(request, f"Excel Import Completed! Successfully imported {success_count} classes and their sections.")
-    if row_errors:
-        messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+        if success_count > 0:
+            messages.success(request, f"Excel Import Completed! Successfully imported {success_count} classes and their sections.")
+        if row_errors:
+            messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+    except Exception as e:
+        messages.error(request, f"Excel Import Failed: {str(e)}")
 
     return redirect("class_list")
 

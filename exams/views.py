@@ -1,6 +1,7 @@
 import io
 import os
 import re
+from datetime import date, datetime
 from decimal import Decimal
 from django.conf import settings
 from django.contrib import messages
@@ -569,13 +570,15 @@ def import_subject_award_excel(request):
     cs = ClassSubject.objects.filter(class_level=class_level, subject=subject).first()
     max_marks = cs.total_marks if cs else Decimal("100.0")
 
+    target_redirect = f"/exams/award-sheet/?exam_id={exam.id}&class_id={class_level.id}&subject_id={subject.id}"
+
     try:
         wb = load_workbook(uploaded_file, data_only=True)
         ws = wb.active
         rows = list(ws.iter_rows(values_only=True))
     except Exception as e:
         messages.error(request, f"Error reading Excel file: {str(e)}")
-        return redirect(f"subject_award_sheet?exam_id={exam.id}&class_id={class_level.id}&subject_id={subject.id}")
+        return redirect(target_redirect)
 
     # Find header row (contains "name" or "o/marks" or "admission")
     header_idx = -1
@@ -587,7 +590,7 @@ def import_subject_award_excel(request):
 
     if header_idx == -1:
         messages.error(request, "Could not find valid column headers in the uploaded Excel file.")
-        return redirect(f"subject_award_sheet?exam_id={exam.id}&class_id={class_level.id}&subject_id={subject.id}")
+        return redirect(target_redirect)
 
     raw_headers = [str(c).strip().lower() if c is not None else "" for c in rows[header_idx]]
 
@@ -620,81 +623,73 @@ def import_subject_award_excel(request):
     student_by_name = {s.full_name.strip().lower(): s for s in class_students}
 
     updated_count = 0
+    newly_added = 0
     skipped_count = 0
     errors = []
 
-    with transaction.atomic():
-        for r_idx, row_values in enumerate(rows[header_idx + 1:], start=header_idx + 2):
-            if not any(row_values):
-                continue
+    try:
+        with transaction.atomic():
+            for r_idx, row_values in enumerate(rows[header_idx + 1:], start=header_idx + 2):
+                if not any(row_values):
+                    continue
 
-            target_student = None
-            adm_val = str(row_values[adm_col]).strip() if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] else ""
-            name_val = str(row_values[name_col]).strip() if name_col != -1 and name_col < len(row_values) and row_values[name_col] else ""
-            fname_val = str(row_values[fname_col]).strip() if fname_col != -1 and fname_col < len(row_values) and row_values[fname_col] else ""
+                target_student = None
+                adm_val = str(row_values[adm_col]).strip() if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] is not None else ""
+                name_val = str(row_values[name_col]).strip() if name_col != -1 and name_col < len(row_values) and row_values[name_col] is not None else ""
+                fname_val = str(row_values[fname_col]).strip() if fname_col != -1 and fname_col < len(row_values) and row_values[fname_col] is not None else ""
 
-            if adm_val:
-                target_student = student_by_adm.get(adm_val.lower())
+                if adm_val:
+                    target_student = student_by_adm.get(adm_val.lower())
+                    if not target_student:
+                        # Check globally across school
+                        target_student = Student.objects.filter(admission_no__iexact=adm_val).first()
+                        if target_student and target_student.current_class != class_level:
+                            target_student.current_class = class_level
+                            target_student.save(update_fields=["current_class"])
+
+                if not target_student and name_val:
+                    target_student = student_by_name.get(name_val.lower())
+                    if not target_student:
+                        # Check globally by name
+                        target_student = Student.objects.filter(full_name__iexact=name_val).first()
+                        if target_student and target_student.current_class != class_level:
+                            target_student.current_class = class_level
+                            target_student.save(update_fields=["current_class"])
+
+                # If student is brand new, auto-add to this class and to the result
+                if not target_student and name_val:
+                    default_section = Section.objects.filter(class_level=class_level).first()
+                    if not default_section:
+                        default_section = Section.objects.create(class_level=class_level, name="A")
+                    target_student = Student(
+                        full_name=name_val,
+                        father_name=fname_val or "Guardian",
+                        current_class=class_level,
+                        current_section=default_section,
+                        status="Active",
+                        dob=date(2015, 1, 1),
+                        gender="Male",
+                        residence="",
+                        contact_number="",
+                    )
+                    if adm_val and not Student.objects.filter(admission_no=adm_val).exists():
+                        target_student.admission_no = adm_val
+                    target_student.save()
+                    student_by_adm[target_student.admission_no.lower()] = target_student
+                    student_by_name[target_student.full_name.lower()] = target_student
+                    newly_added += 1
+
                 if not target_student:
-                    # Check globally across school
-                    target_student = Student.objects.filter(admission_no__iexact=adm_val).first()
-                    if target_student and target_student.current_class != class_level:
-                        target_student.current_class = class_level
-                        target_student.save(update_fields=["current_class"])
+                    skipped_count += 1
+                    continue
 
-            if not target_student and name_val:
-                target_student = student_by_name.get(name_val.lower())
-                if not target_student:
-                    # Check globally by name
-                    target_student = Student.objects.filter(full_name__iexact=name_val).first()
-                    if target_student and target_student.current_class != class_level:
-                        target_student.current_class = class_level
-                        target_student.save(update_fields=["current_class"])
+                # Parse obtained marks
+                obt_raw = row_values[obt_col] if obt_col != -1 and obt_col < len(row_values) else None
+                if obt_raw is None or str(obt_raw).strip() == "":
+                    continue
 
-            # If student is brand new, auto-add to this class and to the result
-            if not target_student and name_val:
-                default_section = Section.objects.filter(class_level=class_level).first()
-                target_student = Student(
-                    full_name=name_val,
-                    father_name=fname_val or "Guardian",
-                    current_class=class_level,
-                    current_section=default_section,
-                    status="Active",
-                )
-                if adm_val and not Student.objects.filter(admission_no=adm_val).exists():
-                    target_student.admission_no = adm_val
-                target_student.save()
-                student_by_adm[target_student.admission_no.lower()] = target_student
-                student_by_name[target_student.full_name.lower()] = target_student
-
-            if not target_student:
-                skipped_count += 1
-                continue
-
-            # Parse obtained marks
-            obt_raw = row_values[obt_col] if obt_col != -1 and obt_col < len(row_values) else None
-            if obt_raw is None or str(obt_raw).strip() == "":
-                continue
-
-            obt_str = str(obt_raw).strip().upper()
-            if obt_str in ["A", "ABS", "ABSENT"]:
-                ExamMark.objects.update_or_create(
-                    exam=exam,
-                    student=target_student,
-                    subject=subject,
-                    defaults={
-                        "class_level": class_level,
-                        "total_marks": max_marks,
-                        "obtained_marks": Decimal("0.0"),
-                        "is_absent": True,
-                    },
-                )
-                updated_count += 1
-            else:
-                try:
-                    num_val = Decimal(re.sub(r"[^\d.]", "", obt_str))
-                    num_val = min(num_val, max_marks)
-                    num_val = max(num_val, Decimal("0.0"))
+                obt_str = str(obt_raw).strip().upper()
+                if obt_str in ["A", "ABS", "ABSENT"]:
                     ExamMark.objects.update_or_create(
                         exam=exam,
                         student=target_student,
@@ -702,22 +697,42 @@ def import_subject_award_excel(request):
                         defaults={
                             "class_level": class_level,
                             "total_marks": max_marks,
-                            "obtained_marks": num_val,
-                            "is_absent": False,
+                            "obtained_marks": Decimal("0.0"),
+                            "is_absent": True,
                         },
                     )
                     updated_count += 1
-                except Exception as e:
-                    errors.append(f"Row {r_idx}: Invalid marks '{obt_raw}' for {target_student.full_name}")
+                else:
+                    try:
+                        num_val = Decimal(re.sub(r"[^\d.]", "", obt_str))
+                        num_val = min(num_val, max_marks)
+                        num_val = max(num_val, Decimal("0.0"))
+                        ExamMark.objects.update_or_create(
+                            exam=exam,
+                            student=target_student,
+                            subject=subject,
+                            defaults={
+                                "class_level": class_level,
+                                "total_marks": max_marks,
+                                "obtained_marks": num_val,
+                                "is_absent": False,
+                            },
+                        )
+                        updated_count += 1
+                    except Exception:
+                        errors.append(f"Row {r_idx}: Invalid marks '{obt_raw}' for {target_student.full_name}")
 
-    if updated_count > 0:
-        messages.success(request, f"Successfully imported and updated marks for {updated_count} students in {subject.name}!")
-    if skipped_count > 0:
-        messages.info(request, f"{skipped_count} rows were skipped (unmatched student name or blank rows).")
-    if errors:
-        messages.warning(request, f"Some rows had issues: {'; '.join(errors[:3])}")
+        new_info = f" ({newly_added} newly enrolled)" if newly_added > 0 else ""
+        if updated_count > 0:
+            messages.success(request, f"Successfully imported marks for {updated_count} student(s) in {subject.name}{new_info}!")
+        if skipped_count > 0:
+            messages.info(request, f"{skipped_count} row(s) were skipped (blank or unmatched).")
+        if errors:
+            messages.warning(request, f"Some rows had issues: {'; '.join(errors[:3])}")
+    except Exception as e:
+        messages.error(request, f"Excel Import Failed: {str(e)}")
 
-    return redirect(f"{request.path.replace('import-award-excel/', '')}?exam_id={exam.id}&class_id={class_level.id}&subject_id={subject.id}")
+    return redirect(f"/exams/award-sheet/?exam_id={exam.id}&class_id={class_level.id}&subject_id={subject.id}")
 
 
 @login_required
@@ -1506,9 +1521,11 @@ def import_class_result_excel(request):
     class_id = request.POST.get("class_id")
     uploaded_file = request.FILES.get("excel_file")
 
+    target_redirect = request.POST.get("next") or request.META.get("HTTP_REFERER") or f"/exams/class-result/?exam_id={exam_id}&class_id={class_id}"
+
     if not (exam_id and class_id and uploaded_file):
         messages.error(request, "Missing examination, class, or Excel file.")
-        return redirect("class_marks_entry_grid")
+        return redirect(target_redirect)
 
     exam = get_object_or_404(Exam, id=exam_id)
     class_level = get_object_or_404(ClassLevel, id=class_id)
@@ -1521,7 +1538,7 @@ def import_class_result_excel(request):
         rows = list(ws.iter_rows(values_only=True))
     except Exception as e:
         messages.error(request, f"Error reading Excel file: {str(e)}")
-        return redirect(f"class_marks_entry_grid?exam_id={exam.id}&class_id={class_level.id}")
+        return redirect(target_redirect)
 
     # Locate header row (contains "admission" or "name" or subject names)
     header_idx = -1
@@ -1533,7 +1550,7 @@ def import_class_result_excel(request):
 
     if header_idx == -1:
         messages.error(request, "Could not locate valid column headers in the uploaded Excel file.")
-        return redirect(f"class_marks_entry_grid?exam_id={exam.id}&class_id={class_level.id}")
+        return redirect(target_redirect)
 
     raw_headers = [str(c).strip().lower() if c is not None else "" for c in rows[header_idx]]
 
@@ -1566,80 +1583,69 @@ def import_class_result_excel(request):
     updated_students = set()
     newly_added_students = 0
 
-    with transaction.atomic():
-        for r_idx, row_values in enumerate(rows[header_idx + 1:], start=header_idx + 2):
-            if not any(row_values):
-                continue
+    try:
+        with transaction.atomic():
+            for r_idx, row_values in enumerate(rows[header_idx + 1:], start=header_idx + 2):
+                if not any(row_values):
+                    continue
 
-            target_student = None
-            adm_val = str(row_values[adm_col]).strip() if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] else ""
-            name_val = str(row_values[name_col]).strip() if name_col != -1 and name_col < len(row_values) and row_values[name_col] else ""
-            fname_val = str(row_values[fname_col]).strip() if fname_col != -1 and fname_col < len(row_values) and row_values[fname_col] else ""
+                target_student = None
+                adm_val = str(row_values[adm_col]).strip() if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] is not None else ""
+                name_val = str(row_values[name_col]).strip() if name_col != -1 and name_col < len(row_values) and row_values[name_col] is not None else ""
+                fname_val = str(row_values[fname_col]).strip() if fname_col != -1 and fname_col < len(row_values) and row_values[fname_col] is not None else ""
 
-            if adm_val:
-                target_student = student_by_adm.get(adm_val.lower())
+                if adm_val:
+                    target_student = student_by_adm.get(adm_val.lower())
+                    if not target_student:
+                        # Check globally across school
+                        target_student = Student.objects.filter(admission_no__iexact=adm_val).first()
+                        if target_student and target_student.current_class != class_level:
+                            target_student.current_class = class_level
+                            target_student.save(update_fields=["current_class"])
+
+                if not target_student and name_val:
+                    target_student = student_by_name.get(name_val.lower())
+                    if not target_student:
+                        # Check globally by name
+                        target_student = Student.objects.filter(full_name__iexact=name_val).first()
+                        if target_student and target_student.current_class != class_level:
+                            target_student.current_class = class_level
+                            target_student.save(update_fields=["current_class"])
+
+                # If student is new, auto-add to this class and to the result
+                if not target_student and name_val:
+                    default_section = Section.objects.filter(class_level=class_level).first()
+                    if not default_section:
+                        default_section = Section.objects.create(class_level=class_level, name="A")
+                    target_student = Student(
+                        full_name=name_val,
+                        father_name=fname_val or "Guardian",
+                        current_class=class_level,
+                        current_section=default_section,
+                        status="Active",
+                        dob=date(2015, 1, 1),
+                        gender="Male",
+                        residence="",
+                        contact_number="",
+                    )
+                    if adm_val and not Student.objects.filter(admission_no=adm_val).exists():
+                        target_student.admission_no = adm_val
+                    target_student.save()
+                    student_by_adm[target_student.admission_no.lower()] = target_student
+                    student_by_name[target_student.full_name.lower()] = target_student
+                    newly_added_students += 1
+
                 if not target_student:
-                    # Check globally across school
-                    target_student = Student.objects.filter(admission_no__iexact=adm_val).first()
-                    if target_student and target_student.current_class != class_level:
-                        target_student.current_class = class_level
-                        target_student.save(update_fields=["current_class"])
+                    continue
 
-            if not target_student and name_val:
-                target_student = student_by_name.get(name_val.lower())
-                if not target_student:
-                    # Check globally by name
-                    target_student = Student.objects.filter(full_name__iexact=name_val).first()
-                    if target_student and target_student.current_class != class_level:
-                        target_student.current_class = class_level
-                        target_student.save(update_fields=["current_class"])
+                for col_idx, cs in subject_col_map.items():
+                    if col_idx < len(row_values):
+                        val = row_values[col_idx]
+                        if val is None or str(val).strip() == "":
+                            continue
 
-            # If student is new, auto-add to this class and to the result
-            if not target_student and name_val:
-                default_section = Section.objects.filter(class_level=class_level).first()
-                target_student = Student(
-                    full_name=name_val,
-                    father_name=fname_val or "Guardian",
-                    current_class=class_level,
-                    current_section=default_section,
-                    status="Active",
-                )
-                if adm_val and not Student.objects.filter(admission_no=adm_val).exists():
-                    target_student.admission_no = adm_val
-                target_student.save()
-                student_by_adm[target_student.admission_no.lower()] = target_student
-                student_by_name[target_student.full_name.lower()] = target_student
-                newly_added_students += 1
-
-            if not target_student:
-                continue
-
-            for col_idx, cs in subject_col_map.items():
-                if col_idx < len(row_values):
-                    val = row_values[col_idx]
-                    if val is None or str(val).strip() == "":
-                        continue
-
-                    val_str = str(val).strip().upper()
-                    if val_str in ["A", "ABS", "ABSENT"]:
-                        ExamMark.objects.update_or_create(
-                            exam=exam,
-                            student=target_student,
-                            subject=cs.subject,
-                            defaults={
-                                "class_level": class_level,
-                                "total_marks": cs.total_marks,
-                                "obtained_marks": Decimal("0.0"),
-                                "is_absent": True,
-                            }
-                        )
-                        updated_entries += 1
-                        updated_students.add(target_student.id)
-                    else:
-                        try:
-                            dec_val = Decimal(re.sub(r"[^\d.]", "", val_str))
-                            dec_val = min(dec_val, cs.total_marks)
-                            dec_val = max(dec_val, Decimal("0.0"))
+                        val_str = str(val).strip().upper()
+                        if val_str in ["A", "ABS", "ABSENT"]:
                             ExamMark.objects.update_or_create(
                                 exam=exam,
                                 student=target_student,
@@ -1647,21 +1653,43 @@ def import_class_result_excel(request):
                                 defaults={
                                     "class_level": class_level,
                                     "total_marks": cs.total_marks,
-                                    "obtained_marks": dec_val,
-                                    "is_absent": False,
+                                    "obtained_marks": Decimal("0.0"),
+                                    "is_absent": True,
                                 }
                             )
                             updated_entries += 1
                             updated_students.add(target_student.id)
-                        except Exception:
-                            continue
+                        else:
+                            try:
+                                dec_val = Decimal(re.sub(r"[^\d.]", "", val_str))
+                                dec_val = min(dec_val, cs.total_marks)
+                                dec_val = max(dec_val, Decimal("0.0"))
+                                ExamMark.objects.update_or_create(
+                                    exam=exam,
+                                    student=target_student,
+                                    subject=cs.subject,
+                                    defaults={
+                                        "class_level": class_level,
+                                        "total_marks": cs.total_marks,
+                                        "obtained_marks": dec_val,
+                                        "is_absent": False,
+                                    }
+                                )
+                                updated_entries += 1
+                                updated_students.add(target_student.id)
+                            except Exception:
+                                continue
 
-    new_info = f" (including {newly_added_students} newly added student(s) to {class_level.name})" if newly_added_students > 0 else ""
-    messages.success(
-        request,
-        f"Import completed! Successfully processed {updated_entries} subject marks for {len(updated_students)} student(s) in {class_level.name}{new_info} with zero duplicates."
-    )
-    return redirect(f"/exams/class-result/?exam_id={exam.id}&class_id={class_level.id}")
+        new_info = f" (including {newly_added_students} newly added student(s) to {class_level.name})" if newly_added_students > 0 else ""
+        messages.success(
+            request,
+            f"Import completed successfully! Processed {updated_entries} subject marks for {len(updated_students)} student(s) in {class_level.name}{new_info} with zero duplicates."
+        )
+    except Exception as e:
+        messages.error(request, f"Excel Import Failed: {str(e)}")
+
+    redirect_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or f"/exams/class-result/?exam_id={exam.id}&class_id={class_level.id}"
+    return redirect(redirect_url)
 
 
 # ==============================================================================

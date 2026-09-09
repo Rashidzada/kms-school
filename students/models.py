@@ -47,12 +47,12 @@ class Student(models.Model):
     admission_date = models.DateField(default=timezone.now)
     full_name = models.CharField(max_length=255)
     father_name = models.CharField(max_length=255)
-    dob = models.DateField()
+    dob = models.DateField(null=True, blank=True, default=timezone.now)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Male")
     tribe_caste = models.CharField(max_length=100, blank=True)
     father_occupation = models.CharField(max_length=100, blank=True)
-    residence = models.TextField()
-    contact_number = models.CharField(max_length=20)
+    residence = models.TextField(blank=True, default="")
+    contact_number = models.CharField(max_length=20, blank=True, default="")
     profile_picture = models.ImageField(upload_to="students/", blank=True, null=True)
 
     current_class = models.ForeignKey(

@@ -517,70 +517,73 @@ def import_teachers_excel(request):
     existing_ids = set(Teacher.objects.values_list("teacher_id", flat=True))
     id_counter = 1
 
-    with transaction.atomic():
-        for r in records:
-            row_num = r.get("_row_number", "?")
-            full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
+    try:
+        with transaction.atomic():
+            for r in records:
+                row_num = r.get("_row_number", "?")
+                full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
 
-            if not full_name:
-                row_errors.append(f"Row {row_num}: Missing Full Name.")
-                continue
+                if not full_name:
+                    row_errors.append(f"Row {row_num}: Missing Full Name.")
+                    continue
 
-            staff_id = str(r.get("staff_id__", "") or r.get("staff_id", "") or r.get("teacher_id", "")).strip()
-            if not staff_id or staff_id in existing_ids:
-                while f"TCH-{id_counter:03d}" in existing_ids:
+                staff_id = str(r.get("staff_id__", "") or r.get("staff_id", "") or r.get("teacher_id", "")).strip()
+                if not staff_id or staff_id in existing_ids:
+                    while f"TCH-{id_counter:03d}" in existing_ids:
+                        id_counter += 1
+                    staff_id = f"TCH-{id_counter:03d}"
                     id_counter += 1
-                staff_id = f"TCH-{id_counter:03d}"
-                id_counter += 1
-            existing_ids.add(staff_id)
+                existing_ids.add(staff_id)
 
-            father_name = str(r.get("father___husband_name", "") or r.get("father_name", "")).strip()
-            designation = str(r.get("designation__", "") or r.get("designation", "Teacher")).strip() or "Teacher"
-            cnic = str(r.get("cnic", "") or "").strip()
-            contact = str(r.get("contact_number__", "") or r.get("contact_number", "")).strip()
-            address = str(r.get("address", "") or "").strip()
-            qualification = str(r.get("qualification", "") or "").strip()
-            experience = str(r.get("experience", "") or "").strip()
+                father_name = str(r.get("father___husband_name", "") or r.get("father_name", "")).strip()
+                designation = str(r.get("designation__", "") or r.get("designation", "Teacher")).strip() or "Teacher"
+                cnic = str(r.get("cnic", "") or "").strip()
+                contact = str(r.get("contact_number__", "") or r.get("contact_number", "")).strip()
+                address = str(r.get("address", "") or "").strip()
+                qualification = str(r.get("qualification", "") or "").strip()
+                experience = str(r.get("experience", "") or "").strip()
 
-            dob = parse_date(r.get("date_of_birth__yyyy_mm_dd____", None) or r.get("date_of_birth", None)) or date(1990, 1, 1)
-            joining_date = parse_date(r.get("joining_date__yyyy_mm_dd_", None) or r.get("joining_date", None)) or timezone.now().date()
+                dob = parse_date(r.get("date_of_birth__yyyy_mm_dd____", None) or r.get("date_of_birth", None)) or date(1990, 1, 1)
+                joining_date = parse_date(r.get("joining_date__yyyy_mm_dd_", None) or r.get("joining_date", None)) or timezone.now().date()
 
-            status_raw = str(r.get("status__active_inactive_", "") or r.get("status", "Active")).strip().capitalize()
-            status = "Inactive" if "inactive" in status_raw.lower() else "Active"
+                status_raw = str(r.get("status__active_inactive_", "") or r.get("status", "Active")).strip().capitalize()
+                status = "Inactive" if "inactive" in status_raw.lower() else "Active"
 
-            scale_name = str(r.get("salary_scale_name", "") or r.get("salary_scale", "")).strip()
-            salary_scale = None
-            if scale_name and scale_name != "-":
-                salary_scale = SalaryScale.objects.filter(name__iexact=scale_name).first()
-                if not salary_scale:
-                    salary_scale = SalaryScale.objects.create(
-                        name=scale_name,
-                        basic_pay=Decimal("25000.00"),
-                        medical_allowance=Decimal("2000.00"),
-                        conveyance_allowance=Decimal("3000.00"),
-                    )
+                scale_name = str(r.get("salary_scale_name", "") or r.get("salary_scale", "")).strip()
+                salary_scale = None
+                if scale_name and scale_name != "-":
+                    salary_scale = SalaryScale.objects.filter(name__iexact=scale_name).first()
+                    if not salary_scale:
+                        salary_scale = SalaryScale.objects.create(
+                            name=scale_name,
+                            basic_pay=Decimal("25000.00"),
+                            medical_allowance=Decimal("2000.00"),
+                            conveyance_allowance=Decimal("3000.00"),
+                        )
 
-            Teacher.objects.create(
-                teacher_id=staff_id,
-                full_name=full_name,
-                father_name=father_name,
-                designation=designation,
-                cnic=cnic,
-                dob=dob,
-                contact_number=contact,
-                address=address,
-                qualification=qualification,
-                experience=experience,
-                joining_date=joining_date,
-                salary_scale=salary_scale,
-                status=status,
-            )
-            success_count += 1
+                Teacher.objects.create(
+                    teacher_id=staff_id,
+                    full_name=full_name,
+                    father_name=father_name,
+                    designation=designation,
+                    cnic=cnic,
+                    dob=dob,
+                    contact_number=contact,
+                    address=address,
+                    qualification=qualification,
+                    experience=experience,
+                    joining_date=joining_date,
+                    salary_scale=salary_scale,
+                    status=status,
+                )
+                success_count += 1
 
-    if success_count > 0:
-        messages.success(request, f"Excel Import Completed! Successfully imported {success_count} staff / teacher records.")
-    if row_errors:
-        messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+        if success_count > 0:
+            messages.success(request, f"Excel Import Completed! Successfully imported {success_count} staff / teacher records.")
+        if row_errors:
+            messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
+    except Exception as e:
+        messages.error(request, f"Excel Import Failed: {str(e)}")
 
     return redirect("teacher_list")
 

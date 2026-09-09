@@ -45,8 +45,8 @@
   "model": "sessions.session",
   "pk": "0qsvwrepq98amte3uop7pcm8goztyw92",
   "fields": {
-    "session_data": ".eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x48hc:hwCx9weCSb4pXC9hzZNyyuSHZ1AuBe3ddS5c1TYF__U",
-    "expire_date": "2026-09-09T06:10:24.081Z"
+    "session_data": ".eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x48rL:Dl5Jh0ztA0U-gS6_uZFuTfJv0SmON9EFemgfZ0Jrxoo",
+    "expire_date": "2026-09-09T06:20:27.379Z"
   }
 },
 {
@@ -3413,6 +3413,84 @@
     "status": "Active",
     "inactive_date": null,
     "remarks": "need flexable",
+    "withdrawal_date": null,
+    "class_at_withdrawal": "",
+    "arrears_at_withdrawal": "0.00"
+  }
+},
+{
+  "model": "students.student",
+  "pk": 160,
+  "fields": {
+    "admission_no": "1076",
+    "admission_date": "2026-09-09",
+    "full_name": "Hussain",
+    "father_name": "Ali Jan",
+    "dob": "2026-09-09",
+    "gender": "Male",
+    "tribe_caste": "",
+    "father_occupation": "",
+    "residence": "",
+    "contact_number": "",
+    "profile_picture": "",
+    "current_class": 15,
+    "current_section": 1,
+    "family": null,
+    "status": "Active",
+    "inactive_date": null,
+    "remarks": "",
+    "withdrawal_date": null,
+    "class_at_withdrawal": "",
+    "arrears_at_withdrawal": "0.00"
+  }
+},
+{
+  "model": "students.student",
+  "pk": 161,
+  "fields": {
+    "admission_no": "1077",
+    "admission_date": "2026-09-09",
+    "full_name": "Umar Zada",
+    "father_name": "Zafar Zada",
+    "dob": "2026-09-09",
+    "gender": "Male",
+    "tribe_caste": "",
+    "father_occupation": "",
+    "residence": "",
+    "contact_number": "",
+    "profile_picture": "",
+    "current_class": 1,
+    "current_section": 1,
+    "family": null,
+    "status": "Active",
+    "inactive_date": null,
+    "remarks": "",
+    "withdrawal_date": null,
+    "class_at_withdrawal": "",
+    "arrears_at_withdrawal": "0.00"
+  }
+},
+{
+  "model": "students.student",
+  "pk": 162,
+  "fields": {
+    "admission_no": "1078",
+    "admission_date": "2026-09-09",
+    "full_name": "New Student Test",
+    "father_name": "Mr Guardian",
+    "dob": "2015-01-01",
+    "gender": "Male",
+    "tribe_caste": "",
+    "father_occupation": "",
+    "residence": "",
+    "contact_number": "",
+    "profile_picture": "",
+    "current_class": 15,
+    "current_section": 29,
+    "family": null,
+    "status": "Active",
+    "inactive_date": null,
+    "remarks": "",
     "withdrawal_date": null,
     "class_at_withdrawal": "",
     "arrears_at_withdrawal": "0.00"
@@ -30587,7 +30665,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.264Z"
+    "updated_at": "2026-09-09T03:19:39.377Z"
   }
 },
 {
@@ -30602,7 +30680,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.270Z"
+    "updated_at": "2026-09-09T03:19:39.381Z"
   }
 },
 {
@@ -30617,7 +30695,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.276Z"
+    "updated_at": "2026-09-09T03:19:39.385Z"
   }
 },
 {
@@ -30632,7 +30710,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.288Z"
+    "updated_at": "2026-09-09T03:19:39.389Z"
   }
 },
 {
@@ -30647,7 +30725,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.294Z"
+    "updated_at": "2026-09-09T03:19:39.394Z"
   }
 },
 {
@@ -30662,7 +30740,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.282Z"
+    "updated_at": "2026-09-09T03:19:39.398Z"
   }
 },
 {
@@ -30677,7 +30755,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.742Z"
+    "updated_at": "2026-09-09T03:19:39.403Z"
   }
 },
 {
@@ -30692,7 +30770,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.747Z"
+    "updated_at": "2026-09-09T03:19:39.407Z"
   }
 },
 {
@@ -30707,7 +30785,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.751Z"
+    "updated_at": "2026-09-09T03:19:39.411Z"
   }
 },
 {
@@ -30722,7 +30800,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.763Z"
+    "updated_at": "2026-09-09T03:19:39.415Z"
   }
 },
 {
@@ -30737,7 +30815,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.767Z"
+    "updated_at": "2026-09-09T03:19:39.420Z"
   }
 },
 {
@@ -30752,7 +30830,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:03.758Z"
+    "updated_at": "2026-09-09T03:19:39.424Z"
   }
 },
 {
@@ -30767,7 +30845,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.112Z"
+    "updated_at": "2026-09-09T03:19:39.429Z"
   }
 },
 {
@@ -30782,7 +30860,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.117Z"
+    "updated_at": "2026-09-09T03:19:39.434Z"
   }
 },
 {
@@ -30797,7 +30875,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.126Z"
+    "updated_at": "2026-09-09T03:19:39.438Z"
   }
 },
 {
@@ -30812,7 +30890,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.141Z"
+    "updated_at": "2026-09-09T03:19:39.443Z"
   }
 },
 {
@@ -30827,7 +30905,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.149Z"
+    "updated_at": "2026-09-09T03:19:39.447Z"
   }
 },
 {
@@ -30842,7 +30920,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.133Z"
+    "updated_at": "2026-09-09T03:19:39.452Z"
   }
 },
 {
@@ -30857,7 +30935,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.509Z"
+    "updated_at": "2026-09-09T03:19:39.456Z"
   }
 },
 {
@@ -30872,7 +30950,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.515Z"
+    "updated_at": "2026-09-09T03:19:39.460Z"
   }
 },
 {
@@ -30887,7 +30965,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.522Z"
+    "updated_at": "2026-09-09T03:19:39.465Z"
   }
 },
 {
@@ -30902,7 +30980,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.533Z"
+    "updated_at": "2026-09-09T03:19:39.470Z"
   }
 },
 {
@@ -30917,7 +30995,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.540Z"
+    "updated_at": "2026-09-09T03:19:39.475Z"
   }
 },
 {
@@ -30932,7 +31010,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.528Z"
+    "updated_at": "2026-09-09T03:19:39.479Z"
   }
 },
 {
@@ -30947,7 +31025,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.873Z"
+    "updated_at": "2026-09-09T03:19:44.785Z"
   }
 },
 {
@@ -30962,7 +31040,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.879Z"
+    "updated_at": "2026-09-09T03:19:44.792Z"
   }
 },
 {
@@ -30977,7 +31055,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.884Z"
+    "updated_at": "2026-09-09T03:19:44.797Z"
   }
 },
 {
@@ -30992,7 +31070,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.896Z"
+    "updated_at": "2026-09-09T03:19:44.803Z"
   }
 },
 {
@@ -31007,7 +31085,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.901Z"
+    "updated_at": "2026-09-09T03:19:44.808Z"
   }
 },
 {
@@ -31022,7 +31100,217 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:06:04.891Z"
+    "updated_at": "2026-09-09T03:19:44.814Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 142,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 1,
+    "total_marks": "75.0",
+    "obtained_marks": "65.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:21:01.003Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 143,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 2,
+    "total_marks": "75.0",
+    "obtained_marks": "70.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:21:01.008Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 144,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 1,
+    "subject": 3,
+    "total_marks": "100.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:40.835Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 145,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 1,
+    "subject": 14,
+    "total_marks": "50.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:40.838Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 146,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 1,
+    "subject": 15,
+    "total_marks": "50.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:40.842Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 147,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 1,
+    "subject": 13,
+    "total_marks": "50.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:40.846Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 148,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 1,
+    "total_marks": "100.0",
+    "obtained_marks": "55.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.114Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 149,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 2,
+    "total_marks": "100.0",
+    "obtained_marks": "45.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.118Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 150,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 3,
+    "total_marks": "100.0",
+    "obtained_marks": "55.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.123Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 151,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 14,
+    "total_marks": "50.0",
+    "obtained_marks": "50.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.127Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 152,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 15,
+    "total_marks": "50.0",
+    "obtained_marks": "45.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.133Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 153,
+  "fields": {
+    "exam": 3,
+    "student": 161,
+    "class_level": 1,
+    "subject": 13,
+    "total_marks": "50.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:19:42.136Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 154,
+  "fields": {
+    "exam": 3,
+    "student": 162,
+    "class_level": 15,
+    "subject": 1,
+    "total_marks": "75.0",
+    "obtained_marks": "55.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:21:01.046Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 155,
+  "fields": {
+    "exam": 3,
+    "student": 162,
+    "class_level": 15,
+    "subject": 2,
+    "total_marks": "75.0",
+    "obtained_marks": "60.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-09T03:21:01.049Z"
   }
 },
 {

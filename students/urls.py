@@ -7,6 +7,7 @@ urlpatterns = [
     path("download-template/", views.download_student_template, name="download_student_template"),
     path("import-excel/", views.import_students_excel, name="import_students_excel"),
     path("add/", views.student_create, name="student_create"),
+    path("blank-admission-form/", views.blank_admission_form, name="blank_admission_form"),
     path("admission-register/", views.admission_register, name="admission_register"),
     path("withdrawals/", views.withdrawal_register, name="withdrawal_register"),
     path("bulk-promote/", views.bulk_promote, name="bulk_promote"),

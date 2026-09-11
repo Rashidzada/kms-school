@@ -662,6 +662,34 @@ def character_certificate(request, pk):
 
 
 @login_required
+def blank_admission_form(request):
+    """
+    Official blank printable Student Admission & Registration Form (PDF/Print)
+    for parents who need a physical form to take home and fill in child details.
+    """
+    from school.models import SchoolSetting, ClassLevel, AcademicSession
+    school_setting = SchoolSetting.objects.first()
+    class_levels = ClassLevel.objects.all().order_by("name")
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+
+    selected_class_id = request.GET.get("class_id")
+    selected_class = None
+    if selected_class_id:
+        selected_class = ClassLevel.objects.filter(id=selected_class_id).first()
+
+    return render(
+        request,
+        "students/blank_admission_form.html",
+        {
+            "school_setting": school_setting,
+            "class_levels": class_levels,
+            "selected_class": selected_class,
+            "active_session": active_session,
+        },
+    )
+
+
+@login_required
 def export_students_excel(request):
     """
     Export students to professionally styled Excel spreadsheet including

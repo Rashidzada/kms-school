@@ -1,0 +1,680 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blank Admission Form | {{ school_setting.name|default:"Kohisar Model School & College" }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      color: #0f172a;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Screen Control Bar */
+    .screen-toolbar {
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* A4 Form Sheet Container */
+    .form-page-wrapper {
+      padding: 15px 0 40px 0;
+    }
+    .form-sheet {
+      background: #ffffff;
+      width: 210mm;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 6mm 8mm 5mm 8mm;
+      border: 1.5px solid #0f2442;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Watermark */
+    .watermark-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .form-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* School Header */
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 4px;
+    }
+    .school-logo-img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+    }
+    .school-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #0f2442;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      line-height: 1.1;
+      margin-bottom: 1px;
+    }
+    .school-address {
+      font-size: 0.68rem;
+      color: #334155;
+      font-weight: 600;
+      line-height: 1.15;
+    }
+    .school-contact {
+      font-size: 0.65rem;
+      color: #475569;
+      line-height: 1.15;
+    }
+    .form-badge {
+      display: inline-block;
+      background: #0f2442;
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 1.5px 14px;
+      border-radius: 3px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Photo Box */
+    .photo-box {
+      width: 78px;
+      height: 92px;
+      border: 1.2px dashed #475569;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.56rem;
+      color: #64748b;
+      padding: 2px;
+      background: #f8fafc;
+      line-height: 1.15;
+    }
+
+    /* Official Office Top Bar */
+    .top-office-grid {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.2px solid #0f2442;
+      margin-bottom: 3px;
+      font-size: 0.68rem;
+    }
+    .top-office-grid td {
+      border: 1px solid #94a3b8;
+      padding: 2.5px 5px;
+      vertical-align: middle;
+      line-height: 1.1;
+    }
+    .top-office-grid td.label-cell {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f2442;
+      width: 13%;
+      white-space: nowrap;
+    }
+    .top-office-grid td.val-cell {
+      width: 20%;
+    }
+
+    /* Section Headers */
+    .section-header {
+      background: #0f2442;
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 1.5px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-top: 3px;
+      margin-bottom: 2px;
+      border-radius: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      line-height: 1.2;
+    }
+
+    /* Form Tables */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.68rem;
+      margin-bottom: 2px;
+    }
+    .info-table td {
+      padding: 1.5px 3px;
+      vertical-align: middle;
+      line-height: 1.15;
+    }
+    .info-label {
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+    }
+    .dotted-line {
+      border-bottom: 1px dotted #475569;
+      height: 14px;
+      display: inline-block;
+      width: 100%;
+    }
+
+    /* Digit Boxes for B-Form / CNIC */
+    .digit-box-wrap {
+      display: inline-flex;
+      gap: 1.5px;
+      vertical-align: middle;
+    }
+    .digit-box {
+      width: 13px;
+      height: 15px;
+      border: 1px solid #475569;
+      text-align: center;
+      font-size: 0.60rem;
+      line-height: 13px;
+      background: #fff;
+    }
+    .digit-separator {
+      margin: 0 1px;
+      font-weight: bold;
+      line-height: 15px;
+      font-size: 0.65rem;
+    }
+
+    /* Checkbox items */
+    .chk-item {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 10px;
+      font-weight: 600;
+      font-size: 0.67rem;
+    }
+    .chk-square {
+      width: 11px;
+      height: 11px;
+      border: 1.2px solid #334155;
+      margin-right: 3px;
+      display: inline-block;
+      vertical-align: middle;
+      background: #fff;
+    }
+
+    /* Previous School Table */
+    .record-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.66rem;
+      margin-top: 1px;
+      margin-bottom: 2px;
+      border: 1px solid #94a3b8;
+    }
+    .record-table th, .record-table td {
+      border: 1px solid #cbd5e1;
+      padding: 2px 4px;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .record-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f2442;
+    }
+    .record-table td {
+      height: 17px;
+    }
+
+    /* Checklist */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5px 8px;
+      font-size: 0.65rem;
+      padding: 2.5px 5px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 2px;
+      line-height: 1.15;
+    }
+
+    /* Undertaking Box */
+    .undertaking-text {
+      font-size: 0.61rem;
+      line-height: 1.22;
+      text-align: justify;
+      color: #334155;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+    .sign-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 10px;
+      margin-top: 4px;
+    }
+    .sign-cell {
+      text-align: center;
+      width: 30%;
+    }
+    .sign-line {
+      border-top: 1.2px solid #1e293b;
+      padding-top: 2px;
+      font-weight: 700;
+      font-size: 0.66rem;
+      color: #0f2442;
+    }
+
+    /* Office Final Approval */
+    .office-approval-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.2px solid #0f2442;
+      font-size: 0.66rem;
+      margin-top: 3px;
+    }
+    .office-approval-table td {
+      border: 1px solid #94a3b8;
+      padding: 2.5px 6px;
+      vertical-align: middle;
+      line-height: 1.15;
+    }
+
+    /* Strict 1-Page Print Media Rules */
+    @media print {
+      html, body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .form-page-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .form-sheet {
+        border: 1.5px solid #0f2442 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 288mm !important;
+        padding: 3mm 5mm 2mm 5mm !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 4mm 5mm 3mm 5mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Control Bar (Screen Only) -->
+<div class="screen-toolbar no-print">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'student_create' %}" class="btn btn-sm btn-outline-light">
+        <i class="fas fa-arrow-left me-1"></i> Back to New Admission
+      </a>
+      <span class="fw-bold fs-6">
+        <i class="fas fa-file-invoice text-warning me-1"></i> Official Blank Student Admission Form (1-Page Print)
+      </span>
+    </div>
+
+    <!-- Quick Class Pre-fill Selector & Print Button -->
+    <div class="d-flex align-items-center gap-2">
+      <form method="get" class="d-flex align-items-center gap-2 mb-0">
+        <label for="class_id" class="small text-white text-nowrap mb-0 fw-semibold">Target Class:</label>
+        <select name="class_id" id="class_id" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 180px;">
+          <option value="">-- Blank (Handwrite Class) --</option>
+          {% for cl in class_levels %}
+            <option value="{{ cl.id }}" {% if selected_class.id == cl.id %}selected{% endif %}>{{ cl.name }}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      <button onclick="window.print()" class="btn btn-sm btn-success fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print / Save as PDF (1 Page)
+      </button>
+      <button onclick="window.close()" class="btn btn-sm btn-outline-secondary text-white">
+        <i class="fas fa-times me-1"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Form Sheet Body -->
+<div class="form-page-wrapper">
+  <div class="form-sheet">
+    <!-- Watermark Logo -->
+    {% if school_setting.logo %}
+      <img src="{{ school_setting.logo.url }}" alt="Watermark" class="watermark-bg">
+    {% else %}
+      <img src="{% static 'dist/img/logo.png' %}" alt="Watermark" class="watermark-bg">
+    {% endif %}
+
+    <div class="form-content">
+      <!-- School Header Table -->
+      <table class="header-table">
+        <tr>
+          <td style="width: 65px; text-align: left; vertical-align: middle;">
+            {% if school_setting.logo %}
+              <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo-img">
+            {% else %}
+              <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo-img">
+            {% endif %}
+          </td>
+          <td style="text-align: center; vertical-align: middle;">
+            <div class="school-title">{{ school_setting.name|default:"KOHISAR MODEL SCHOOL & COLLEGE" }}</div>
+            <div class="school-address">{{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa" }}</div>
+            <div class="school-contact">Phone / WhatsApp: {{ school_setting.contact|default:"0347-0983567 / 0300-1234567" }}</div>
+            <div>
+              <span class="form-badge">STUDENT ADMISSION APPLICATION FORM</span>
+            </div>
+            <div style="font-size: 0.68rem; font-weight: 700; color: #0f2442; margin-top: 1px;">
+              ACADEMIC SESSION: <u>{{ active_session.name|default:"2025-2026" }}</u>
+            </div>
+          </td>
+          <td style="width: 85px; text-align: right; vertical-align: top;">
+            <div class="photo-box ms-auto">
+              <i class="fas fa-camera fa-sm mb-1 text-secondary"></i>
+              <strong>AFFIX PHOTO</strong>
+              <span>Passport Size<br>(Blue/White Bg)</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Top Official Grid (Office Record) -->
+      <table class="top-office-grid">
+        <tr>
+          <td class="label-cell">Form / Sr No:</td>
+          <td class="val-cell"><span class="dotted-line"></span></td>
+          <td class="label-cell">Admission No:</td>
+          <td class="val-cell"><span class="dotted-line"></span></td>
+          <td class="label-cell">Admission Date:</td>
+          <td class="val-cell"><span class="dotted-line">____ / ____ / 20____</span></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Class Admitted:</td>
+          <td class="val-cell" style="font-weight: 800; color: #0f2442;">
+            {% if selected_class %}{{ selected_class.name|upper }}{% else %}<span class="dotted-line"></span>{% endif %}
+          </td>
+          <td class="label-cell">Section Assigned:</td>
+          <td class="val-cell"><span class="dotted-line"></span></td>
+          <td class="label-cell">Family Code / ID:</td>
+          <td class="val-cell"><span class="dotted-line"></span></td>
+        </tr>
+      </table>
+
+      <!-- 1. Student Particulars -->
+      <div class="section-header">
+        <span>1. Student Particulars (To be filled in CAPITAL / Block Letters)</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">معلومات طالب علم</span>
+      </div>
+
+      <table class="info-table">
+        <tr>
+          <td style="width: 18%;" class="info-label">Full Name of Student:</td>
+          <td colspan="3"><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Student Form-B / CNIC:</td>
+          <td style="width: 39%;">
+            <div class="digit-box-wrap">
+              <span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span>
+              <span class="digit-separator">-</span>
+              <span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span>
+              <span class="digit-separator">-</span>
+              <span class="digit-box"></span>
+            </div>
+          </td>
+          <td style="width: 14%;" class="info-label">Gender:</td>
+          <td style="width: 29%;">
+            <span class="chk-item"><span class="chk-square"></span> Male</span>
+            <span class="chk-item"><span class="chk-square"></span> Female</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">Date of Birth (Figures):</td>
+          <td>
+            <strong>D D :</strong> [ &nbsp; &nbsp; ] &nbsp;
+            <strong>M M :</strong> [ &nbsp; &nbsp; ] &nbsp;
+            <strong>Y Y Y Y :</strong> [ &nbsp; &nbsp; &nbsp; &nbsp; ]
+          </td>
+          <td class="info-label">Blood Group:</td>
+          <td><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Date of Birth (Words):</td>
+          <td colspan="3"><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Nationality:</td>
+          <td><span class="dotted-line" style="width: 85%;">Pakistani</span></td>
+          <td class="info-label">Religion:</td>
+          <td>
+            <span class="chk-item"><span class="chk-square"></span> Islam</span>
+            <span class="chk-item"><span class="chk-square"></span> Other: _______</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">Caste / Tribe:</td>
+          <td><span class="dotted-line"></span></td>
+          <td class="info-label">Mother Tongue:</td>
+          <td><span class="dotted-line" style="width: 85%;">Pashto / Urdu</span></td>
+        </tr>
+      </table>
+
+      <!-- 2. Parent / Guardian Particulars -->
+      <div class="section-header">
+        <span>2. Parent / Guardian Information</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">معلومات والدین / سرپرست</span>
+      </div>
+
+      <table class="info-table">
+        <tr>
+          <td style="width: 18%;" class="info-label">Father's Full Name:</td>
+          <td style="width: 42%;"><span class="dotted-line"></span></td>
+          <td style="width: 15%;" class="info-label">Father's Status:</td>
+          <td style="width: 25%;">
+            <span class="chk-item"><span class="chk-square"></span> Alive</span>
+            <span class="chk-item"><span class="chk-square"></span> Deceased</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">Father's CNIC No:</td>
+          <td>
+            <div class="digit-box-wrap">
+              <span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span>
+              <span class="digit-separator">-</span>
+              <span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span><span class="digit-box"></span>
+              <span class="digit-separator">-</span>
+              <span class="digit-box"></span>
+            </div>
+          </td>
+          <td class="info-label">Occupation:</td>
+          <td><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Guardian's Name (if any):</td>
+          <td><span class="dotted-line"></span></td>
+          <td class="info-label">Relationship:</td>
+          <td><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Mobile (Primary / WhatsApp):</td>
+          <td><strong>0 3</strong> <span class="dotted-line" style="width: 82%;"></span></td>
+          <td class="info-label">Alternate Phone:</td>
+          <td><strong>0 3</strong> <span class="dotted-line" style="width: 78%;"></span></td>
+        </tr>
+      </table>
+
+      <!-- 3. Residential Address -->
+      <div class="section-header">
+        <span>3. Residential Address Details</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">رہائشی پتہ</span>
+      </div>
+
+      <table class="info-table">
+        <tr>
+          <td style="width: 18%;" class="info-label">Present Address:</td>
+          <td colspan="3"><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Permanent Address:</td>
+          <td colspan="3"><span class="dotted-line"></span></td>
+        </tr>
+        <tr>
+          <td class="info-label">Village / City:</td>
+          <td style="width: 36%;"><span class="dotted-line"></span></td>
+          <td style="width: 15%;" class="info-label">Tehsil & District:</td>
+          <td style="width: 31%;"><span class="dotted-line">Tehsil Kabal, District Swat</span></td>
+        </tr>
+      </table>
+
+      <!-- 4. Previous Academic Record -->
+      <div class="section-header">
+        <span>4. Previous Academic Record (If Transferred from another school)</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">سابقہ تعلیمی ریکارڈ</span>
+      </div>
+
+      <table class="record-table">
+        <thead>
+          <tr>
+            <th style="width: 36%;">Previous School Attended</th>
+            <th style="width: 18%;">Last Class Passed</th>
+            <th style="width: 14%;">Passing Year</th>
+            <th style="width: 16%;">Marks / Total</th>
+            <th style="width: 16%;">Grade / %age</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 5. Documents Checklist -->
+      <div class="section-header">
+        <span>5. Documents Required Checklist (To be attached with this form)</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">ضروری دستاویزات</span>
+      </div>
+
+      <div class="checklist-grid">
+        <div><span class="chk-square"></span> 2x Recent Passport Size Photographs of Student</div>
+        <div><span class="chk-square"></span> Attested Copy of Father / Guardian CNIC</div>
+        <div><span class="chk-square"></span> Copy of Student B-Form (NADRA) or Birth Certificate</div>
+        <div><span class="chk-square"></span> Original School Leaving Certificate (SLC) if migrated</div>
+        <div><span class="chk-square"></span> Copy of Previous Class DMC / Result Card</div>
+        <div><span class="chk-square"></span> Paid Admission Fee Receipt Copy</div>
+      </div>
+
+      <!-- 6. Undertaking by Parent / Guardian -->
+      <div class="section-header">
+        <span>6. Undertaking / Declaration by Parent or Guardian</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">بیان حلفی والدین</span>
+      </div>
+
+      <div class="undertaking-text">
+        "I hereby solemnly affirm that the particulars provided in this admission form are true and accurate to the best of my knowledge. I undertake that my child will strictly abide by all rules, regulations, code of conduct, and discipline of Kohisar Model School & College. I also agree to pay all monthly school fees and institutional charges in advance by the due date specified on the fee voucher. In case of any violation, the decision of the School Administration/Principal shall be final and binding."
+      </div>
+
+      <div class="sign-row">
+        <div class="sign-cell">
+          <div style="height: 18px;"></div>
+          <div class="sign-line">Signature of Student</div>
+        </div>
+        <div class="sign-cell">
+          <div style="height: 18px;"></div>
+          <div class="sign-line">Date: ____ / ____ / 20____</div>
+        </div>
+        <div class="sign-cell">
+          <div style="height: 18px;"></div>
+          <div class="sign-line">Signature / Thumb of Father/Guardian</div>
+        </div>
+      </div>
+
+      <!-- 7. For Office Use Only -->
+      <div class="section-header" style="background: #334155; margin-top: 4px;">
+        <span>7. For Official Use Only (School Administration)</span>
+        <span style="font-size: 0.60rem; font-weight: 400;">صرف برائے دفتری استعمال</span>
+      </div>
+
+      <table class="office-approval-table">
+        <tr>
+          <td style="width: 25%;"><strong>Document Verification:</strong><br>[ &nbsp; ] Complete &amp; Verified</td>
+          <td style="width: 25%;"><strong>Admission Status:</strong><br>[ &nbsp; ] Granted &nbsp; [ &nbsp; ] Rejected</td>
+          <td style="width: 25%;"><strong>Fee Receipt Slip #:</strong><br><span class="dotted-line"></span></td>
+          <td style="width: 25%;"><strong>Computer Entry:</strong><br>[ &nbsp; ] Registered in KMS Portal</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="height: 30px; vertical-align: bottom; text-align: center;">
+            <div style="border-top: 1px solid #475569; width: 85%; margin: 0 auto; font-weight: bold; font-size: 0.66rem;">
+              Signature of Admission In-Charge
+            </div>
+          </td>
+          <td colspan="2" style="height: 30px; vertical-align: bottom; text-align: center;">
+            <div style="border-top: 1px solid #475569; width: 85%; margin: 0 auto; font-weight: bold; font-size: 0.66rem;">
+              Principal / Headmaster (Signature &amp; Stamp)
+            </div>
+          </td>
+        </tr>
+      </table>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

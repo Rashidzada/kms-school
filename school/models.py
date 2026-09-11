@@ -3,7 +3,7 @@ from django.db import models
 
 class SchoolSetting(models.Model):
     name = models.CharField(max_length=255, default="Kohisar Model School & College")
-    address = models.TextField(default="Qalagay, Tehsil Barikot, District Swat, Khyber Pakhtunkhwa")
+    address = models.TextField(default="Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa")
     logo = models.ImageField(upload_to="school_logos/", blank=True, null=True)
     contact = models.CharField(max_length=100, default="0347-0983567 / 0300-1234567")
     academic_session_format = models.CharField(max_length=50, default="2025-2026")

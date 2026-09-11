@@ -10,7 +10,7 @@ def school_context(request):
         # Provide a default instance if none exists in DB yet
         setting = SchoolSetting(
             name="Kohisar Model School & College",
-            address="Qalagay, Tehsil Barikot, District Swat, Khyber Pakhtunkhwa",
+            address="Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa",
             contact="0347-0983567 / 0300-1234567",
         )
 

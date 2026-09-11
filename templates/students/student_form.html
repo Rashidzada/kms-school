@@ -11,19 +11,45 @@
         <h5 class="fw-bold mb-0 text-primary">
           <i class="fas fa-user-edit me-2"></i> {{ title }}
         </h5>
-        <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary">
-          <i class="fas fa-arrow-left me-1"></i> Back to List
-        </a>
+        <div class="d-flex gap-2">
+          <a href="{% url 'blank_admission_form' %}" target="_blank" class="btn btn-sm btn-outline-danger fw-bold" title="Download or print blank physical admission form for parents">
+            <i class="fas fa-file-pdf me-1"></i> Blank Admission Form (PDF / Print)
+          </a>
+          <a href="{% url 'student_list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to List
+          </a>
+        </div>
       </div>
       <div class="card-body p-4">
+        <!-- Take-Home Blank Form Banner for Parents -->
+        <div class="alert alert-light border border-danger-subtle d-flex align-items-center justify-content-between p-3 mb-4 rounded-3">
+          <div class="d-flex align-items-center">
+            <div class="bg-danger bg-opacity-10 text-danger p-2 rounded-circle me-3">
+              <i class="fas fa-file-pdf fa-lg"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark">Parent has child details at home?</div>
+              <div class="text-muted small">Give them an official blank printed admission form to take home and fill in.</div>
+            </div>
+          </div>
+          <a href="{% url 'blank_admission_form' %}" target="_blank" class="btn btn-danger btn-sm fw-bold px-3 text-nowrap">
+            <i class="fas fa-print me-1"></i> Download / Print Blank Form
+          </a>
+        </div>
+
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           {{ form|crispy }}
-          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-            <a href="{% url 'student_list' %}" class="btn btn-light border px-4">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4 fw-bold">
-              <i class="fas fa-save me-1"></i> Save Student
-            </button>
+          <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+            <a href="{% url 'blank_admission_form' %}" target="_blank" class="btn btn-outline-danger fw-bold">
+              <i class="fas fa-file-pdf me-1"></i> Blank Admission Form (PDF / Print)
+            </a>
+            <div class="d-flex gap-2">
+              <a href="{% url 'student_list' %}" class="btn btn-light border px-4">Cancel</a>
+              <button type="submit" class="btn btn-primary px-4 fw-bold">
+                <i class="fas fa-save me-1"></i> Save Student
+              </button>
+            </div>
           </div>
         </form>
       </div>

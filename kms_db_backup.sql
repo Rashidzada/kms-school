@@ -2213,7 +2213,7 @@ COPY public.school_classlevel (id, name, level, monthly_fee) FROM stdin;
 --
 
 COPY public.school_schoolsetting (id, name, address, logo, contact, academic_session_format, receipt_no_prefix, last_receipt_no) FROM stdin;
-1	Kohisar Model School & College	Qalagay, Tehsil Barikot, District Swat, Khyber Pakhtunkhwa		0347-0983567 / 0300-1234567	2025-2026	REC-	1050
+1	Kohisar Model School & College	Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa		0347-0983567 / 0300-1234567	2025-2026	REC-	1050
 \.
 
 

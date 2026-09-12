@@ -5,7 +5,7 @@ class SchoolSetting(models.Model):
     name = models.CharField(max_length=255, default="Kohisar Model School & College")
     address = models.TextField(default="Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa")
     logo = models.ImageField(upload_to="school_logos/", blank=True, null=True)
-    contact = models.CharField(max_length=100, default="0347-0983567 / 0300-1234567")
+    contact = models.CharField(max_length=100, default="+92 344 9631323 / +92 345 3407095")
     academic_session_format = models.CharField(max_length=50, default="2025-2026")
     receipt_no_prefix = models.CharField(max_length=10, default="REC-")
     last_receipt_no = models.IntegerField(default=1000)

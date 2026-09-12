@@ -76,10 +76,18 @@
       font-size: 0.85rem;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 5mm 8mm;
+    }
+
     @media print {
-      body {
+      html, body {
         background: #fff !important;
         padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .no-print {
         display: none !important;
@@ -87,22 +95,34 @@
       .dmc-card {
         border: 2px solid #000 !important;
         box-shadow: none !important;
-        padding: 8mm 10mm !important;
+        padding: 5mm 8mm !important;
         max-width: 100% !important;
         width: 100% !important;
+        max-height: 286mm !important;
+        box-sizing: border-box !important;
         margin: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
         page-break-after: always !important;
         break-after: page !important;
+      }
+      .dmc-header {
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 5px !important;
+        margin-bottom: 8px !important;
       }
       .marks-table th {
         background-color: #eee !important;
         color: #000 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
       }
-      @page {
-        size: A4 portrait;
-        margin: 8mm;
+      .marks-table th, .marks-table td {
+        padding: 3px 5px !important;
+        font-size: 0.82rem !important;
+      }
+      .sig-line {
+        margin-top: 20px !important;
+        font-size: 0.80rem !important;
+        page-break-inside: avoid !important;
       }
     }
   </style>

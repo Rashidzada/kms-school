@@ -25,6 +25,9 @@
     <a href="{% url 'character_certificate' student.pk %}" class="btn btn-outline-info text-dark" target="_blank">
       <i class="fas fa-award me-1"></i> Character Cert
     </a>
+    <a href="{% url 'dob_certificate' student.pk %}" class="btn btn-outline-info text-dark" target="_blank" title="Print Official D.O.B Certificate (School Based)">
+      <i class="fas fa-birthday-cake me-1"></i> DOB Cert
+    </a>
     <a href="{% url 'student_roll_number_slip' student.pk %}" class="btn btn-outline-dark" target="_blank" title="Print Examination Roll Number Slip">
       <i class="fas fa-id-badge me-1"></i> Roll No Slip
     </a>

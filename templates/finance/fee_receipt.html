@@ -167,13 +167,20 @@
     .cut-line::before { left: 0; }
     .cut-line::after { right: 0; }
 
+    @page {
+      size: A4 portrait;
+      margin: 3mm 5mm;
+    }
+
     @media print {
-      body {
+      html, body {
         background: #fff !important;
         padding: 0 !important;
         margin: 0 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        height: 100% !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .no-print {
         display: none !important;
@@ -181,14 +188,77 @@
       .print-page {
         box-shadow: none !important;
         padding: 0 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 291mm !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+        break-inside: avoid !important;
       }
       .voucher-copy {
-        page-break-inside: avoid;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        padding: 4px 10px !important;
+      }
+      .voucher-header {
+        margin-bottom: 3px !important;
+        padding-bottom: 2px !important;
+      }
+      .school-name {
+        font-size: 13.5px !important;
+      }
+      .school-sub {
+        font-size: 8px !important;
+      }
+      .meta-table {
+        margin-bottom: 3px !important;
+        font-size: 9.5px !important;
+      }
+      .meta-table td {
+        padding: 0.5px 2px !important;
+      }
+      .particulars-table {
+        margin-bottom: 3px !important;
+        font-size: 9.5px !important;
+      }
+      .particulars-table th, .particulars-table td {
+        padding: 1.5px 4px !important;
+      }
+      .status-strip {
+        font-size: 9px !important;
+        margin-bottom: 2px !important;
+      }
+      .dues-strip {
+        font-size: 9.5px !important;
+        margin-bottom: 4px !important;
+      }
+      .signature-row {
+        margin-top: 6px !important;
+        margin-bottom: 2px !important;
+        page-break-inside: avoid !important;
+      }
+      .sig-line {
+        font-size: 8.5px !important;
+        width: 140px !important;
+      }
+      .terms-notice {
+        font-size: 7.5px !important;
+        margin-bottom: 1px !important;
+      }
+      .contact-line {
+        font-size: 7.5px !important;
+        margin-bottom: 1px !important;
+      }
+      .dev-line {
+        font-size: 7px !important;
       }
       .cut-line {
-        margin: 5px 0;
+        margin: 2px 0 !important;
+        font-size: 8px !important;
       }
     }
   </style>

@@ -1,0 +1,775 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>D.O.B Certificate {% if student %}| {{ student.full_name }} ({{ student.admission_no }}){% else %}| Blank Form{% endif %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f1f5f9;
+      color: #000;
+      font-family: 'Times New Roman', Times, serif;
+      margin: 0;
+      padding: 20px 0 40px;
+    }
+
+    /* Screen Action Bar */
+    .screen-toolbar {
+      max-width: 860px;
+      margin: 0 auto 18px;
+      background: #ffffff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Live Searchable Student Dropdown */
+    .student-search-container {
+      position: relative;
+      min-width: 320px;
+      max-width: 440px;
+    }
+    .student-search-input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .student-search-input {
+      font-size: 12.5px;
+      padding-left: 32px;
+      padding-right: 28px;
+      height: 33px;
+      border-radius: 6px;
+      border: 1.5px solid #cbd5e1;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .student-search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      outline: none;
+    }
+    .search-icon-left {
+      position: absolute;
+      left: 10px;
+      color: #64748b;
+      pointer-events: none;
+      font-size: 12px;
+      z-index: 5;
+    }
+    .search-clear-btn {
+      position: absolute;
+      right: 7px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 2px 6px;
+      font-size: 13px;
+      border-radius: 50%;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-clear-btn:hover {
+      color: #dc2626;
+      background-color: #fee2e2;
+    }
+    .student-search-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1.5px solid #94a3b8;
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+      max-height: 330px;
+      overflow-y: auto;
+      z-index: 1050;
+      display: none;
+    }
+    .student-dropdown-header {
+      padding: 6px 12px;
+      background-color: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+      font-size: 11px;
+      color: #475569;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .student-result-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      font-size: 12.5px;
+      display: block;
+      color: #0f172a;
+    }
+    .student-result-item:last-child {
+      border-bottom: none;
+    }
+    .student-result-item:hover, .student-result-item.active {
+      background-color: #eff6ff;
+      border-left: 3px solid #2563eb;
+    }
+    .student-result-item.selected {
+      background-color: #ecfdf5;
+      border-left: 3px solid #059669;
+    }
+
+    /* Outer Certificate Sheet (A4 Portrait format) */
+    .cert-sheet {
+      width: 100%;
+      max-width: 794px; /* standard A4 width in 96dpi */
+      min-height: 1080px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 28px 32px;
+      box-sizing: border-box;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      position: relative;
+    }
+
+    /* Double border matching official certificate format */
+    .cert-inner-frame {
+      border: 3px solid #000000;
+      outline: 1.5px solid #000000;
+      outline-offset: 4px;
+      padding: 36px 42px;
+      min-height: 1010px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    /* Watermark */
+    .cert-watermark {
+      position: absolute;
+      top: 52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 320px;
+      height: 320px;
+      object-fit: contain;
+      opacity: 0.045;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .cert-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* School Header */
+    .school-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .school-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 50%;
+      margin-bottom: 6px;
+    }
+    .school-name {
+      font-size: 20pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 2px;
+      color: #000000;
+    }
+    .school-meta {
+      font-size: 10pt;
+      color: #222222;
+      margin: 0;
+    }
+
+    /* Boxed Title matching Image exactly */
+    .title-box-container {
+      text-align: center;
+      margin: 18px 0 28px;
+    }
+    .title-box {
+      display: inline-block;
+      border: 2px solid #000000;
+      border-radius: 14px;
+      padding: 8px 36px 10px;
+      background-color: #ffffff;
+      box-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+    }
+    .title-box h1 {
+      font-size: 17pt;
+      font-weight: 800;
+      text-decoration: underline;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 0;
+      color: #000000;
+    }
+    .title-box .subtitle {
+      font-size: 11pt;
+      font-weight: 700;
+      margin-top: 2px;
+      color: #000000;
+    }
+
+    /* Certification intro statement */
+    .cert-intro {
+      font-size: 12.5pt;
+      line-height: 1.65;
+      text-align: justify;
+      margin-bottom: 26px;
+      color: #000000;
+    }
+
+    /* Form Fields Lines */
+    .field-row {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 22px;
+      font-size: 12.5pt;
+      color: #000000;
+    }
+    .field-label {
+      font-weight: 700;
+      white-space: nowrap;
+      margin-right: 6px;
+      color: #000000;
+    }
+    .field-line {
+      flex: 1;
+      border-bottom: 1px solid #000000;
+      min-height: 24px;
+      padding: 0 8px;
+      font-weight: 700;
+      color: #000000;
+      font-size: 12pt;
+      display: inline-block;
+    }
+
+    /* Confirmation text */
+    .cert-confirmation {
+      font-size: 12pt;
+      line-height: 1.55;
+      margin-top: 32px;
+      margin-bottom: 40px;
+      color: #000000;
+    }
+
+    /* Signatures layout */
+    .signatures-section {
+      margin-top: auto;
+      padding-top: 20px;
+    }
+    .sig-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 48px;
+    }
+    .sig-row-bottom {
+      display: flex;
+      justify-content: center;
+      text-align: center;
+    }
+    .sig-item {
+      text-align: center;
+    }
+    .sig-line {
+      width: 220px;
+      border-top: 1.5px solid #000000;
+      margin: 0 auto;
+      padding-top: 5px;
+      font-weight: 800;
+      font-size: 11pt;
+      color: #000000;
+    }
+    .dated-label {
+      font-weight: 700;
+      font-size: 11.5pt;
+      color: #000000;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .dated-line {
+      display: inline-block;
+      border-bottom: 1px solid #000000;
+      width: 140px;
+      padding: 0 6px;
+      font-weight: 700;
+    }
+
+    /* Print Setup */
+    @page {
+      size: A4 portrait;
+      margin: 5mm 6mm;
+    }
+
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .screen-toolbar {
+        display: none !important;
+      }
+      .cert-sheet {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 286mm !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+        break-inside: avoid !important;
+      }
+      .cert-inner-frame {
+        border: 3px solid #000000 !important;
+        outline: 1.5px solid #000000 !important;
+        outline-offset: 3px !important;
+        padding: 16px 26px !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 284mm !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+      .school-header {
+        margin-bottom: 10px !important;
+      }
+      .school-logo {
+        width: 58px !important;
+        height: 58px !important;
+        margin-bottom: 2px !important;
+      }
+      .school-name {
+        font-size: 17pt !important;
+      }
+      .title-box-container {
+        margin: 10px 0 16px !important;
+      }
+      .title-box {
+        padding: 5px 26px 6px !important;
+        box-shadow: 2px 2px 0px #000000 !important;
+      }
+      .title-box h1 {
+        font-size: 14.5pt !important;
+      }
+      .cert-intro {
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
+        margin-bottom: 14px !important;
+      }
+      .field-row {
+        margin-bottom: 13px !important;
+        font-size: 11pt !important;
+      }
+      .field-line {
+        min-height: 18px !important;
+        font-size: 11pt !important;
+      }
+      .cert-confirmation {
+        font-size: 10.5pt !important;
+        line-height: 1.4 !important;
+        margin-top: 12px !important;
+        margin-bottom: 14px !important;
+      }
+      .signatures-section {
+        padding-top: 8px !important;
+        margin-top: auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .sig-row-top {
+        margin-bottom: 22px !important;
+      }
+      .sig-line {
+        width: 185px !important;
+        font-size: 10pt !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Control Bar (Hidden on Print) -->
+  <div class="screen-toolbar no-print">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <a href="{% if student %}{% url 'student_detail' student.pk %}{% else %}{% url 'student_list' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+        <button onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-3">
+          <i class="fas fa-print me-1"></i> Print D.O.B Certificate
+        </button>
+      </div>
+
+      <!-- Quick Searchable Switcher -->
+      <div class="d-flex align-items-center gap-2 m-0">
+        <label class="small fw-bold text-muted text-nowrap m-0">
+          <i class="fas fa-user-graduate me-1 text-primary"></i> Select Student:
+        </label>
+        
+        <div class="student-search-container" id="studentSearchContainer">
+          <div class="student-search-input-group">
+            <i class="fas fa-search search-icon-left"></i>
+            <input type="text"
+                   id="studentSearchInput"
+                   class="form-control student-search-input"
+                   placeholder="Type Name, Adm # (e.g. 1015), or Class..."
+                   autocomplete="off"
+                   value="{% if student %}{{ student.admission_no }} - {{ student.full_name }} ({{ student.current_class.name }}){% endif %}">
+            <button type="button" class="search-clear-btn" id="searchClearBtn" title="Clear / Show all">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <!-- Live Search Dropdown Popup -->
+          <div class="student-search-dropdown" id="studentSearchDropdown">
+            <div class="student-dropdown-header">
+              <span><strong>Students:</strong> <span id="searchResultCount">{{ all_students|length }}</span> available</span>
+              <span><kbd class="bg-secondary text-white" style="font-size: 10px;">↑↓</kbd> navigate <kbd class="bg-secondary text-white" style="font-size: 10px;">Enter</kbd> select</span>
+            </div>
+            
+            <div id="studentItemsList">
+              {% for s in all_students %}
+              <div class="student-result-item {% if student and student.id == s.id %}selected{% endif %}"
+                   data-id="{{ s.id }}"
+                   data-adm="{{ s.admission_no }}"
+                   data-name="{{ s.full_name }}"
+                   data-father="{{ s.father_name|default:'' }}"
+                   data-class="{{ s.current_class.name }}{% if s.current_section %} ({{ s.current_section.name }}){% endif %}"
+                   data-url="{% url 'dob_certificate' s.id %}"
+                   data-search="{{ s.admission_no }} {{ s.full_name|lower }} {{ s.father_name|lower|default:'' }} {{ s.current_class.name|lower }} {{ s.current_section.name|lower|default:'' }}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="badge bg-dark font-monospace me-1">{{ s.admission_no }}</span>
+                    <strong class="text-dark">{{ s.full_name }}</strong>
+                    {% if s.father_name %}
+                      <span class="small text-muted ms-1">(S/O {{ s.father_name }})</span>
+                    {% endif %}
+                  </div>
+                  <span class="badge bg-primary text-nowrap ms-2">
+                    {{ s.current_class.name }}{% if s.current_section %} ({{ s.current_section.name }}){% endif %}
+                  </span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div id="noResultsNotice" class="p-3 text-center text-muted small" style="display: none;">
+              <i class="fas fa-user-slash text-danger fs-5 d-block mb-1"></i>
+              No student found matching "<strong id="noResultsText"></strong>".<br>
+              <span class="text-xs">Search by admission number (e.g. <code>1015</code>), student name, or class.</span>
+            </div>
+          </div>
+        </div>
+
+        {% if is_blank %}
+          <span class="badge bg-secondary">Blank Mode</span>
+        {% else %}
+          <a href="{% url 'dob_certificate_general' %}?blank=1" class="btn btn-outline-primary btn-sm text-nowrap" title="Print empty blank form for manual handwriting">
+            <i class="fas fa-file-alt me-1"></i> Blank Form
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Certificate Paper -->
+  <div class="cert-sheet">
+    <div class="cert-inner-frame">
+
+      <!-- Background Watermark -->
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="Watermark" class="cert-watermark">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="Watermark" class="cert-watermark">
+      {% endif %}
+
+      <div class="cert-content">
+        <!-- School Header -->
+        <div class="school-header">
+          {% if school_setting.logo %}
+            <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo">
+          {% else %}
+            <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo">
+          {% endif %}
+          <h2 class="school-name">{{ school_setting.name }}</h2>
+          <p class="school-meta">
+            {{ school_setting.address }}
+            {% if school_setting.contact %}&nbsp;|&nbsp;Phone: {{ school_setting.contact }}{% endif %}
+          </p>
+        </div>
+
+        <!-- Boxed Title exactly matching reference sample -->
+        <div class="title-box-container">
+          <div class="title-box">
+            <h1>D.O.B CERTIFICATE</h1>
+            <div class="subtitle">(School Based)</div>
+          </div>
+        </div>
+
+        <!-- Introductory Paragraph -->
+        <div class="cert-intro">
+          It is certified that the Name, Father Name, DOB and other particulars of the student, according to our school record / AWR (Admission Withdrawal Register) are as under: -
+        </div>
+
+        <!-- Field Rows matching image layout -->
+        <!-- Row 1: Name and Father's Name -->
+        <div class="field-row">
+          <span class="field-label">Name:</span>
+          <span class="field-line" style="min-width: 220px;">
+            {% if student %}{{ student.full_name|upper }}{% endif %}
+          </span>
+          <span class="field-label ms-3">Father's Name:</span>
+          <span class="field-line">
+            {% if student %}{{ student.father_name|upper }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Row 2: Admission No, Class, session -->
+        <div class="field-row">
+          <span class="field-label">Admission No:</span>
+          <span class="field-line" style="max-width: 140px;">
+            {% if student %}{{ student.admission_no }}{% endif %}
+          </span>
+          <span class="field-label ms-3">Class:</span>
+          <span class="field-line" style="max-width: 160px;">
+            {% if student %}{{ student.current_class.name }}{% if student.current_section %} ({{ student.current_section.name }}){% endif %}{% endif %}
+          </span>
+          <span class="field-label ms-3">session:</span>
+          <span class="field-line">
+            {% if student %}{{ active_session.name }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Row 3: DOB (in figures) -->
+        <div class="field-row">
+          <span class="field-label">DOB (in figures):</span>
+          <span class="field-line">
+            {% if student %}{{ dob_in_figures }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Row 4: DOB (in words) -->
+        <div class="field-row">
+          <span class="field-label">DOB (in words):</span>
+          <span class="field-line">
+            {% if student %}{{ dob_in_words }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Row 5: Remarks (if any) -->
+        <div class="field-row">
+          <span class="field-label">Remarks (if any):</span>
+          <span class="field-line">
+            {% if student and student.remarks %}{{ student.remarks }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Confirmation Text matching image -->
+        <div class="cert-confirmation">
+          Certified that the above information are verified and correct to the best of our knowledge.
+        </div>
+      </div>
+
+      <!-- Signatures Footer matching reference image layout -->
+      <div class="signatures-section">
+        <div class="sig-row-top">
+          <div class="dated-label">
+            Dated:
+            <span class="dated-line">
+              {% if not is_blank %}{% now "d-m-Y" %}{% endif %}
+            </span>
+          </div>
+
+          <div class="sig-item">
+            <div class="sig-line">Admission Incharge</div>
+          </div>
+        </div>
+
+        <div class="sig-row-bottom">
+          <div class="sig-item">
+            <div class="sig-line" style="width: 250px;">Principal/HM/Incharge</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const container = document.getElementById('studentSearchContainer');
+      const input = document.getElementById('studentSearchInput');
+      const dropdown = document.getElementById('studentSearchDropdown');
+      const clearBtn = document.getElementById('searchClearBtn');
+      const countSpan = document.getElementById('searchResultCount');
+      const noResults = document.getElementById('noResultsNotice');
+      const noResultsText = document.getElementById('noResultsText');
+      const items = Array.from(document.querySelectorAll('.student-result-item'));
+
+      let activeIndex = -1;
+
+      function showDropdown() {
+        if (dropdown) dropdown.style.display = 'block';
+      }
+
+      function hideDropdown() {
+        if (dropdown) dropdown.style.display = 'none';
+        activeIndex = -1;
+        items.forEach(it => it.classList.remove('active'));
+      }
+
+      function filterStudents(query) {
+        query = query.trim().toLowerCase();
+        const tokens = query.split(/\s+/).filter(t => t.length > 0);
+        let visibleCount = 0;
+
+        items.forEach(item => {
+          const searchText = (item.dataset.search || '').toLowerCase();
+          const matches = tokens.every(token => searchText.includes(token));
+
+          if (matches) {
+            item.style.display = 'block';
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+
+        if (countSpan) countSpan.textContent = visibleCount;
+
+        if (visibleCount === 0) {
+          if (noResults) noResults.style.display = 'block';
+          if (noResultsText) noResultsText.textContent = query;
+        } else {
+          if (noResults) noResults.style.display = 'none';
+        }
+
+        activeIndex = -1;
+        items.forEach(it => it.classList.remove('active'));
+      }
+
+      if (input) {
+        input.addEventListener('focus', function() {
+          showDropdown();
+          this.select();
+        });
+
+        input.addEventListener('click', function() {
+          showDropdown();
+        });
+
+        input.addEventListener('input', function() {
+          showDropdown();
+          filterStudents(this.value);
+        });
+
+        input.addEventListener('keydown', function(e) {
+          const visibleItems = items.filter(it => it.style.display !== 'none');
+          if (visibleItems.length === 0) return;
+
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            showDropdown();
+            activeIndex = (activeIndex + 1) % visibleItems.length;
+            updateActiveItem(visibleItems);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            showDropdown();
+            activeIndex = (activeIndex - 1 + visibleItems.length) % visibleItems.length;
+            updateActiveItem(visibleItems);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIndex >= 0 && activeIndex < visibleItems.length) {
+              selectStudent(visibleItems[activeIndex]);
+            } else if (visibleItems.length > 0) {
+              selectStudent(visibleItems[0]);
+            }
+          } else if (e.key === 'Escape') {
+            hideDropdown();
+          }
+        });
+      }
+
+      function updateActiveItem(visibleItems) {
+        items.forEach(it => it.classList.remove('active'));
+        if (activeIndex >= 0 && activeIndex < visibleItems.length) {
+          const current = visibleItems[activeIndex];
+          current.classList.add('active');
+          current.scrollIntoView({ block: 'nearest' });
+        }
+      }
+
+      function selectStudent(item) {
+        const url = item.dataset.url;
+        if (url) {
+          input.value = `${item.dataset.adm} - ${item.dataset.name} (${item.dataset.class})`;
+          hideDropdown();
+          window.location.href = url;
+        }
+      }
+
+      items.forEach(item => {
+        item.addEventListener('click', function() {
+          selectStudent(this);
+        });
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          input.value = '';
+          filterStudents('');
+          input.focus();
+          showDropdown();
+        });
+      }
+
+      document.addEventListener('click', function(e) {
+        if (container && !container.contains(e.target)) {
+          hideDropdown();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

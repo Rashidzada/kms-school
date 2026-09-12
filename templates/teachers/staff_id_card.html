@@ -59,18 +59,30 @@
       font-size: 8pt;
       color: #718096;
     }
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
     @media print {
-      body {
-        background: #fff;
-        padding: 0;
+      html, body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .no-print {
         display: none !important;
       }
       .id-card {
-        box-shadow: none;
-        margin: 20px auto;
-        page-break-inside: avoid;
+        box-shadow: none !important;
+        margin: 30px auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
       }
     }
   </style>

@@ -3,12 +3,12 @@
   "model": "auth.user",
   "fields": {
     "password": "pbkdf2_sha256$1500000$sYsJ1qoplWjlANfQSkN2OL$jDMmKoH/FbflEZTOV16VzX4uXE3/ggNmvqySINmkvUg=",
-    "last_login": "2026-09-09T03:08:16.329Z",
+    "last_login": "2026-09-12T03:30:49.013Z",
     "is_superuser": true,
     "username": "admin",
-    "first_name": "",
-    "last_name": "",
-    "email": "admin@kohisar.edu.pk",
+    "first_name": "Dr. Farman",
+    "last_name": "Ali",
+    "email": "drfarmanali@kohisar.edu.pk",
     "is_staff": true,
     "is_active": true,
     "date_joined": "2026-09-04T05:55:13.883Z",
@@ -20,12 +20,12 @@
   "model": "auth.user",
   "fields": {
     "password": "pbkdf2_sha256$1500000$kMbtaNj6OxVKdcOM4ERu9w$UX3dGbfY1vCTibNFhilY9e/kkPv4E6w0QVgl9MM6HIw=",
-    "last_login": "2026-09-09T02:12:03.523Z",
+    "last_login": "2026-09-12T01:43:41.046Z",
     "is_superuser": true,
     "username": "umarsaeed",
     "first_name": "Umar",
     "last_name": "Saeed",
-    "email": "usmankhanswat2026@gmail.com",
+    "email": "umarsaeed@kohisar.edu.pk",
     "is_staff": true,
     "is_active": true,
     "date_joined": "2026-09-04T06:36:55Z",
@@ -99,6 +99,14 @@
 },
 {
   "model": "sessions.session",
+  "pk": "27axf9e2w3gznii4qhd0e32glbwm5pzk",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qa5:BKTIencCo9U8cLXrn7qo6CFIYVKKE6y_j-U9JrFNMPk",
+    "expire_date": "2026-09-11T05:01:33.710Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "2k7p0wm5s6tvm7wnxlz63mobq71uirbq",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48HT:amMkGtq_MOw6CJd4qCKV6L7u_tKgzDthgRPmZSdzeFw",
@@ -115,10 +123,26 @@
 },
 {
   "model": "sessions.session",
+  "pk": "55y44h07zk85w45dblim86r001u3spxd",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5CtJ:v-mKG3VUujkLOD6Dd2YZYkGrBjuzKI4NeahN4mDboNg",
+    "expire_date": "2026-09-12T04:50:53.258Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "5ptn23360eb9ip7525udb1z8uk6x3o8t",
   "fields": {
     "session_data": ".eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2NYn:xMjHUtaZJTVBlVtvcOCaGtqMTHjfntd1B-sVHzsh44w",
     "expire_date": "2026-09-04T09:38:01.325Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "5ylymlznwqyow2429izra2wum64kmaxd",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qen:VnQVOVjMwCenJHJWOQhLWmwI6xA8zvVkRuNgIhgTXhQ",
+    "expire_date": "2026-09-11T05:06:25.700Z"
   }
 },
 {
@@ -147,6 +171,14 @@
 },
 {
   "model": "sessions.session",
+  "pk": "7zmrk41l91mqdv1yjkpqamzis0562gjw",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qVS:WPbEN-19OZE2XZX0lzUSwF-f-6qcXF_ZigRnXTlI5X0",
+    "expire_date": "2026-09-11T04:56:46.469Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "8frs3vgkarff9sfips70nspe07gvc6ew",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2nek:imt52FSSIoBZcXMzujeo_KmdSsOxi6W0gPaq2p0rbdY",
@@ -159,6 +191,30 @@
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZJw:rWW9Xs726-wF0bqAjnvXMxMIwyVLJbEbHjk-rFip5KI",
     "expire_date": "2026-09-04T22:11:28.605Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "9t6bhtzchjsgfasj2rvl7rner6wjqu22",
+  "fields": {
+    "session_data": ".eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x5EIH:3gPhC1sqFPgttlyeGhDz0nfwmXYLE4wuuG5f_E4Me0E",
+    "expire_date": "2026-09-12T06:20:45.704Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "9y846ifbjnppfk72mbcyhgeqt5bjg5pw",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qZY:6_BUYrAEMkYwKOe-tL5SVem41V2KHno0GOQLXA2uMSY",
+    "expire_date": "2026-09-11T05:01:00.489Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cfd3aqa5mcsp7kfknkttt41v558k073w",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D01:tqH4M7wL7NEeUaRePZjRgCvAMl9qYjIO_e0KGt3Qdic",
+    "expire_date": "2026-09-12T04:57:49.466Z"
   }
 },
 {
@@ -219,10 +275,34 @@
 },
 {
   "model": "sessions.session",
+  "pk": "fvzxqab7sr336p18v0a7rbzbczajo6ag",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUb:Mb-l-CTSTZfYNJ2ybrq65JZ79KhvPR8hH4gnpvU3RfM",
+    "expire_date": "2026-09-11T04:55:53.950Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "gb5dit08x9cmj0zkaa1qt2qa7m2a0e7s",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpB:AeyA362lf3Gb5Dwb1b9W1EsXeyhwFD1-RTT7hdzNRn0",
     "expire_date": "2026-09-05T05:08:09.420Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gpo171vilxaq2gu084e68wk1ptooxdu3",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUA:yh8rZoJteUw4WOo26K9Js__IYQiqN43UJrbcBkNIcaE",
+    "expire_date": "2026-09-11T04:55:26.160Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gqj0ndip9b5h7unqbftg7zstwrns3xpb",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ERh:rkVhLtIKNXEFFRWGmr3QzOiWfD9ftwHKgMpI2uRJ350",
+    "expire_date": "2026-09-12T06:30:29.302Z"
   }
 },
 {
@@ -259,10 +339,34 @@
 },
 {
   "model": "sessions.session",
+  "pk": "k66arh5gllt5p5l7bafi2nnmrj4ailse",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ES1:yjWwsG-6CDHIc0AIIed-PtK3jYueAPW5kTIBnNvUsNM",
+    "expire_date": "2026-09-12T06:30:49.743Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "kqpe5oylst5i7xsw8uyeeqmmbf61fngp",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOB:m7t205PS_zy5udSrnPmvlodaKuCKDdOncXS_vZpoMgk",
     "expire_date": "2026-09-05T05:44:19.867Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "kvm3iq3an2dfw3ij10ut7u7bzdast9cm",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qd9:F3TB9Bar6jYwvD-JLnoFCh5LAcUJ4jOdWbSeMMlrdqY",
+    "expire_date": "2026-09-11T05:04:43.425Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "l53eveqecnn9tw149a85ktiif9lsxgwy",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUQ:j-I_-Mk2wxTlbLZAVaY_xNZD3lKtECR-pJK7R683q64",
+    "expire_date": "2026-09-11T04:55:42.881Z"
   }
 },
 {
@@ -291,6 +395,14 @@
 },
 {
   "model": "sessions.session",
+  "pk": "pq6cc1a1562t8rc8wvq0p2i2l4wgbx2a",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4yZf:Nh01Zg22qcOalZdfhazn7fsKfUxrsrBIPXVdHNugaoc",
+    "expire_date": "2026-09-11T13:33:39.221Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "priudnpf392bx143wf6kzx62k9eoqudp",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4882:FmyuAJdFoRAtEuxH-KSQBAFO-xBkBKlqEplIWWKiJMg",
@@ -315,10 +427,26 @@
 },
 {
   "model": "sessions.session",
+  "pk": "rs8mw1g06nnzq54v9zysg46ten55rznq",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5E33:fbOurC1s2b1ke_6VbDQfkq5YpXrrDbtyx0KsQwQFSqo",
+    "expire_date": "2026-09-12T06:05:01.877Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "rwiqg1akrrumur8hvlw8ufa022jknl3s",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fef:ZjRMrGF3Yefe7g65R_1ItZs0TYfMzRRD9yRqP7BE05Q",
     "expire_date": "2026-09-05T04:57:17.719Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "s8sf8xrtjh2ixdzvnqg3ki6tmlwy7qew",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Ctc:XjiMeRjIUxSVtAGfFL5pJfOi2vKTkg4GOVc6tSmbAIo",
+    "expire_date": "2026-09-12T04:51:12.371Z"
   }
 },
 {
@@ -343,6 +471,14 @@
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fQ8:5krBVo8jUlWGFQHZ8q1MbE37hbcDBrLkbSiga4eLBCU",
     "expire_date": "2026-09-05T04:42:16.143Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "vv3nalgno37vf7x5z8lf9fweha213iq0",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4E7x:QWP7JDU26eyOe4na703Z-Qu3_smcAKdvb3_uvZQSQr4",
+    "expire_date": "2026-09-09T11:57:57.763Z"
   }
 },
 {
@@ -403,6 +539,14 @@
 },
 {
   "model": "sessions.session",
+  "pk": "y7i53ipvn3ol7kx7wt1u2407vwlf7cab",
+  "fields": {
+    "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D0M:NpsPy84UmvbFJyh7XcNUppFi6kQC9LBhUmSO-dfNU6o",
+    "expire_date": "2026-09-12T04:58:10.731Z"
+  }
+},
+{
+  "model": "sessions.session",
   "pk": "y9sian8in24o4k9iwstede9quqk3625d",
   "fields": {
     "session_data": ".eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZIP:s73buoPMEHufrtPvg8Q4KgXwZcD3zgNT8PEX-Lg4IA4",
@@ -440,10 +584,10 @@
     "name": "Kohisar Model School & College",
     "address": "Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa",
     "logo": "school_logos/logo.png",
-    "contact": "0347-0983567 / 0300-1234567",
+    "contact": "+92 344 9631323 / +92 345 3407095",
     "academic_session_format": "2025-2026",
     "receipt_no_prefix": "REC-",
-    "last_receipt_no": 1057
+    "last_receipt_no": 1058
   }
 },
 {
@@ -3497,6 +3641,32 @@
   }
 },
 {
+  "model": "students.student",
+  "pk": 163,
+  "fields": {
+    "admission_no": "1099",
+    "admission_date": "2026-09-11",
+    "full_name": "Kamal Ali",
+    "father_name": "Zaf",
+    "dob": "2002-09-11",
+    "gender": "Male",
+    "tribe_caste": "Y",
+    "father_occupation": "job less",
+    "residence": "qalagay",
+    "contact_number": "4535345345",
+    "profile_picture": "",
+    "current_class": 11,
+    "current_section": 22,
+    "family": null,
+    "status": "Active",
+    "inactive_date": null,
+    "remarks": "from ppmsq",
+    "withdrawal_date": null,
+    "class_at_withdrawal": "",
+    "arrears_at_withdrawal": "0.00"
+  }
+},
+{
   "model": "students.promotionhistory",
   "pk": 1,
   "fields": {
@@ -3619,13 +3789,13 @@
   "pk": 1,
   "fields": {
     "teacher_id": "T-001",
-    "full_name": "Bilal Rehman",
+    "full_name": "Dr. Farman Ali",
     "father_name": "Tariq Gul",
     "cnic": "15602-4835727-1",
     "dob": "1982-11-02",
     "qualification": "M.Phil / Master Degree in relevant subject",
     "experience": "9 years teaching experience",
-    "contact_number": "03127220733",
+    "contact_number": "+92 344 9631323",
     "address": "Matta Road, Swat KPK",
     "joining_date": "2019-05-25",
     "designation": "Principal",
@@ -3640,13 +3810,13 @@
   "pk": 2,
   "fields": {
     "teacher_id": "T-002",
-    "full_name": "Shoaib Swati",
+    "full_name": "Umar Saeed",
     "father_name": "Kashan Gul",
     "cnic": "15602-2804339-1",
     "dob": "1990-07-22",
     "qualification": "M.Phil / Master Degree in relevant subject",
     "experience": "8 years teaching experience",
-    "contact_number": "03004623214",
+    "contact_number": "+92 345 3407095",
     "address": "Matta Road, Swat KPK",
     "joining_date": "2023-10-04",
     "designation": "Vice Principal",
@@ -8918,10 +9088,10 @@
     "base_pay": "68000.00",
     "days_present": 30,
     "allowances": "22000.00",
-    "deductions": "0.00",
-    "paid_amount": "0.00",
-    "is_paid": false,
-    "payment_date": null,
+    "deductions": "6000.00",
+    "paid_amount": "84000.00",
+    "is_paid": true,
+    "payment_date": "2026-09-12",
     "voucher_no": ""
   }
 },
@@ -11193,6 +11363,15 @@
   }
 },
 {
+  "model": "finance.studentfeeledger",
+  "pk": 161,
+  "fields": {
+    "student": 163,
+    "academic_session": 2,
+    "created_at": "2026-09-11T01:53:34.738Z"
+  }
+},
+{
   "model": "finance.studentfeemonthentry",
   "pk": 1,
   "fields": {
@@ -11362,10 +11541,10 @@
     "monthly_fee": "2500.00",
     "exam_fee": "0.00",
     "other_charges": "0.00",
-    "paid_amount": "0.00",
+    "paid_amount": "600.00",
     "is_paid": false,
-    "last_payment_date": null,
-    "last_receipt_no": ""
+    "last_payment_date": "2026-09-11",
+    "last_receipt_no": "REC-1058"
   }
 },
 {
@@ -11374,7 +11553,7 @@
   "fields": {
     "ledger": 1,
     "month": 12,
-    "arrears": "5000.00",
+    "arrears": "4400.00",
     "monthly_fee": "2500.00",
     "exam_fee": "0.00",
     "other_charges": "0.00",
@@ -26553,6 +26732,198 @@
   }
 },
 {
+  "model": "finance.studentfeemonthentry",
+  "pk": 1921,
+  "fields": {
+    "ledger": 161,
+    "month": 1,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1922,
+  "fields": {
+    "ledger": 161,
+    "month": 2,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1923,
+  "fields": {
+    "ledger": 161,
+    "month": 3,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1924,
+  "fields": {
+    "ledger": 161,
+    "month": 4,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1925,
+  "fields": {
+    "ledger": 161,
+    "month": 5,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1926,
+  "fields": {
+    "ledger": 161,
+    "month": 6,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1927,
+  "fields": {
+    "ledger": 161,
+    "month": 7,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1928,
+  "fields": {
+    "ledger": 161,
+    "month": 8,
+    "arrears": "0.00",
+    "monthly_fee": "0.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": true,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1929,
+  "fields": {
+    "ledger": 161,
+    "month": 9,
+    "arrears": "0.00",
+    "monthly_fee": "4800.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": false,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1930,
+  "fields": {
+    "ledger": 161,
+    "month": 10,
+    "arrears": "4800.00",
+    "monthly_fee": "4800.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": false,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1931,
+  "fields": {
+    "ledger": 161,
+    "month": 11,
+    "arrears": "9600.00",
+    "monthly_fee": "4800.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": false,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
+  "model": "finance.studentfeemonthentry",
+  "pk": 1932,
+  "fields": {
+    "ledger": 161,
+    "month": 12,
+    "arrears": "14400.00",
+    "monthly_fee": "4800.00",
+    "exam_fee": "0.00",
+    "other_charges": "0.00",
+    "paid_amount": "0.00",
+    "is_paid": false,
+    "last_payment_date": null,
+    "last_receipt_no": ""
+  }
+},
+{
   "model": "finance.feepaymentreceipt",
   "pk": 1,
   "fields": {
@@ -27391,6 +27762,20 @@
     "remarks": "",
     "month_entries": [
       92
+    ]
+  }
+},
+{
+  "model": "finance.feepaymentreceipt",
+  "pk": 60,
+  "fields": {
+    "receipt_no": "REC-1058",
+    "payment_date": "2026-09-11",
+    "amount_paid": "600.00",
+    "student": 1,
+    "remarks": "Family Payment: FAM-0001 (Moiz Ahmad).",
+    "month_entries": [
+      11
     ]
   }
 },
@@ -30185,7 +30570,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:58:34.216Z"
+    "updated_at": "2026-09-12T01:46:39.346Z"
   }
 },
 {
@@ -30200,7 +30585,7 @@
     "obtained_marks": "55.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.860Z"
+    "updated_at": "2026-09-12T01:46:39.350Z"
   }
 },
 {
@@ -30215,7 +30600,7 @@
     "obtained_marks": "55.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.867Z"
+    "updated_at": "2026-09-12T01:46:39.360Z"
   }
 },
 {
@@ -30230,7 +30615,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.870Z"
+    "updated_at": "2026-09-12T01:46:39.363Z"
   }
 },
 {
@@ -30245,7 +30630,7 @@
     "obtained_marks": "47.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.873Z"
+    "updated_at": "2026-09-12T01:46:39.366Z"
   }
 },
 {
@@ -30260,7 +30645,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.877Z"
+    "updated_at": "2026-09-12T01:46:39.374Z"
   }
 },
 {
@@ -30275,7 +30660,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.883Z"
+    "updated_at": "2026-09-12T01:46:39.377Z"
   }
 },
 {
@@ -30290,7 +30675,7 @@
     "obtained_marks": "23.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.886Z"
+    "updated_at": "2026-09-12T01:46:39.381Z"
   }
 },
 {
@@ -30305,7 +30690,7 @@
     "obtained_marks": "55.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:58:34.220Z"
+    "updated_at": "2026-09-12T01:46:39.384Z"
   }
 },
 {
@@ -30320,7 +30705,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.894Z"
+    "updated_at": "2026-09-12T01:46:39.392Z"
   }
 },
 {
@@ -30335,7 +30720,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.899Z"
+    "updated_at": "2026-09-12T01:46:39.396Z"
   }
 },
 {
@@ -30350,7 +30735,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.903Z"
+    "updated_at": "2026-09-12T01:46:39.401Z"
   }
 },
 {
@@ -30365,7 +30750,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.907Z"
+    "updated_at": "2026-09-12T01:46:39.409Z"
   }
 },
 {
@@ -30380,7 +30765,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.912Z"
+    "updated_at": "2026-09-12T01:46:39.414Z"
   }
 },
 {
@@ -30395,7 +30780,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.916Z"
+    "updated_at": "2026-09-12T01:46:39.417Z"
   }
 },
 {
@@ -30410,7 +30795,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.919Z"
+    "updated_at": "2026-09-12T01:46:39.425Z"
   }
 },
 {
@@ -30422,10 +30807,10 @@
     "class_level": 15,
     "subject": 1,
     "total_marks": "75.0",
-    "obtained_marks": "66.0",
+    "obtained_marks": "56.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:58:34.225Z"
+    "updated_at": "2026-09-12T01:46:39.429Z"
   }
 },
 {
@@ -30440,7 +30825,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.928Z"
+    "updated_at": "2026-09-12T01:46:39.432Z"
   }
 },
 {
@@ -30455,7 +30840,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.931Z"
+    "updated_at": "2026-09-12T01:46:39.435Z"
   }
 },
 {
@@ -30470,7 +30855,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.934Z"
+    "updated_at": "2026-09-12T01:46:39.441Z"
   }
 },
 {
@@ -30485,7 +30870,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.937Z"
+    "updated_at": "2026-09-12T01:46:39.444Z"
   }
 },
 {
@@ -30500,7 +30885,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.940Z"
+    "updated_at": "2026-09-12T01:46:39.447Z"
   }
 },
 {
@@ -30515,7 +30900,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.945Z"
+    "updated_at": "2026-09-12T01:46:39.451Z"
   }
 },
 {
@@ -30530,7 +30915,7 @@
     "obtained_marks": "24.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.948Z"
+    "updated_at": "2026-09-12T01:46:39.457Z"
   }
 },
 {
@@ -30542,10 +30927,10 @@
     "class_level": 15,
     "subject": 1,
     "total_marks": "75.0",
-    "obtained_marks": "66.0",
+    "obtained_marks": "67.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:58:34.229Z"
+    "updated_at": "2026-09-12T01:46:39.473Z"
   }
 },
 {
@@ -30560,7 +30945,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.954Z"
+    "updated_at": "2026-09-12T01:46:39.477Z"
   }
 },
 {
@@ -30575,7 +30960,7 @@
     "obtained_marks": "43.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.958Z"
+    "updated_at": "2026-09-12T01:46:39.480Z"
   }
 },
 {
@@ -30590,7 +30975,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.963Z"
+    "updated_at": "2026-09-12T01:46:39.483Z"
   }
 },
 {
@@ -30605,7 +30990,7 @@
     "obtained_marks": "44.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.966Z"
+    "updated_at": "2026-09-12T01:46:39.489Z"
   }
 },
 {
@@ -30620,7 +31005,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.969Z"
+    "updated_at": "2026-09-12T01:46:39.492Z"
   }
 },
 {
@@ -30635,7 +31020,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.973Z"
+    "updated_at": "2026-09-12T01:46:39.496Z"
   }
 },
 {
@@ -30650,7 +31035,7 @@
     "obtained_marks": "34.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T02:32:51.978Z"
+    "updated_at": "2026-09-12T01:46:39.499Z"
   }
 },
 {
@@ -31115,7 +31500,7 @@
     "obtained_marks": "65.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:21:01.003Z"
+    "updated_at": "2026-09-12T01:46:39.505Z"
   }
 },
 {
@@ -31130,7 +31515,7 @@
     "obtained_marks": "70.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:21:01.008Z"
+    "updated_at": "2026-09-12T01:46:39.508Z"
   }
 },
 {
@@ -31139,13 +31524,13 @@
   "fields": {
     "exam": 3,
     "student": 160,
-    "class_level": 1,
+    "class_level": 15,
     "subject": 3,
-    "total_marks": "100.0",
-    "obtained_marks": "44.0",
+    "total_marks": "75.0",
+    "obtained_marks": "72.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:19:40.835Z"
+    "updated_at": "2026-09-12T01:46:39.512Z"
   }
 },
 {
@@ -31295,7 +31680,7 @@
     "obtained_marks": "55.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:21:01.046Z"
+    "updated_at": "2026-09-12T01:46:39.542Z"
   }
 },
 {
@@ -31310,7 +31695,82 @@
     "obtained_marks": "60.0",
     "is_absent": false,
     "remarks": "",
-    "updated_at": "2026-09-09T03:21:01.049Z"
+    "updated_at": "2026-09-12T01:46:39.547Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 156,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 5,
+    "total_marks": "50.0",
+    "obtained_marks": "33.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-12T01:46:39.515Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 157,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 6,
+    "total_marks": "75.0",
+    "obtained_marks": "23.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-12T01:46:39.527Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 158,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 7,
+    "total_marks": "75.0",
+    "obtained_marks": "24.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-12T01:46:39.531Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 159,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 8,
+    "total_marks": "75.0",
+    "obtained_marks": "44.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-12T01:46:39.534Z"
+  }
+},
+{
+  "model": "exams.exammark",
+  "pk": 160,
+  "fields": {
+    "exam": 3,
+    "student": 160,
+    "class_level": 15,
+    "subject": 9,
+    "total_marks": "50.0",
+    "obtained_marks": "50.0",
+    "is_absent": false,
+    "remarks": "",
+    "updated_at": "2026-09-12T01:46:39.539Z"
   }
 },
 {

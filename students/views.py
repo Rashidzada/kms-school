@@ -661,6 +661,111 @@ def character_certificate(request, pk):
     return render(request, "students/character_certificate.html", {"student": student})
 
 
+def date_to_words(d):
+    """
+    Converts a date object or string into formal official words for certificates.
+    Example: 2012-05-14 -> 'Fourteenth May Two Thousand Twelve'
+    """
+    if not d:
+        return ""
+    if isinstance(d, str):
+        try:
+            from datetime import datetime
+            d = datetime.strptime(d, "%Y-%m-%d").date()
+        except Exception:
+            return d
+
+    days = {
+        1: "First", 2: "Second", 3: "Third", 4: "Fourth", 5: "Fifth",
+        6: "Sixth", 7: "Seventh", 8: "Eighth", 9: "Ninth", 10: "Tenth",
+        11: "Eleventh", 12: "Twelfth", 13: "Thirteenth", 14: "Fourteenth",
+        15: "Fifteenth", 16: "Sixteenth", 17: "Seventeenth", 18: "Eighteenth",
+        19: "Nineteenth", 20: "Twentieth", 21: "Twenty-First", 22: "Twenty-Second",
+        23: "Twenty-Third", 24: "Twenty-Fourth", 25: "Twenty-Fifth",
+        26: "Twenty-Sixth", 27: "Twenty-Seventh", 28: "Twenty-Eighth",
+        29: "Twenty-Ninth", 30: "Thirtieth", 31: "Thirty-First"
+    }
+    months = {
+        1: "January", 2: "February", 3: "March", 4: "April",
+        5: "May", 6: "June", 7: "July", 8: "August",
+        9: "September", 10: "October", 11: "November", 12: "December"
+    }
+
+    def num_to_words(n):
+        units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+        teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+        tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+        if n < 10:
+            return units[n]
+        elif n < 20:
+            return teens[n - 10]
+        elif n < 100:
+            rem = n % 10
+            return tens[n // 10] + ("-" + units[rem] if rem else "")
+        elif n < 1000:
+            rem = n % 100
+            return units[n // 100] + " Hundred" + (" and " + num_to_words(rem) if rem else "")
+        elif n < 10000:
+            rem = n % 1000
+            th = n // 1000
+            if rem == 0:
+                return num_to_words(th) + " Thousand"
+            elif rem < 100:
+                return num_to_words(th) + " Thousand " + num_to_words(rem)
+            else:
+                return num_to_words(th) + " Thousand " + num_to_words(rem)
+        return str(n)
+
+    day_str = days.get(d.day, str(d.day))
+    month_str = months.get(d.month, str(d.month))
+    year_str = num_to_words(d.year)
+    return f"{day_str} {month_str} {year_str}"
+
+
+@login_required
+def dob_certificate(request, pk=None):
+    """
+    Printable Official Date of Birth (D.O.B) Certificate (School Based).
+    Matches official AWR format with DOB in figures and words.
+    Supports viewing for a specific student or printing blank.
+    """
+    from school.models import SchoolSetting, AcademicSession
+    student = None
+    student_id = pk or request.GET.get("student_id")
+    if student_id:
+        student = get_object_or_404(Student, pk=student_id)
+
+    school_setting = SchoolSetting.objects.first()
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    all_students = Student.objects.filter(status="Active").select_related("current_class", "current_section").order_by("current_class__name", "admission_no")
+
+    dob_in_words = ""
+    dob_in_figures = ""
+    if student and student.dob:
+        dob_in_figures = student.dob.strftime("%d-%m-%Y")
+        dob_in_words = date_to_words(student.dob)
+
+    is_blank = request.GET.get("blank") == "1"
+    if is_blank:
+        student = None
+        dob_in_figures = ""
+        dob_in_words = ""
+
+    return render(
+        request,
+        "students/dob_certificate.html",
+        {
+            "student": student,
+            "dob_in_figures": dob_in_figures,
+            "dob_in_words": dob_in_words,
+            "school_setting": school_setting,
+            "active_session": active_session,
+            "all_students": all_students,
+            "is_blank": is_blank,
+        },
+    )
+
+
 @login_required
 def blank_admission_form(request):
     """

@@ -384,10 +384,10 @@ def fee_receipt(request, pk):
         student_total_dues_left=student_total_dues_left,
         family_total_dues_left=family_total_dues_left,
         family_count=len(family_siblings_summary),
-        principal_name="Farman Ali",
-        principal_contact="0344-9631323",
+        principal_name="Dr. Farman Ali",
+        principal_contact="+92 344 9631323",
         vp_name="Umar Saeed",
-        vp_contact="0345-3407095",
+        vp_contact="+92 345 3407095",
     )
 
     context = {
@@ -407,10 +407,10 @@ def fee_receipt(request, pk):
         "total_billed_sum": total_billed_sum,
         "months_covered_names": months_covered_names,
         "fee_status": fee_status,
-        "principal_name": "Farman Ali",
-        "principal_contact": "0344-9631323",
+        "principal_name": "Dr. Farman Ali",
+        "principal_contact": "+92 344 9631323",
         "vp_name": "Umar Saeed",
-        "vp_contact": "0345-3407095",
+        "vp_contact": "+92 345 3407095",
         "developer_name": "Rashid Zada",
         "developer_contact": "0347-0983567",
         "admin_name": "Rashid Zada",

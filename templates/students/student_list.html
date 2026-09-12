@@ -23,6 +23,9 @@
     <a href="{% url 'blank_admission_form' %}" target="_blank" class="btn btn-outline-danger" title="Download or print blank physical admission form for parents">
       <i class="fas fa-file-pdf me-1"></i> Blank Form
     </a>
+    <a href="{% url 'dob_certificate_general' %}" target="_blank" class="btn btn-outline-dark" title="Issue or Print D.O.B Certificate">
+      <i class="fas fa-birthday-cake me-1"></i> DOB Cert
+    </a>
     <a href="{% url 'student_create' %}" class="btn btn-primary">
       <i class="fas fa-user-plus me-1"></i> New Admission
     </a>
@@ -238,6 +241,9 @@
                 </a>
                 <a href="{% url 'student_roll_number_slip' s.pk %}" class="btn btn-outline-dark" title="Print Roll Number Slip" target="_blank">
                   <i class="fas fa-id-badge"></i>
+                </a>
+                <a href="{% url 'dob_certificate' s.pk %}" class="btn btn-outline-secondary text-dark" title="Print D.O.B Certificate" target="_blank">
+                  <i class="fas fa-birthday-cake"></i>
                 </a>
                 <a href="{% url 'student_update' s.pk %}" class="btn btn-outline-secondary" title="Edit Student">
                   <i class="fas fa-edit"></i>

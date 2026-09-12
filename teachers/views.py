@@ -224,10 +224,38 @@ def export_salary_bills_excel(request):
     return excel_download_response(buffer, f"KMS_Salary_Bills_{m_str}_{y_str}.xlsx")
 
 
+def calculate_length_of_service(start_date, end_date=None):
+    """
+    Computes exact length of service formatted as:
+    '05 Years 11 Months 19 Days'
+    """
+    if not start_date:
+        return "---"
+    if not end_date:
+        end_date = timezone.now().date()
+    if start_date > end_date:
+        return "00 Years 00 Months 00 Days"
+
+    import calendar
+    years = end_date.year - start_date.year
+    months = end_date.month - start_date.month
+    days = end_date.day - start_date.day
+    if days < 0:
+        months -= 1
+        prev_month = 12 if end_date.month == 1 else end_date.month - 1
+        prev_year = end_date.year - 1 if end_date.month == 1 else end_date.year
+        _, prev_days = calendar.monthrange(prev_year, prev_month)
+        days += prev_days
+    if months < 0:
+        years -= 1
+        months += 12
+    return f"{years:02d} Years {months:02d} Months {days:02d} Days"
+
+
 @login_required
 def salary_bill_detail(request, pk):
     """
-    Printable Salary Slip Detail View (FR-6.7).
+    Official Monthly Salary Statement View matching Accounts Office format for private school.
     """
     bill = get_object_or_404(
         MonthlySalaryBill.objects.select_related("teacher", "teacher__salary_scale"),
@@ -235,18 +263,98 @@ def salary_bill_detail(request, pk):
     )
     whatsapp_data = build_teacher_salary_slip_msg(
         bill,
-        principal_name="Farman Ali",
-        principal_contact="0344-9631323",
+        principal_name="Dr. Farman Ali",
+        principal_contact="+92 344 9631323",
         vp_name="Umar Saeed",
-        vp_contact="0345-3407095",
+        vp_contact="+92 345 3407095",
     )
+
+    # 1. Calculate Length of Service
+    today_date = timezone.now().date()
+    length_of_service = calculate_length_of_service(bill.teacher.joining_date, bill.payment_date or today_date)
+
+    # 2. Structured Pay & Allowances (4-column wage matrix)
+    allowance_items = []
+    allowance_items.append({"code": "0001", "name": "Basic Pay", "amount": bill.base_pay})
+
+    scale = getattr(bill.teacher, "salary_scale", None)
+    if scale and scale.medical_allowance > 0:
+        allowance_items.append({"code": "1001", "name": "Medical Allowance", "amount": scale.medical_allowance})
+    if scale and scale.conveyance_allowance > 0:
+        allowance_items.append({"code": "1210", "name": "Conveyance Allowance", "amount": scale.conveyance_allowance})
+    if scale and scale.other_allowances > 0:
+        allowance_items.append({"code": "1911", "name": "Teaching / Special Allowance", "amount": scale.other_allowances})
+
+    # Account for any remaining or custom allowances
+    scale_total_allw = scale.total_allowances if scale else Decimal("0.00")
+    if bill.allowances > scale_total_allw:
+        diff = bill.allowances - scale_total_allw
+        allowance_items.append({"code": "2378", "name": "Performance / Adhoc Relief", "amount": diff})
+    elif not scale and bill.allowances > 0:
+        half1 = (bill.allowances * Decimal("0.5")).quantize(Decimal("0.01"))
+        half2 = bill.allowances - half1
+        allowance_items.append({"code": "1210", "name": "Conveyance Allowance", "amount": half1})
+        allowance_items.append({"code": "2316", "name": "Teaching Allowance", "amount": half2})
+
+    # Pad to even count for 2-column paired layout
+    if len(allowance_items) % 2 != 0:
+        allowance_items.append({"code": "----", "name": "---", "amount": None})
+
+    allowance_pairs = []
+    for i in range(0, len(allowance_items), 2):
+        allowance_pairs.append({
+            "left": allowance_items[i],
+            "right": allowance_items[i + 1] if (i + 1) < len(allowance_items) else None,
+        })
+
+    # 3. Structured Deductions (Private School - No GPF)
+    deduction_items = []
+    if bill.auto_absent_deduction > 0:
+        deduction_items.append({
+            "code": "3001",
+            "name": f"Absence Deduction ({bill.absent_days} days)",
+            "amount": -bill.auto_absent_deduction,
+        })
+    if bill.other_deductions > 0:
+        deduction_items.append({
+            "code": "3990",
+            "name": "Advance Salary / Loan Recovery",
+            "amount": -bill.other_deductions,
+        })
+
+    # If no deductions, show standard zero entries
+    if not deduction_items:
+        deduction_items.append({
+            "code": "3001",
+            "name": "Absence Deduction (0 days)",
+            "amount": Decimal("0.00"),
+        })
+        deduction_items.append({
+            "code": "3990",
+            "name": "Advance Salary / Loan Recovery",
+            "amount": Decimal("0.00"),
+        })
+
+    if len(deduction_items) % 2 != 0:
+        deduction_items.append({"code": "----", "name": "Staff Welfare / Security Fund", "amount": Decimal("0.00")})
+
+    deduction_pairs = []
+    for i in range(0, len(deduction_items), 2):
+        deduction_pairs.append({
+            "left": deduction_items[i],
+            "right": deduction_items[i + 1] if (i + 1) < len(deduction_items) else None,
+        })
+
     context = {
         "bill": bill,
-        "today": timezone.now().date(),
-        "principal_name": "Farman Ali",
-        "principal_contact": "0344-9631323",
+        "today": today_date,
+        "length_of_service": length_of_service,
+        "allowance_pairs": allowance_pairs,
+        "deduction_pairs": deduction_pairs,
+        "principal_name": "Dr. Farman Ali",
+        "principal_contact": "+92 344 9631323",
         "vp_name": "Umar Saeed",
-        "vp_contact": "0345-3407095",
+        "vp_contact": "+92 345 3407095",
         "developer_name": "Rashid Zada",
         "developer_contact": "0347-0983567",
         "admin_name": "Rashid Zada",

@@ -2,6 +2,30 @@
 
 {% block title %}Student Results{% endblock title %}
 
+{% block extra_css %}
+<style>
+  .table thead th {
+    background-color: #f4f5f7 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    border: 1px solid #000000 !important;
+  }
+  .table tbody td, .table tfoot td {
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    font-weight: 600;
+  }
+  @media print {
+    .table thead th {
+      background-color: #f4f5f7 !important;
+      color: #000000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+{% endblock extra_css %}
+
 {% block breadcrumb %}
 <button type="button" onclick="window.print()" class="btn btn-primary"><i class="fas fa-print mr-1"></i> Print Results</button>
 {% endblock breadcrumb %}

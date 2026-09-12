@@ -3,6 +3,80 @@
 
 {% block title %}Master Class Result Sheet (Format 1){% endblock %}
 
+{% block extra_css %}
+<style>
+  .result-matrix-table {
+    border: 2px solid #000000 !important;
+  }
+  .result-matrix-table th {
+    background-color: #f1f3f6 !important;
+    color: #000000 !important;
+    border: 1.2px solid #000000 !important;
+    font-weight: 800 !important;
+  }
+  .result-matrix-table th .header-label {
+    color: #000000 !important;
+    font-weight: 800 !important;
+  }
+  .result-matrix-table th .header-max-num {
+    color: #000000 !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem;
+  }
+  .result-matrix-table td {
+    color: #000000 !important;
+    border: 1.2px solid #000000 !important;
+  }
+
+  @media print {
+    #sidebar, .topbar, .no-print, .btn, .card-filters, nav, header {
+      display: none !important;
+    }
+    body, html {
+      background: #ffffff !important;
+      color: #000000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .card {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+    .card-header {
+      background: transparent !important;
+      padding: 5px 0 !important;
+      border: none !important;
+    }
+    .result-matrix-table {
+      width: 100% !important;
+      border: 2px solid #000000 !important;
+    }
+    .result-matrix-table th {
+      background-color: #f1f3f6 !important;
+      color: #000000 !important;
+      border: 1.2px solid #000000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .result-matrix-table td {
+      color: #000000 !important;
+      border: 1.2px solid #000000 !important;
+    }
+    .badge {
+      border: 1px solid #000000 !important;
+      color: #000000 !important;
+      background: transparent !important;
+      font-weight: 800 !important;
+    }
+    @page {
+      size: A4 landscape;
+      margin: 6mm;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Top Header & Action Buttons -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
@@ -125,65 +199,65 @@
 
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle mb-0 text-center" style="font-size: 0.88rem;">
-        <thead class="table-dark" style="border-bottom: 2px solid #000;">
+      <table class="table table-bordered table-hover align-middle mb-0 text-center result-matrix-table" style="font-size: 0.88rem;">
+        <thead class="table-light border-dark" style="border-bottom: 2px solid #000;">
           <tr>
-            <th style="width: 45px;">Sr No</th>
-            <th style="width: 80px;">Adm #</th>
-            <th class="text-start" style="min-width: 140px;">Name</th>
-            <th class="text-start" style="min-width: 140px;">Father's Name</th>
+            <th style="width: 45px; color: #000000 !important; font-weight: 800;">Sr No</th>
+            <th style="width: 80px; color: #000000 !important; font-weight: 800;">Adm #</th>
+            <th class="text-start" style="min-width: 140px; color: #000000 !important; font-weight: 800;">Name</th>
+            <th class="text-start" style="min-width: 140px; color: #000000 !important; font-weight: 800;">Father's Name</th>
             <!-- Dynamic Subject Columns matching Image 1: Eng (75), Urdu (75)... -->
             {% for cs in class_subjects %}
-            <th style="min-width: 65px;" class="bg-primary-subtle text-dark border-dark">
-              <span class="d-block fw-bold">{{ cs.subject.short_name }}</span>
-              <span class="small fw-normal text-muted">({{ cs.total_marks|floatformat:0 }})</span>
+            <th style="min-width: 65px;" class="border-dark">
+              <span class="d-block fw-bold header-label">{{ cs.subject.short_name }}</span>
+              <span class="small header-max-num">({{ cs.total_marks|floatformat:0 }})</span>
             </th>
             {% endfor %}
             <!-- Grand Total matching Image 1: G.Total (650) -->
-            <th style="min-width: 80px;" class="bg-info-subtle text-dark fw-bold border-dark">
-              <span class="d-block">G.Total</span>
-              <span class="small fw-normal text-muted">({{ grand_total_max }})</span>
+            <th style="min-width: 80px;" class="fw-bold border-dark">
+              <span class="d-block header-label">G.Total</span>
+              <span class="small header-max-num">({{ grand_total_max }})</span>
             </th>
-            <th style="min-width: 65px;">%age</th>
-            <th style="min-width: 75px;">Position</th>
-            <th style="min-width: 60px;">Grade</th>
-            <th style="min-width: 70px;">Status</th>
-            <th style="width: 60px;" class="no-print">DMC</th>
+            <th style="min-width: 65px; color: #000000 !important; font-weight: 800;">%age</th>
+            <th style="min-width: 75px; color: #000000 !important; font-weight: 800;">Position</th>
+            <th style="min-width: 60px; color: #000000 !important; font-weight: 800;">Grade</th>
+            <th style="min-width: 70px; color: #000000 !important; font-weight: 800;">Status</th>
+            <th style="width: 60px; color: #000000 !important; font-weight: 800;" class="no-print">DMC</th>
           </tr>
         </thead>
         <tbody>
           {% for rec in student_records %}
           <tr {% if rec.status == "Fail" %}class="table-danger-subtle"{% endif %}>
-            <td class="fw-bold text-muted">{{ rec.sr_no }}</td>
-            <td><code>{{ rec.student.admission_no }}</code></td>
-            <td class="text-start fw-bold text-dark">
+            <td class="fw-bold" style="color: #000000 !important;">{{ rec.sr_no }}</td>
+            <td class="fw-bold" style="color: #000000 !important;">{{ rec.student.admission_no }}</td>
+            <td class="text-start fw-bold" style="color: #000000 !important;">
               {{ rec.student.full_name }}
             </td>
-            <td class="text-start text-muted">
+            <td class="text-start fw-bold" style="color: #000000 !important;">
               {{ rec.student.father_name }}
             </td>
             <!-- Subject Marks -->
             {% for sm in rec.subject_marks %}
-            <td class="{% if sm.score_display == 'A' %}text-danger fw-bold bg-danger-subtle{% endif %}">
+            <td style="color: #000000 !important; font-weight: 600;" class="{% if sm.score_display == 'A' %}text-danger fw-bold bg-danger-subtle{% endif %}">
               {% if sm.score_display and sm.score_display != '-' %}
                 {{ sm.score_display }}
               {% endif %}
             </td>
             {% endfor %}
             <!-- Grand Total -->
-            <td class="fw-bold fs-6 text-primary">
+            <td class="fw-bold fs-6" style="color: #000000 !important;">
               {% if rec.has_any_mark %}
                 {{ rec.obtained_total }}
               {% endif %}
             </td>
             <!-- %age -->
-            <td class="fw-bold">
+            <td class="fw-bold" style="color: #000000 !important;">
               {% if rec.percentage is not None and rec.has_any_mark %}
                 {{ rec.percentage }}%
               {% endif %}
             </td>
             <!-- Position -->
-            <td>
+            <td class="fw-bold" style="color: #000000 !important;">
               {% if rec.position == 1 %}
                 <span class="badge bg-warning text-dark px-2 py-1 shadow-sm"><i class="fas fa-trophy me-1"></i> 1st</span>
               {% elif rec.position == 2 %}
@@ -191,11 +265,11 @@
               {% elif rec.position == 3 %}
                 <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: #cd7f32;"><i class="fas fa-award me-1"></i> 3rd</span>
               {% elif rec.position_display and rec.position_display != '-' %}
-                <span class="fw-bold text-secondary">{{ rec.position_display }}</span>
+                <span class="fw-bold text-dark">{{ rec.position_display }}</span>
               {% endif %}
             </td>
             <!-- Grade -->
-            <td>
+            <td class="fw-bold" style="color: #000000 !important;">
               {% if rec.has_any_mark %}
                 {% if rec.grade == "A+" %}
                   <span class="badge bg-success fw-bold px-2 py-1">A+</span>

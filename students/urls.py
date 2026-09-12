@@ -19,5 +19,7 @@ urlpatterns = [
     path("<int:pk>/promote/", views.student_promote, name="student_promote"),
     path("<int:pk>/slc/", views.school_leaving_certificate, name="school_leaving_certificate"),
     path("<int:pk>/character/", views.character_certificate, name="character_certificate"),
+    path("<int:pk>/dob-certificate/", views.dob_certificate, name="dob_certificate"),
+    path("dob-certificate/", views.dob_certificate, name="dob_certificate_general"),
     path("<int:pk>/withdraw/", views.student_withdraw, name="student_withdraw"),
 ]

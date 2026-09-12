@@ -11,7 +11,7 @@ def school_context(request):
         setting = SchoolSetting(
             name="Kohisar Model School & College",
             address="Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa",
-            contact="0347-0983567 / 0300-1234567",
+            contact="+92 344 9631323 / +92 345 3407095",
         )
 
     active_session = AcademicSession.objects.filter(is_active=True).first()

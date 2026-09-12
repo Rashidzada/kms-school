@@ -41,10 +41,10 @@ def build_wa_link(phone, text):
 
 
 # Default school leadership contacts
-PRINCIPAL_NAME = "Farman Ali"
-PRINCIPAL_CONTACT = "0344-9631323"
+PRINCIPAL_NAME = "Dr. Farman Ali"
+PRINCIPAL_CONTACT = "+92 344 9631323"
 VP_NAME = "Umar Saeed"
-VP_CONTACT = "0345-3407095"
+VP_CONTACT = "+92 345 3407095"
 
 
 def build_student_fee_receipt_msg(

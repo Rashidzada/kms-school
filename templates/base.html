@@ -21,37 +21,57 @@
       --secondary-color: #2b6cb0;
       --accent-color: #d69e2e;
     }
-    body {
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background-color: #f7fafc;
       color: #2d3748;
-      min-height: 100vh;
     }
     #wrapper {
       display: flex;
-      width: 100%;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
     }
     #sidebar {
       width: var(--sidebar-width);
       min-width: var(--sidebar-width);
+      max-width: var(--sidebar-width);
+      height: 100vh;
+      max-height: 100vh;
       background: linear-gradient(180deg, #1a365d 0%, #0f2442 100%);
       color: #e2e8f0;
-      transition: all 0.3s ease;
+      transition: margin-left 0.3s ease;
       z-index: 1000;
       box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
     #sidebar.collapsed {
       margin-left: calc(-1 * var(--sidebar-width));
     }
     .sidebar-brand {
-      padding: 1.25rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #1a365d;
+      padding: 1.15rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
       display: flex;
       align-items: center;
       gap: 12px;
       text-decoration: none;
       color: #fff;
+      flex-shrink: 0;
     }
     .sidebar-brand img {
       width: 48px;
@@ -106,23 +126,35 @@
     }
     #content-wrapper {
       flex: 1;
+      height: 100vh;
+      max-height: 100vh;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
+      overflow-y: auto;
+      overflow-x: auto;
+      background-color: #f7fafc;
+      position: relative;
     }
     .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 990;
       background: #fff;
       height: 62px;
+      min-height: 62px;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      flex-shrink: 0;
     }
     .main-content {
-      flex: 1;
+      flex: 1 0 auto;
       padding: 1.5rem;
+      min-width: 0;
     }
     .card {
       border: 1px solid #e2e8f0;
@@ -146,15 +178,66 @@
       font-size: 0.82rem;
     }
 
+    /* Custom Modern Scrollbars for Left Sidebar */
+    #sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    #sidebar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    #sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+    }
+    #sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.45);
+    }
+    #sidebar {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.2);
+    }
+
+    /* Custom Modern Scrollbars for Right Content Area */
+    #content-wrapper::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    #content-wrapper::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    #content-wrapper::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    #content-wrapper::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    #content-wrapper {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
     /* Print styling */
     @media print {
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+      }
       #sidebar, .topbar, .no-print, .btn, .pagination, .modal {
         display: none !important;
       }
       #wrapper {
         display: block !important;
+        height: auto !important;
+        width: 100% !important;
+        overflow: visible !important;
       }
       #content-wrapper {
+        display: block !important;
+        height: auto !important;
+        width: 100% !important;
+        overflow: visible !important;
         margin: 0 !important;
         padding: 0 !important;
       }
@@ -162,7 +245,6 @@
         padding: 0 !important;
       }
       body {
-        background: #fff !important;
         color: #000 !important;
         font-size: 12pt;
       }

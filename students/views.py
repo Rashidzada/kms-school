@@ -944,7 +944,7 @@ def import_students_excel(request):
     family matching, and 12-month fee ledger initialization.
     """
     from datetime import datetime, date
-    from school.excel_utils import parse_excel_upload
+    from school.excel_utils import clean_adm_no, parse_excel_upload, resolve_class_level
 
     if request.method != "POST" or "excel_file" not in request.FILES:
         messages.error(request, "Please select an Excel file (.xlsx) to upload.")
@@ -984,23 +984,21 @@ def import_students_excel(request):
         with transaction.atomic():
             for r in records:
                 row_num = r.get("_row_number", "?")
-                full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
-                father_name = str(r.get("father_name__", "") or r.get("father_name", "")).strip()
+                full_name = str(r.get("full_name") or r.get("full_name__") or r.get("name", "")).strip()
+                father_name = str(r.get("father_name") or r.get("father_name__") or r.get("father", "")).strip()
 
                 if not full_name:
                     row_errors.append(f"Row {row_num}: Missing Full Name.")
                     continue
 
-                # Class matching or auto-creation
-                class_raw = str(r.get("class_name__", "") or r.get("class", "") or r.get("class_name", "")).strip()
-                class_obj = None
-                if class_raw:
-                    class_obj = ClassLevel.objects.filter(name__iexact=class_raw).first()
-                    if not class_obj:
-                        class_obj = ClassLevel.objects.create(name=class_raw, level="Primary", monthly_fee=Decimal("1500.00"))
+                # Class matching via intelligent resolver or fallback auto-creation
+                class_raw = str(r.get("class_name") or r.get("class_name__") or r.get("class") or r.get("grade", "")).strip()
+                class_obj = resolve_class_level(class_raw) if class_raw else None
+                if not class_obj and class_raw:
+                    class_obj = ClassLevel.objects.create(name=class_raw, level="Primary", monthly_fee=Decimal("1500.00"))
 
                 # Section matching or default
-                section_raw = str(r.get("section__a_b_c_", "") or r.get("section", "A")).strip().upper() or "A"
+                section_raw = str(r.get("section") or r.get("section_a_b_c") or r.get("section__a_b_c_", "A")).strip().upper() or "A"
                 section_obj = None
                 if class_obj:
                     section_obj = Section.objects.filter(class_level=class_obj, name__iexact=section_raw).first()
@@ -1008,12 +1006,12 @@ def import_students_excel(request):
                         section_obj = Section.objects.create(class_level=class_obj, name=section_raw)
 
                 # Gender
-                gender_raw = str(r.get("gender__male_female___", "") or r.get("gender", "Male")).strip().capitalize()
+                gender_raw = str(r.get("gender") or r.get("gender_male_female") or r.get("gender__male_female___", "Male")).strip().capitalize()
                 gender = gender_raw if gender_raw in ["Male", "Female"] else "Male"
 
                 # Contact & Address
-                contact = str(r.get("contact_number", "") or "").strip()
-                residence = str(r.get("residence_address", "") or r.get("residence", "")).strip()
+                contact = str(r.get("contact_number") or r.get("contact") or r.get("phone", "")).strip()
+                residence = str(r.get("residence_address") or r.get("residence") or r.get("address", "")).strip()
 
                 # Family matching or creation
                 family = None
@@ -1029,15 +1027,18 @@ def import_students_excel(request):
                         )
 
                 # Dates
-                dob = parse_date(r.get("date_of_birth__yyyy_mm_dd_", None) or r.get("date_of_birth", None))
-                adm_date = parse_date(r.get("admission_date__yyyy_mm_dd_", None) or r.get("admission_date", None)) or timezone.now().date()
+                dob = parse_date(r.get("dob") or r.get("date_of_birth") or r.get("date_of_birth_yyyy_mm_dd") or r.get("date_of_birth__yyyy_mm_dd_"))
+                adm_date = parse_date(r.get("admission_date") or r.get("admission_date_yyyy_mm_dd") or r.get("admission_date__yyyy_mm_dd_")) or timezone.now().date()
 
                 # Status
-                status_raw = str(r.get("status__active_withdrawn_", "") or r.get("status", "Active")).strip().capitalize()
+                status_raw = str(r.get("status") or r.get("status_active_withdrawn") or r.get("status__active_withdrawn_", "Active")).strip().capitalize()
                 status = "Withdrawn" if "withdrawn" in status_raw.lower() else "Active"
 
                 # Check for existing student by admission number or name+father+class (Prevent Duplicates)
-                adm_no = str(r.get("admission_no__optional_", "") or r.get("admission_no", "") or r.get("admission_number", "")).strip()
+                adm_no = clean_adm_no(
+                    r.get("admission_no") or r.get("admission_optional") or r.get("admission_no__optional_") or
+                    r.get("admission") or r.get("roll_no") or r.get("roll") or r.get("reg_no") or ""
+                )
                 student = None
                 if adm_no:
                     student = Student.objects.filter(admission_no__iexact=adm_no).first()
@@ -1053,6 +1054,8 @@ def import_students_excel(request):
                     student.full_name = full_name
                     student.father_name = father_name
                     student.gender = gender
+                    if adm_no and not student.admission_no:
+                        student.admission_no = adm_no
                     if dob:
                         student.dob = dob
                     if class_obj:

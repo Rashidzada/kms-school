@@ -107,6 +107,82 @@ def excel_download_response(buffer, filename):
     return response
 
 
+def clean_adm_no(val):
+    """
+    Cleans admission / roll number value from Excel.
+    Normalizes floats like 800.0 or 900.0 to '800', '900', strips whitespace,
+    and returns a clean string. Returns empty string if None/empty.
+    """
+    if val is None:
+        return ""
+    if isinstance(val, float):
+        if val.is_integer():
+            return str(int(val))
+        return str(val).strip()
+    val_str = str(val).strip()
+    if val_str.endswith(".0"):
+        val_str = val_str[:-2]
+    return val_str
+
+
+def resolve_class_level(raw_val):
+    """
+    Intelligently resolves a raw class name string from Excel (e.g. '8th', 'Class 8th',
+    '8', 'Grade 8th', '9th', '10th', 'Nursery', 'Prep', '1st Year Pre-Medical')
+    to an existing ClassLevel database record.
+    Prevents creating orphan duplicate classes like 'Class 8th' when 'Class 8' exists.
+    """
+    if not raw_val:
+        return None
+    from school.models import ClassLevel
+
+    if isinstance(raw_val, ClassLevel):
+        return raw_val
+
+    s = str(raw_val).strip()
+    if not s:
+        return None
+
+    # 1. Direct case-insensitive match
+    c = ClassLevel.objects.filter(name__iexact=s).first()
+    if c:
+        return c
+
+    s_lower = s.lower()
+
+    # 2. Early childhood keywords
+    if "nur" in s_lower:
+        return ClassLevel.objects.filter(name__iexact="Nursery").first()
+    if "prep" in s_lower or "kg" in s_lower or "kinder" in s_lower:
+        return ClassLevel.objects.filter(name__iexact="Prep").first()
+
+    # 3. College programs
+    if "ics" in s_lower:
+        if "2" in s_lower:
+            return ClassLevel.objects.filter(name__icontains="ICS 2nd").first()
+        return ClassLevel.objects.filter(name__icontains="ICS 1st").first()
+    if "med" in s_lower:
+        if "2" in s_lower or "12" in s_lower:
+            return ClassLevel.objects.filter(name__icontains="2nd Year Pre-Med").first()
+        return ClassLevel.objects.filter(name__icontains="1st Year Pre-Med").first()
+    if "eng" in s_lower:
+        if "2" in s_lower or "12" in s_lower:
+            return ClassLevel.objects.filter(name__icontains="2nd Year Pre-Eng").first()
+        return ClassLevel.objects.filter(name__icontains="1st Year Pre-Eng").first()
+
+    # 4. Standard school classes: 1 to 10 with suffixes (1st, 2nd, 3rd, 4th... 8th, 9th, 10th)
+    nums = re.findall(r"\b(10|[1-9])(?:st|nd|rd|th)?\b", s_lower)
+    if nums:
+        num = nums[0]
+        c = ClassLevel.objects.filter(name__iexact=f"Class {num}").first()
+        if c:
+            return c
+
+    # 5. Fallback contains search
+    c = ClassLevel.objects.filter(name__icontains=s).first()
+    return c
+
+
 def parse_excel_upload(uploaded_file, header_row=2):
     """
     Parses an uploaded Excel file.
@@ -147,12 +223,18 @@ def parse_excel_upload(uploaded_file, header_row=2):
                 row_dict[k] = val
 
                 # Auto-populate canonical key aliases for seamless lookups
-                if "class_name" in k or k == "class":
+                if "class" in k or "grade" in k:
                     row_dict["class_name"] = val
-                elif "full_name" in k or k == "name":
+                elif "admission" in k or "adm" in k or "roll" in k or "reg" in k:
+                    row_dict["admission_no"] = clean_adm_no(val)
+                elif "full_name" in k or ("name" in k and "father" not in k and "guardian" not in k and "school" not in k):
                     row_dict["full_name"] = val
-                elif "father" in k:
+                elif "father" in k or "guardian" in k:
                     row_dict["father_name"] = val
+                elif "gender" in k or "sex" in k:
+                    row_dict["gender"] = val
+                elif "birth" in k or "dob" in k:
+                    row_dict["dob"] = val
                 elif "monthly_fee" in k or "fee" in k:
                     row_dict["monthly_fee"] = val
                 elif "level" in k:
@@ -167,14 +249,10 @@ def parse_excel_upload(uploaded_file, header_row=2):
                     row_dict["designation"] = val
                 elif "cnic" in k:
                     row_dict["cnic"] = val
-                elif "birth" in k or "dob" in k:
-                    row_dict["dob"] = val
                 elif "joining" in k:
                     row_dict["joining_date"] = val
-                elif "admission_date" in k:
+                elif "admission_date" in k or ("date" in k and "adm" in k):
                     row_dict["admission_date"] = val
-                elif "admission_no" in k:
-                    row_dict["admission_no"] = val
                 elif "contact" in k or "phone" in k or "mobile" in k:
                     row_dict["contact_number"] = val
                 elif "address" in k or "residence" in k:

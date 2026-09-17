@@ -48,7 +48,7 @@ class ClassLevel(models.Model):
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["id"]
         verbose_name = "Class Level"
         verbose_name_plural = "Class Levels"
 

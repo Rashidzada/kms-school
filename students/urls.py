@@ -22,4 +22,7 @@ urlpatterns = [
     path("<int:pk>/dob-certificate/", views.dob_certificate, name="dob_certificate"),
     path("dob-certificate/", views.dob_certificate, name="dob_certificate_general"),
     path("<int:pk>/withdraw/", views.student_withdraw, name="student_withdraw"),
+    path("<int:pk>/delete/", views.student_delete, name="student_delete"),
+    path("bulk-delete/", views.student_bulk_delete, name="student_bulk_delete"),
+    path("class/<int:class_id>/delete/", views.class_students_delete, name="class_students_delete"),
 ]

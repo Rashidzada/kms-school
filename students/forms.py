@@ -37,6 +37,8 @@ class StudentForm(forms.ModelForm):
         self.fields["admission_no"].help_text = (
             "Leave blank to auto-generate sequentially (e.g. 1001, 1002...)"
         )
+        self.fields["father_name"].required = False
+        self.fields["father_name"].help_text = "Optional if not known in advance"
 
 
 class FamilyHouseholdForm(forms.ModelForm):

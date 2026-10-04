@@ -13,6 +13,8 @@ class SchoolSettingForm(forms.ModelForm):
             "academic_session_format",
             "receipt_no_prefix",
             "last_receipt_no",
+            "passing_percentage",
+            "passing_rule",
         ]
 
 

@@ -20,6 +20,18 @@ class StudentAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "current_class", "current_section", "gender")
     search_fields = ("admission_no", "full_name", "father_name", "contact_number")
+    actions = ["delete_selected_safely"]
+
+    @admin.action(description="Delete selected students (and all related marks & records)")
+    def delete_selected_safely(self, request, queryset):
+        from django.contrib import messages
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(
+            request,
+            f"Successfully deleted {count} student(s) and their associated records.",
+            messages.SUCCESS,
+        )
 
 
 @admin.register(PromotionHistory)

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ucWj8IzFgpv5QiFqd0BdHQoK4yOfgQZdwFoIbwnkZ2PLKaWdUR57dy341K6QFAN
+\restrict i1A1gHqAKtz9pT1JjCLwRm3n3rgwmVdejYlBBTiCz5ZOiTMbGj0cmaKAinGLDmh
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -19,164 +19,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY public.teachers_teacher DROP CONSTRAINT IF EXISTS teachers_teacher_salary_scale_id_e526c2c8_fk_teachers_;
-ALTER TABLE IF EXISTS ONLY public.teachers_monthlysalarybill DROP CONSTRAINT IF EXISTS teachers_monthlysala_teacher_id_cc1084ca_fk_teachers_;
-ALTER TABLE IF EXISTS ONLY public.students_student DROP CONSTRAINT IF EXISTS students_student_family_id_bbc9cc99_fk_students_;
-ALTER TABLE IF EXISTS ONLY public.students_student DROP CONSTRAINT IF EXISTS students_student_current_section_id_3239129f_fk_school_se;
-ALTER TABLE IF EXISTS ONLY public.students_student DROP CONSTRAINT IF EXISTS students_student_current_class_id_cf5f558b_fk_school_cl;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhi_to_section_id_ec1f7bb7_fk_school_se;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhi_to_class_id_d284316c_fk_school_cl;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhi_student_id_66feb5eb_fk_students_;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhi_from_section_id_9305de88_fk_school_se;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhi_from_class_id_7189d79c_fk_school_cl;
-ALTER TABLE IF EXISTS ONLY public.school_section DROP CONSTRAINT IF EXISTS school_section_class_level_id_0c997e4a_fk_school_classlevel_id;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeemonthentry DROP CONSTRAINT IF EXISTS finance_studentfeemo_ledger_id_e4c9a9e7_fk_finance_s;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeeledger DROP CONSTRAINT IF EXISTS finance_studentfeele_student_id_6819ba4c_fk_students_;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeeledger DROP CONSTRAINT IF EXISTS finance_studentfeele_academic_session_id_98fdaaac_fk_school_ac;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt_month_entries DROP CONSTRAINT IF EXISTS finance_feepaymentre_studentfeemonthentry_88f8f2aa_fk_finance_s;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt DROP CONSTRAINT IF EXISTS finance_feepaymentre_student_id_0286c392_fk_students_;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt_month_entries DROP CONSTRAINT IF EXISTS finance_feepaymentre_feepaymentreceipt_id_8da561d4_fk_finance_f;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_subject_id_b114cf98_fk_exams_subject_id;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_student_id_fcc2fb05_fk_students_student_id;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_exam_id_0e1ee69b_fk_exams_exam_id;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_class_level_id_9d13595d_fk_school_classlevel_id;
-ALTER TABLE IF EXISTS ONLY public.exams_exam DROP CONSTRAINT IF EXISTS exams_exam_session_id_97602d19_fk_school_academicsession_id;
-ALTER TABLE IF EXISTS ONLY public.exams_classsubject DROP CONSTRAINT IF EXISTS exams_classsubject_subject_id_c4ba1111_fk_exams_subject_id;
-ALTER TABLE IF EXISTS ONLY public.exams_classsubject DROP CONSTRAINT IF EXISTS exams_classsubject_class_level_id_1cf805ba_fk_school_cl;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_user_id_c564eba6_fk_auth_user_id;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_content_type_id_c4bce8eb_fk_django_co;
-ALTER TABLE IF EXISTS ONLY public.auth_user_user_permissions DROP CONSTRAINT IF EXISTS auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id;
-ALTER TABLE IF EXISTS ONLY public.auth_user_user_permissions DROP CONSTRAINT IF EXISTS auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm;
-ALTER TABLE IF EXISTS ONLY public.auth_user_groups DROP CONSTRAINT IF EXISTS auth_user_groups_user_id_6a12ed8b_fk_auth_user_id;
-ALTER TABLE IF EXISTS ONLY public.auth_user_groups DROP CONSTRAINT IF EXISTS auth_user_groups_group_id_97559544_fk_auth_group_id;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_2f476e4b_fk_django_co;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_b120cbf9_fk_auth_group_id;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissio_permission_id_84c5c92e_fk_auth_perm;
-DROP INDEX IF EXISTS public.teachers_teacher_teacher_id_d2057e5f_like;
-DROP INDEX IF EXISTS public.teachers_teacher_salary_scale_id_e526c2c8;
-DROP INDEX IF EXISTS public.teachers_salaryscale_name_829c87a9_like;
-DROP INDEX IF EXISTS public.teachers_monthlysalarybill_teacher_id_cc1084ca;
-DROP INDEX IF EXISTS public.students_student_family_id_bbc9cc99;
-DROP INDEX IF EXISTS public.students_student_current_section_id_3239129f;
-DROP INDEX IF EXISTS public.students_student_current_class_id_cf5f558b;
-DROP INDEX IF EXISTS public.students_student_admission_no_feb174a2_like;
-DROP INDEX IF EXISTS public.students_promotionhistory_to_section_id_ec1f7bb7;
-DROP INDEX IF EXISTS public.students_promotionhistory_to_class_id_d284316c;
-DROP INDEX IF EXISTS public.students_promotionhistory_student_id_66feb5eb;
-DROP INDEX IF EXISTS public.students_promotionhistory_from_section_id_9305de88;
-DROP INDEX IF EXISTS public.students_promotionhistory_from_class_id_7189d79c;
-DROP INDEX IF EXISTS public.students_familyhousehold_family_id_0db3cd5b_like;
-DROP INDEX IF EXISTS public.school_section_class_level_id_0c997e4a;
-DROP INDEX IF EXISTS public.school_classlevel_name_45e68f6f_like;
-DROP INDEX IF EXISTS public.school_academicsession_name_f698a586_like;
-DROP INDEX IF EXISTS public.finance_studentfeemonthentry_ledger_id_e4c9a9e7;
-DROP INDEX IF EXISTS public.finance_studentfeeledger_student_id_6819ba4c;
-DROP INDEX IF EXISTS public.finance_studentfeeledger_academic_session_id_98fdaaac;
-DROP INDEX IF EXISTS public.finance_feepaymentreceipt_student_id_0286c392;
-DROP INDEX IF EXISTS public.finance_feepaymentreceipt_receipt_no_2a5aaf5c_like;
-DROP INDEX IF EXISTS public.finance_feepaymentreceipt__studentfeemonthentry_id_88f8f2aa;
-DROP INDEX IF EXISTS public.finance_feepaymentreceipt__feepaymentreceipt_id_8da561d4;
-DROP INDEX IF EXISTS public.exams_subject_name_ec73097d_like;
-DROP INDEX IF EXISTS public.exams_exammark_subject_id_b114cf98;
-DROP INDEX IF EXISTS public.exams_exammark_student_id_fcc2fb05;
-DROP INDEX IF EXISTS public.exams_exammark_exam_id_0e1ee69b;
-DROP INDEX IF EXISTS public.exams_exammark_class_level_id_9d13595d;
-DROP INDEX IF EXISTS public.exams_exam_session_id_97602d19;
-DROP INDEX IF EXISTS public.exams_classsubject_subject_id_c4ba1111;
-DROP INDEX IF EXISTS public.exams_classsubject_class_level_id_1cf805ba;
-DROP INDEX IF EXISTS public.django_session_session_key_c0390e0f_like;
-DROP INDEX IF EXISTS public.django_session_expire_date_a5c62663;
-DROP INDEX IF EXISTS public.django_admin_log_user_id_c564eba6;
-DROP INDEX IF EXISTS public.django_admin_log_content_type_id_c4bce8eb;
-DROP INDEX IF EXISTS public.auth_user_username_6821ab7c_like;
-DROP INDEX IF EXISTS public.auth_user_user_permissions_user_id_a95ead1b;
-DROP INDEX IF EXISTS public.auth_user_user_permissions_permission_id_1fbb5f2c;
-DROP INDEX IF EXISTS public.auth_user_groups_user_id_6a12ed8b;
-DROP INDEX IF EXISTS public.auth_user_groups_group_id_97559544;
-DROP INDEX IF EXISTS public.auth_permission_content_type_id_2f476e4b;
-DROP INDEX IF EXISTS public.auth_group_permissions_permission_id_84c5c92e;
-DROP INDEX IF EXISTS public.auth_group_permissions_group_id_b120cbf9;
-DROP INDEX IF EXISTS public.auth_group_name_a6ea08ec_like;
-ALTER TABLE IF EXISTS ONLY public.teachers_teacher DROP CONSTRAINT IF EXISTS teachers_teacher_teacher_id_key;
-ALTER TABLE IF EXISTS ONLY public.teachers_teacher DROP CONSTRAINT IF EXISTS teachers_teacher_pkey;
-ALTER TABLE IF EXISTS ONLY public.teachers_salaryscale DROP CONSTRAINT IF EXISTS teachers_salaryscale_pkey;
-ALTER TABLE IF EXISTS ONLY public.teachers_salaryscale DROP CONSTRAINT IF EXISTS teachers_salaryscale_name_key;
-ALTER TABLE IF EXISTS ONLY public.teachers_monthlysalarybill DROP CONSTRAINT IF EXISTS teachers_monthlysalarybill_teacher_id_month_year_6e9825e4_uniq;
-ALTER TABLE IF EXISTS ONLY public.teachers_monthlysalarybill DROP CONSTRAINT IF EXISTS teachers_monthlysalarybill_pkey;
-ALTER TABLE IF EXISTS ONLY public.students_student DROP CONSTRAINT IF EXISTS students_student_pkey;
-ALTER TABLE IF EXISTS ONLY public.students_student DROP CONSTRAINT IF EXISTS students_student_admission_no_key;
-ALTER TABLE IF EXISTS ONLY public.students_promotionhistory DROP CONSTRAINT IF EXISTS students_promotionhistory_pkey;
-ALTER TABLE IF EXISTS ONLY public.students_familyhousehold DROP CONSTRAINT IF EXISTS students_familyhousehold_pkey;
-ALTER TABLE IF EXISTS ONLY public.students_familyhousehold DROP CONSTRAINT IF EXISTS students_familyhousehold_family_id_key;
-ALTER TABLE IF EXISTS ONLY public.school_section DROP CONSTRAINT IF EXISTS school_section_pkey;
-ALTER TABLE IF EXISTS ONLY public.school_section DROP CONSTRAINT IF EXISTS school_section_class_level_id_name_bdec3baa_uniq;
-ALTER TABLE IF EXISTS ONLY public.school_schoolsetting DROP CONSTRAINT IF EXISTS school_schoolsetting_pkey;
-ALTER TABLE IF EXISTS ONLY public.school_classlevel DROP CONSTRAINT IF EXISTS school_classlevel_pkey;
-ALTER TABLE IF EXISTS ONLY public.school_classlevel DROP CONSTRAINT IF EXISTS school_classlevel_name_key;
-ALTER TABLE IF EXISTS ONLY public.school_academicsession DROP CONSTRAINT IF EXISTS school_academicsession_pkey;
-ALTER TABLE IF EXISTS ONLY public.school_academicsession DROP CONSTRAINT IF EXISTS school_academicsession_name_key;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeemonthentry DROP CONSTRAINT IF EXISTS finance_studentfeemonthentry_pkey;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeemonthentry DROP CONSTRAINT IF EXISTS finance_studentfeemonthentry_ledger_id_month_9462bee3_uniq;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeeledger DROP CONSTRAINT IF EXISTS finance_studentfeeledger_student_id_academic_sess_851f7590_uniq;
-ALTER TABLE IF EXISTS ONLY public.finance_studentfeeledger DROP CONSTRAINT IF EXISTS finance_studentfeeledger_pkey;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt DROP CONSTRAINT IF EXISTS finance_feepaymentreceipt_receipt_no_key;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt DROP CONSTRAINT IF EXISTS finance_feepaymentreceipt_pkey;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt_month_entries DROP CONSTRAINT IF EXISTS finance_feepaymentreceipt_month_entries_pkey;
-ALTER TABLE IF EXISTS ONLY public.finance_feepaymentreceipt_month_entries DROP CONSTRAINT IF EXISTS finance_feepaymentreceip_feepaymentreceipt_id_stu_5fa12f1a_uniq;
-ALTER TABLE IF EXISTS ONLY public.exams_subject DROP CONSTRAINT IF EXISTS exams_subject_pkey;
-ALTER TABLE IF EXISTS ONLY public.exams_subject DROP CONSTRAINT IF EXISTS exams_subject_name_key;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_pkey;
-ALTER TABLE IF EXISTS ONLY public.exams_exammark DROP CONSTRAINT IF EXISTS exams_exammark_exam_id_student_id_subject_id_9db8e81e_uniq;
-ALTER TABLE IF EXISTS ONLY public.exams_exam DROP CONSTRAINT IF EXISTS exams_exam_pkey;
-ALTER TABLE IF EXISTS ONLY public.exams_classsubject DROP CONSTRAINT IF EXISTS exams_classsubject_pkey;
-ALTER TABLE IF EXISTS ONLY public.exams_classsubject DROP CONSTRAINT IF EXISTS exams_classsubject_class_level_id_subject_id_78b4658b_uniq;
-ALTER TABLE IF EXISTS ONLY public.django_session DROP CONSTRAINT IF EXISTS django_session_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_migrations DROP CONSTRAINT IF EXISTS django_migrations_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_pkey;
-ALTER TABLE IF EXISTS ONLY public.django_content_type DROP CONSTRAINT IF EXISTS django_content_type_app_label_model_76bd3d3b_uniq;
-ALTER TABLE IF EXISTS ONLY public.django_admin_log DROP CONSTRAINT IF EXISTS django_admin_log_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_user DROP CONSTRAINT IF EXISTS auth_user_username_key;
-ALTER TABLE IF EXISTS ONLY public.auth_user_user_permissions DROP CONSTRAINT IF EXISTS auth_user_user_permissions_user_id_permission_id_14a6b632_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_user_user_permissions DROP CONSTRAINT IF EXISTS auth_user_user_permissions_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_user DROP CONSTRAINT IF EXISTS auth_user_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_user_groups DROP CONSTRAINT IF EXISTS auth_user_groups_user_id_group_id_94350c0c_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_user_groups DROP CONSTRAINT IF EXISTS auth_user_groups_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_permission DROP CONSTRAINT IF EXISTS auth_permission_content_type_id_codename_01ab375a_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_pkey;
-ALTER TABLE IF EXISTS ONLY public.auth_group_permissions DROP CONSTRAINT IF EXISTS auth_group_permissions_group_id_permission_id_0cd325b0_uniq;
-ALTER TABLE IF EXISTS ONLY public.auth_group DROP CONSTRAINT IF EXISTS auth_group_name_key;
-ALTER TABLE IF EXISTS ONLY public.accounts_expense DROP CONSTRAINT IF EXISTS accounts_expense_pkey;
-DROP TABLE IF EXISTS public.teachers_teacher;
-DROP TABLE IF EXISTS public.teachers_salaryscale;
-DROP TABLE IF EXISTS public.teachers_monthlysalarybill;
-DROP TABLE IF EXISTS public.students_student;
-DROP TABLE IF EXISTS public.students_promotionhistory;
-DROP TABLE IF EXISTS public.students_familyhousehold;
-DROP TABLE IF EXISTS public.school_section;
-DROP TABLE IF EXISTS public.school_schoolsetting;
-DROP TABLE IF EXISTS public.school_classlevel;
-DROP TABLE IF EXISTS public.school_academicsession;
-DROP TABLE IF EXISTS public.finance_studentfeemonthentry;
-DROP TABLE IF EXISTS public.finance_studentfeeledger;
-DROP TABLE IF EXISTS public.finance_feepaymentreceipt_month_entries;
-DROP TABLE IF EXISTS public.finance_feepaymentreceipt;
-DROP TABLE IF EXISTS public.exams_subject;
-DROP TABLE IF EXISTS public.exams_exammark;
-DROP TABLE IF EXISTS public.exams_exam;
-DROP TABLE IF EXISTS public.exams_classsubject;
-DROP TABLE IF EXISTS public.django_session;
-DROP TABLE IF EXISTS public.django_migrations;
-DROP TABLE IF EXISTS public.django_content_type;
-DROP TABLE IF EXISTS public.django_admin_log;
-DROP TABLE IF EXISTS public.auth_user_user_permissions;
-DROP TABLE IF EXISTS public.auth_user_groups;
-DROP TABLE IF EXISTS public.auth_user;
-DROP TABLE IF EXISTS public.auth_permission;
-DROP TABLE IF EXISTS public.auth_group_permissions;
-DROP TABLE IF EXISTS public.auth_group;
-DROP TABLE IF EXISTS public.accounts_expense;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -911,7 +753,7 @@ ALTER TABLE public.students_promotionhistory ALTER COLUMN id ADD GENERATED BY DE
 
 CREATE TABLE public.students_student (
     id bigint NOT NULL,
-    admission_no character varying(20) NOT NULL,
+    admission_no character varying(50) NOT NULL,
     admission_date date NOT NULL,
     full_name character varying(255) NOT NULL,
     father_name character varying(255) NOT NULL,
@@ -1089,11 +931,11 @@ COPY public.accounts_expense (id, date, category, amount, note, reference, payme
 26	2026-07-13	Maintenance	16400.00	Monthly operational bills & procurement for Maintenance	EXP-2026-07-858	Cash
 27	2026-07-08	Electricity	36800.00	Monthly operational bills & procurement for Electricity	EXP-2026-07-100	Cash
 28	2026-07-01	Other	16400.00	Monthly operational bills & procurement for Other	EXP-2026-07-165	Bank
-33	2026-09-04	Other	5600.00	All new and olad party with dues and other cold drinks	2026905	Cash
 29	2026-08-02	Stationery	6200.00	Monthly operational bills & procurement for Stationery	EXP-2026-08-872	Cash
 30	2026-08-07	Maintenance	7600.00	Monthly operational bills & procurement for Maintenance	EXP-2026-08-256	Bank
 31	2026-08-07	Electricity	6300.00	Monthly operational bills & procurement for Electricity	EXP-2026-08-511	Cash
 32	2026-08-20	Other	18000.00	Monthly operational bills & procurement for Other	EXP-2026-08-463	Bank
+33	2026-09-04	Other	5600.00	All new and olad party with dues and other cold drinks	2026905	Cash
 \.
 
 
@@ -1222,8 +1064,8 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 --
 
 COPY public.auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) FROM stdin;
-2	pbkdf2_sha256$1500000$kMbtaNj6OxVKdcOM4ERu9w$UX3dGbfY1vCTibNFhilY9e/kkPv4E6w0QVgl9MM6HIw=	2026-09-11 18:43:41.046878-07	t	umarsaeed	Umar	Saeed	umarsaeed@kohisar.edu.pk	t	t	2026-09-03 23:36:55-07
-1	pbkdf2_sha256$1500000$sYsJ1qoplWjlANfQSkN2OL$jDMmKoH/FbflEZTOV16VzX4uXE3/ggNmvqySINmkvUg=	2026-09-11 20:30:49.01332-07	t	admin	Dr. Farman	Ali	drfarmanali@kohisar.edu.pk	t	t	2026-09-03 22:55:13.883-07
+2	pbkdf2_sha256$1500000$kMbtaNj6OxVKdcOM4ERu9w$UX3dGbfY1vCTibNFhilY9e/kkPv4E6w0QVgl9MM6HIw=	2026-09-17 04:17:09.015469-07	t	umarsaeed	Umar	Saeed	umarsaeed@kohisar.edu.pk	t	t	2026-09-03 23:36:55-07
+1	pbkdf2_sha256$1500000$sYsJ1qoplWjlANfQSkN2OL$jDMmKoH/FbflEZTOV16VzX4uXE3/ggNmvqySINmkvUg=	2026-09-19 05:20:39.978359-07	t	admin	Dr. Farman	Ali	drfarmanali@kohisar.edu.pk	t	t	2026-09-03 22:55:13.883-07
 \.
 
 
@@ -1248,9 +1090,397 @@ COPY public.auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
 --
 
 COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
-1	2026-09-03 23:36:56.494695-07	2	umarsaeed	1	[{"added": {}}]	4	1
-2	2026-09-03 23:37:16.745258-07	2	umarsaeed	2	[{"changed": {"fields": ["First name", "Last name", "Email address", "Staff status", "Superuser status"]}}]	4	1
-3	2026-09-06 18:44:09.458082-07	41	REC-1041 - Mustafa Swati (3200.00)	2	[]	17	1
+1	2026-09-03 23:36:56.494-07	2	umarsaeed	1	[{"added": {}}]	4	1
+2	2026-09-03 23:37:16.745-07	2	umarsaeed	2	[{"changed": {"fields": ["First name", "Last name", "Email address", "Staff status", "Superuser status"]}}]	4	1
+3	2026-09-06 18:44:09.458-07	41	REC-1041 - Mustafa Swati (3200.00)	2	[]	17	1
+4	2026-09-17 03:57:07.913885-07	60	REC-1058 - Zubair Gul (600.00)	3		17	2
+5	2026-09-17 03:57:07.91397-07	59	REC-1057 - Fatima Bibi (1200.00)	3		17	2
+6	2026-09-17 03:57:07.914024-07	58	REC-1056 - Abdullah Rehman (40000.00)	3		17	2
+7	2026-09-17 03:57:07.91407-07	55	REC-1055 - Zubair Gul (2300.00)	3		17	2
+8	2026-09-17 03:57:07.914116-07	54	REC-1054 - Mustafa Jan (2800.00)	3		17	2
+9	2026-09-17 03:57:07.914159-07	53	REC-1053 - Zubair Gul (6000.00)	3		17	2
+10	2026-09-17 03:57:07.914203-07	52	REC-1052 - Umar Jan (2300.00)	3		17	2
+11	2026-09-17 03:57:07.914252-07	51	REC-1051 - Ali Hussain (19500.00)	3		17	2
+12	2026-09-17 03:57:07.914294-07	50	REC-1050 - Tariq Ahmad (20400.00)	3		17	2
+13	2026-09-17 03:57:07.914338-07	49	REC-1049 - Usman Khan (39000.00)	3		17	2
+14	2026-09-17 03:57:07.914443-07	48	REC-1048 - Sana Khan (15000.00)	3		17	2
+15	2026-09-17 03:57:07.914497-07	47	REC-1047 - Junaid Khan (14400.00)	3		17	2
+16	2026-09-17 03:57:07.91453-07	46	REC-1046 - Noman Ahmad (4200.00)	3		17	2
+17	2026-09-17 03:57:07.91456-07	45	REC-1045 - Junaid Ahmad (12000.00)	3		17	2
+18	2026-09-17 03:57:07.914588-07	44	REC-1044 - Hafsa Bibi (3800.00)	3		17	2
+19	2026-09-17 03:57:07.914614-07	43	REC-1043 - Adil Yousafzai (10500.00)	3		17	2
+20	2026-09-17 03:57:07.914642-07	42	REC-1042 - Shahzad Rehman (9600.00)	3		17	2
+21	2026-09-17 03:57:07.914669-07	41	REC-1041 - Mustafa Swati (3200.00)	3		17	2
+22	2026-09-17 03:57:07.914696-07	40	REC-1040 - Maryam Khan (9000.00)	3		17	2
+23	2026-09-17 03:57:07.914724-07	39	REC-1039 - Usman Zada (9000.00)	3		17	2
+24	2026-09-17 03:57:07.91475-07	38	REC-1038 - Ali Gul (2800.00)	3		17	2
+25	2026-09-17 03:57:07.914776-07	37	REC-1037 - Zubair Swati (2500.00)	3		17	2
+26	2026-09-17 03:57:07.914803-07	36	REC-1036 - Sidra Bibi (18600.00)	3		17	2
+27	2026-09-17 03:57:07.914829-07	35	REC-1035 - Zubair Hussain (6000.00)	3		17	2
+28	2026-09-17 03:57:07.914855-07	34	REC-1034 - Junaid Yousafzai (40800.00)	3		17	2
+29	2026-09-17 03:57:07.914883-07	33	REC-1033 - Sami Bibi (19500.00)	3		17	2
+30	2026-09-17 03:57:07.914912-07	32	REC-1032 - Mehwish Khan (40800.00)	3		17	2
+31	2026-09-17 03:57:07.914939-07	31	REC-1031 - Talha Bibi (19500.00)	3		17	2
+32	2026-09-17 03:57:07.91497-07	30	REC-1030 - Aman Jan (5000.00)	3		17	2
+33	2026-09-17 03:57:07.914998-07	29	REC-1029 - Shahzad Bibi (14400.00)	3		17	2
+34	2026-09-17 03:57:07.915024-07	28	REC-1028 - Mehwish Khan (25200.00)	3		17	2
+35	2026-09-17 03:57:07.915051-07	27	REC-1027 - Danish Hussain (12000.00)	3		17	2
+36	2026-09-17 03:57:07.915078-07	26	REC-1026 - Danish Ali (3800.00)	3		17	2
+37	2026-09-17 03:57:07.915107-07	25	REC-1025 - Shoaib Swati (3500.00)	3		17	2
+38	2026-09-17 03:57:07.915135-07	24	REC-1024 - Mahnoor Khan (19200.00)	3		17	2
+39	2026-09-17 03:57:07.915163-07	23	REC-1023 - Abdullah Ali (19200.00)	3		17	2
+40	2026-09-17 03:57:07.91519-07	22	REC-1022 - Farhan Ahmad (3000.00)	3		17	2
+41	2026-09-17 03:57:07.915217-07	21	REC-1021 - Danish Yousafzai (9000.00)	3		17	2
+42	2026-09-17 03:57:07.915245-07	20	REC-1020 - Hira Bibi (8400.00)	3		17	2
+43	2026-09-17 03:57:07.915275-07	19	REC-1019 - Abdullah Rehman (15000.00)	3		17	2
+44	2026-09-17 03:57:07.915306-07	18	REC-1018 - Rizwan Yousafzai (6200.00)	3		17	2
+45	2026-09-17 03:57:07.915372-07	17	REC-1017 - Bilal Bibi (36000.00)	3		17	2
+46	2026-09-17 03:57:07.915406-07	16	REC-1016 - Zainab Khan (40800.00)	3		17	2
+47	2026-09-17 03:57:07.915427-07	15	REC-1015 - Farhan Ali (19500.00)	3		17	2
+48	2026-09-17 03:57:07.915446-07	14	REC-1014 - Sameer Hussain (6800.00)	3		17	2
+49	2026-09-17 03:57:07.915468-07	13	REC-1013 - Salman Gul (39000.00)	3		17	2
+50	2026-09-17 03:57:07.915487-07	12	REC-1012 - Ayesha Khan (5000.00)	3		17	2
+51	2026-09-17 03:57:07.915505-07	11	REC-1011 - Shoaib Shah (14400.00)	3		17	2
+52	2026-09-17 03:57:07.915523-07	10	REC-1010 - Shaukat Rehman (25200.00)	3		17	2
+53	2026-09-17 03:57:07.915541-07	9	REC-1009 - Junaid Shah (4000.00)	3		17	2
+54	2026-09-17 03:57:07.915558-07	8	REC-1008 - Fatima Bibi (11400.00)	3		17	2
+55	2026-09-17 03:57:07.915577-07	7	REC-1007 - Bakht Yousafzai (3500.00)	3		17	2
+56	2026-09-17 03:57:07.915595-07	6	REC-1006 - Talha Yousafzai (3200.00)	3		17	2
+57	2026-09-17 03:57:07.915614-07	5	REC-1005 - Moiz Zada (19200.00)	3		17	2
+58	2026-09-17 03:57:07.915631-07	4	REC-1004 - Sana Khan (3000.00)	3		17	2
+59	2026-09-17 03:57:07.915648-07	3	REC-1003 - Hamza Ahmad (9000.00)	3		17	2
+60	2026-09-17 03:57:07.915666-07	2	REC-1002 - Mustafa Jan (2800.00)	3		17	2
+61	2026-09-17 03:57:07.915683-07	1	REC-1001 - Zubair Gul (7500.00)	3		17	2
+62	2026-09-17 03:57:37.388551-07	1	1001 - Zubair Gul	3		13	2
+63	2026-09-17 03:57:37.388621-07	2	1002 - Mustafa Jan	3		13	2
+64	2026-09-17 03:57:37.388666-07	3	1003 - Hamza Ahmad	3		13	2
+65	2026-09-17 03:57:37.388704-07	4	1004 - Sana Khan	3		13	2
+66	2026-09-17 03:57:37.388743-07	5	1005 - Moiz Zada	3		13	2
+67	2026-09-17 03:57:37.388907-07	6	1006 - Talha Yousafzai	3		13	2
+68	2026-09-17 03:57:37.388962-07	7	1007 - Bakht Yousafzai	3		13	2
+69	2026-09-17 03:57:37.389004-07	8	1008 - Fatima Bibi	3		13	2
+70	2026-09-17 03:57:37.389043-07	9	1009 - Junaid Shah	3		13	2
+71	2026-09-17 03:57:37.389081-07	10	1010 - Shaukat Rehman	3		13	2
+72	2026-09-17 03:57:37.389119-07	11	1011 - Shoaib Shah	3		13	2
+73	2026-09-17 03:57:37.389158-07	12	1012 - Ayesha Khan	3		13	2
+74	2026-09-17 03:57:37.389213-07	13	1013 - Salman Gul	3		13	2
+75	2026-09-17 03:57:37.389268-07	14	1014 - Sameer Hussain	3		13	2
+76	2026-09-17 03:57:37.389353-07	15	1015 - Farhan Ali	3		13	2
+77	2026-09-17 03:57:37.389395-07	16	1016 - Zainab Khan	3		13	2
+78	2026-09-17 03:57:37.389434-07	17	1017 - Bilal Bibi	3		13	2
+79	2026-09-17 03:57:37.389473-07	18	1018 - Rizwan Yousafzai	3		13	2
+80	2026-09-17 03:57:37.389511-07	19	1019 - Abdullah Rehman	3		13	2
+81	2026-09-17 03:57:37.38955-07	20	1020 - Hira Bibi	3		13	2
+82	2026-09-17 03:57:37.389589-07	21	1021 - Danish Yousafzai	3		13	2
+83	2026-09-17 03:57:37.389626-07	22	1022 - Farhan Ahmad	3		13	2
+84	2026-09-17 03:57:37.389663-07	23	1023 - Abdullah Ali	3		13	2
+85	2026-09-17 03:57:37.389699-07	24	1024 - Mahnoor Khan	3		13	2
+86	2026-09-17 03:57:37.389735-07	25	1025 - Shoaib Swati	3		13	2
+87	2026-09-17 03:57:37.389772-07	26	1026 - Danish Ali	3		13	2
+88	2026-09-17 03:57:37.389807-07	27	1027 - Danish Hussain	3		13	2
+89	2026-09-17 03:57:37.389846-07	28	1028 - Mehwish Khan	3		13	2
+90	2026-09-17 03:57:37.389884-07	29	1029 - Shahzad Bibi	3		13	2
+91	2026-09-17 03:57:37.389929-07	30	1030 - Aman Jan	3		13	2
+92	2026-09-17 03:57:37.389966-07	31	1031 - Talha Bibi	3		13	2
+93	2026-09-17 03:57:37.390002-07	32	1032 - Mehwish Khan	3		13	2
+94	2026-09-17 03:57:37.390037-07	33	1033 - Sami Bibi	3		13	2
+95	2026-09-17 03:57:37.390074-07	34	1034 - Junaid Yousafzai	3		13	2
+96	2026-09-17 03:57:37.39011-07	35	1035 - Zubair Hussain	3		13	2
+97	2026-09-17 03:57:37.390145-07	36	1036 - Sidra Bibi	3		13	2
+98	2026-09-17 03:57:37.390183-07	37	1037 - Zubair Swati	3		13	2
+99	2026-09-17 03:57:37.390222-07	38	1038 - Ali Gul	3		13	2
+100	2026-09-17 03:57:37.390256-07	39	1039 - Usman Zada	3		13	2
+101	2026-09-17 03:57:37.390289-07	40	1040 - Maryam Khan	3		13	2
+102	2026-09-17 03:57:37.390322-07	41	1041 - Mustafa Swati	3		13	2
+103	2026-09-17 03:57:37.390358-07	42	1042 - Shahzad Rehman	3		13	2
+104	2026-09-17 03:57:37.390392-07	43	1043 - Adil Yousafzai	3		13	2
+105	2026-09-17 03:57:37.390428-07	44	1044 - Hafsa Bibi	3		13	2
+106	2026-09-17 03:57:37.390464-07	45	1045 - Junaid Ahmad	3		13	2
+107	2026-09-17 03:57:37.390499-07	46	1046 - Noman Ahmad	3		13	2
+108	2026-09-17 03:57:37.390535-07	47	1047 - Junaid Khan	3		13	2
+109	2026-09-17 03:57:37.390571-07	48	1048 - Sana Khan	3		13	2
+110	2026-09-17 03:57:37.390606-07	49	1049 - Usman Khan	3		13	2
+111	2026-09-17 03:57:37.390642-07	50	1050 - Tariq Ahmad	3		13	2
+112	2026-09-17 03:57:37.390677-07	51	1051 - Saad Ali	3		13	2
+113	2026-09-17 03:57:37.390711-07	52	1052 - Laiba Khan	3		13	2
+114	2026-09-17 03:57:37.390747-07	53	1053 - Aman Ali	3		13	2
+115	2026-09-17 03:57:37.390783-07	54	1054 - Haris Ahmad	3		13	2
+116	2026-09-17 03:57:37.390817-07	55	1055 - Umar Ali	3		13	2
+117	2026-09-17 03:57:37.390852-07	56	1056 - Maryam Khan	3		13	2
+118	2026-09-17 03:57:37.390886-07	57	1057 - Umar Jan	3		13	2
+119	2026-09-17 03:57:37.390921-07	58	1058 - Gulzar Rehman	3		13	2
+120	2026-09-17 03:57:37.390957-07	59	1059 - Sami Jan	3		13	2
+121	2026-09-17 03:57:37.390991-07	60	1060 - Aiman Gul	3		13	2
+122	2026-09-17 03:57:37.391027-07	61	1061 - Fazal Khan	3		13	2
+123	2026-09-17 03:57:37.391064-07	62	1062 - Moiz Khan	3		13	2
+124	2026-09-17 03:57:37.391102-07	63	1063 - Shaukat Jan	3		13	2
+125	2026-09-17 03:57:37.391143-07	64	1064 - Zainab Bibi	3		13	2
+126	2026-09-17 03:57:37.391179-07	65	1065 - Hassan Jan	3		13	2
+127	2026-09-17 03:57:37.391233-07	66	1066 - Rizwan Ali	3		13	2
+128	2026-09-17 03:57:37.391268-07	67	1067 - Adil Ali	3		13	2
+129	2026-09-17 03:57:37.391303-07	68	1068 - Zainab Khan	3		13	2
+130	2026-09-17 03:57:37.391339-07	69	1069 - Ali Hussain	3		13	2
+131	2026-09-17 03:57:37.391375-07	70	1070 - Hamza Hussain	3		13	2
+132	2026-09-17 03:57:37.391409-07	71	1071 - Farooq Zada	3		13	2
+133	2026-09-17 03:57:37.391442-07	72	1072 - Maryam Gul	3		13	2
+134	2026-09-17 03:57:37.391476-07	73	1073 - Farooq Khan	3		13	2
+135	2026-09-17 03:57:37.39151-07	74	1074 - Talha Zada	3		13	2
+136	2026-09-17 03:57:37.391544-07	75	1075 - Hazrat Khan	3		13	2
+137	2026-09-17 03:57:37.391579-07	160	1076 - Hussain	3		13	2
+138	2026-09-17 03:57:37.391613-07	161	1077 - Umar Zada	3		13	2
+139	2026-09-17 03:57:37.391652-07	162	1078 - New Student Test	3		13	2
+140	2026-09-17 03:57:37.391688-07	163	1099 - Kamal Ali	3		13	2
+141	2026-09-17 03:57:37.391724-07	152	SSA26005 - Kamal Zada	3		13	2
+142	2026-09-17 04:15:02.106713-07	219	801 - Sample Student 1	3		13	1
+143	2026-09-17 04:15:02.106765-07	220	802 - Sample Student 2	3		13	1
+144	2026-09-17 04:15:02.106788-07	221	803 - Sample Student 3	3		13	1
+145	2026-09-17 04:15:02.106807-07	222	804 - Sample Student 4	3		13	1
+146	2026-09-17 04:15:02.106825-07	223	805 - Sample Student 5	3		13	1
+147	2026-09-17 04:15:02.106841-07	224	806 - Sample Student 6	3		13	1
+148	2026-09-17 04:15:02.106857-07	225	807 - Sample Student 7	3		13	1
+149	2026-09-17 04:15:02.106872-07	226	808 - Sample Student 8	3		13	1
+150	2026-09-17 04:15:02.106887-07	227	809 - Sample Student 9	3		13	1
+151	2026-09-17 04:15:02.106903-07	228	810 - Sample Student 10	3		13	1
+152	2026-09-17 04:15:02.106918-07	229	811 - Sample Student 11	3		13	1
+153	2026-09-17 04:15:02.106933-07	230	812 - Sample Student 12	3		13	1
+154	2026-09-17 04:15:02.106948-07	231	813 - Sample Student 13	3		13	1
+155	2026-09-17 04:15:02.106963-07	232	814 - Sample Student 14	3		13	1
+156	2026-09-17 04:15:02.106977-07	233	815 - Sample Student 15	3		13	1
+157	2026-09-17 04:15:02.106993-07	234	816 - Sample Student 16	3		13	1
+158	2026-09-17 04:15:02.107008-07	235	817 - Sample Student 17	3		13	1
+159	2026-09-17 04:15:02.107023-07	236	818 - Sample Student 18	3		13	1
+160	2026-09-17 04:15:02.107038-07	237	819 - Sample Student 19	3		13	1
+161	2026-09-17 04:15:02.10706-07	238	820 - Sample Student 20	3		13	1
+162	2026-09-17 04:15:02.107111-07	239	821 - Sample Student 21	3		13	1
+163	2026-09-17 04:15:02.107147-07	240	822 - Sample Student 22	3		13	1
+164	2026-09-17 04:15:02.10717-07	241	823 - Sample Student 23	3		13	1
+165	2026-09-17 04:15:02.107193-07	242	824 - Sample Student 24	3		13	1
+166	2026-09-17 04:15:02.107216-07	243	825 - Sample Student 25	3		13	1
+167	2026-09-17 04:15:02.107239-07	244	826 - Sample Student 26	3		13	1
+168	2026-09-17 04:15:02.107264-07	245	827 - Sample Student 27	3		13	1
+169	2026-09-17 04:15:02.107287-07	246	828 - Sample Student 28	3		13	1
+170	2026-09-17 04:15:02.107309-07	247	829 - Sample Student 29	3		13	1
+171	2026-09-17 04:15:02.107333-07	248	830 - Sample Student 30	3		13	1
+172	2026-09-17 04:15:02.107355-07	249	831 - Sample Student 31	3		13	1
+173	2026-09-17 04:15:02.107379-07	250	832 - Sample Student 32	3		13	1
+174	2026-09-17 04:15:02.107401-07	251	833 - Sample Student 33	3		13	1
+175	2026-09-17 04:15:02.107424-07	252	834 - Sample Student 34	3		13	1
+176	2026-09-17 04:15:02.107447-07	253	835 - Sample Student 35	3		13	1
+177	2026-09-17 04:15:02.10747-07	254	836 - Sample Student 36	3		13	1
+178	2026-09-17 04:15:02.107493-07	255	837 - Sample Student 37	3		13	1
+179	2026-09-17 04:15:02.107516-07	256	838 - Sample Student 38	3		13	1
+180	2026-09-17 04:15:02.107539-07	257	839 - Sample Student 39	3		13	1
+181	2026-09-17 04:15:02.107563-07	258	840 - Sample Student 40	3		13	1
+182	2026-09-17 04:15:02.107586-07	259	841 - Sample Student 41	3		13	1
+183	2026-09-17 04:15:02.107609-07	260	842 - Sample Student 42	3		13	1
+184	2026-09-17 04:15:02.107631-07	261	843 - Sample Student 43	3		13	1
+185	2026-09-17 04:15:02.107654-07	262	844 - Sample Student 44	3		13	1
+186	2026-09-17 04:15:02.107677-07	263	845 - Sample Student 45	3		13	1
+187	2026-09-17 04:15:02.1077-07	264	846 - Sample Student 46	3		13	1
+188	2026-09-17 04:15:02.107724-07	265	847 - Sample Student 47	3		13	1
+189	2026-09-17 04:15:02.107747-07	266	848 - Sample Student 48	3		13	1
+190	2026-09-17 04:15:02.10777-07	267	849 - Sample Student 49	3		13	1
+191	2026-09-17 04:15:02.107792-07	268	850 - Sample Student 50	3		13	1
+192	2026-09-17 04:15:02.107815-07	169	901 - Sample Student 1	3		13	1
+193	2026-09-17 04:15:02.107838-07	170	902 - Sample Student 2	3		13	1
+194	2026-09-17 04:15:02.107861-07	171	903 - Sample Student 3	3		13	1
+195	2026-09-17 04:15:02.107884-07	172	904 - Sample Student 4	3		13	1
+196	2026-09-17 04:15:02.107907-07	173	905 - Sample Student 5	3		13	1
+197	2026-09-17 04:15:02.107931-07	174	906 - Sample Student 6	3		13	1
+198	2026-09-17 04:15:02.107954-07	175	907 - Sample Student 7	3		13	1
+199	2026-09-17 04:15:02.107978-07	176	908 - Sample Student 8	3		13	1
+200	2026-09-17 04:15:02.108-07	177	909 - Sample Student 9	3		13	1
+201	2026-09-17 04:15:02.108023-07	178	910 - Sample Student 10	3		13	1
+202	2026-09-17 04:15:02.108046-07	179	911 - Sample Student 11	3		13	1
+203	2026-09-17 04:15:02.108068-07	180	912 - Sample Student 12	3		13	1
+204	2026-09-17 04:15:02.108091-07	181	913 - Sample Student 13	3		13	1
+205	2026-09-17 04:15:02.108114-07	182	914 - Sample Student 14	3		13	1
+206	2026-09-17 04:15:02.108136-07	183	915 - Sample Student 15	3		13	1
+207	2026-09-17 04:15:02.10816-07	184	916 - Sample Student 16	3		13	1
+208	2026-09-17 04:15:02.108183-07	185	917 - Sample Student 17	3		13	1
+209	2026-09-17 04:15:02.108206-07	186	918 - Sample Student 18	3		13	1
+210	2026-09-17 04:15:02.108228-07	187	919 - Sample Student 19	3		13	1
+211	2026-09-17 04:15:02.108251-07	188	920 - Sample Student 20	3		13	1
+212	2026-09-17 04:15:02.108274-07	189	921 - Sample Student 21	3		13	1
+213	2026-09-17 04:15:02.108296-07	190	922 - Sample Student 22	3		13	1
+214	2026-09-17 04:15:02.108319-07	191	923 - Sample Student 23	3		13	1
+215	2026-09-17 04:15:02.108342-07	192	924 - Sample Student 24	3		13	1
+216	2026-09-17 04:15:02.108365-07	193	925 - Sample Student 25	3		13	1
+217	2026-09-17 04:15:02.108387-07	194	926 - Sample Student 26	3		13	1
+218	2026-09-17 04:15:02.10841-07	195	927 - Sample Student 27	3		13	1
+219	2026-09-17 04:15:02.108434-07	196	928 - Sample Student 28	3		13	1
+220	2026-09-17 04:15:02.108457-07	197	929 - Sample Student 29	3		13	1
+221	2026-09-17 04:15:02.10848-07	198	930 - Sample Student 30	3		13	1
+222	2026-09-17 04:15:02.108502-07	199	931 - Sample Student 31	3		13	1
+223	2026-09-17 04:15:02.108525-07	200	932 - Sample Student 32	3		13	1
+224	2026-09-17 04:15:02.108548-07	201	933 - Sample Student 33	3		13	1
+225	2026-09-17 04:15:02.108571-07	202	934 - Sample Student 34	3		13	1
+226	2026-09-17 04:15:02.108593-07	203	935 - Sample Student 35	3		13	1
+227	2026-09-17 04:15:02.108616-07	204	936 - Sample Student 36	3		13	1
+228	2026-09-17 04:15:02.108638-07	205	937 - Sample Student 37	3		13	1
+229	2026-09-17 04:15:02.10866-07	206	938 - Sample Student 38	3		13	1
+230	2026-09-17 04:15:02.108683-07	207	939 - Sample Student 39	3		13	1
+231	2026-09-17 04:15:02.108705-07	208	940 - Sample Student 40	3		13	1
+232	2026-09-17 04:15:02.108728-07	209	941 - Sample Student 41	3		13	1
+233	2026-09-17 04:15:02.10875-07	210	942 - Sample Student 42	3		13	1
+234	2026-09-17 04:15:02.108773-07	211	943 - Sample Student 43	3		13	1
+235	2026-09-17 04:15:02.108797-07	212	944 - Sample Student 44	3		13	1
+236	2026-09-17 04:15:02.10882-07	213	945 - Sample Student 45	3		13	1
+237	2026-09-17 04:15:02.108843-07	214	946 - Sample Student 46	3		13	1
+238	2026-09-17 04:15:02.108866-07	215	947 - Sample Student 47	3		13	1
+239	2026-09-17 04:15:02.108889-07	216	948 - Sample Student 48	3		13	1
+240	2026-09-17 04:15:02.108912-07	217	949 - Sample Student 49	3		13	1
+241	2026-09-17 04:15:02.108934-07	218	950 - Sample Student 50	3		13	1
+242	2026-09-17 04:20:37.483974-07	319	801 - Sample Student 1	3		13	2
+243	2026-09-17 04:20:37.484028-07	320	802 - Sample Student 2	3		13	2
+244	2026-09-17 04:20:37.484057-07	321	803 - Sample Student 3	3		13	2
+245	2026-09-17 04:20:37.484081-07	322	804 - Sample Student 4	3		13	2
+246	2026-09-17 04:20:37.484102-07	323	805 - Sample Student 5	3		13	2
+247	2026-09-17 04:20:37.484123-07	324	806 - Sample Student 6	3		13	2
+248	2026-09-17 04:20:37.484144-07	325	807 - Sample Student 7	3		13	2
+249	2026-09-17 04:20:37.484166-07	326	808 - Sample Student 8	3		13	2
+250	2026-09-17 04:20:37.484187-07	327	809 - Sample Student 9	3		13	2
+251	2026-09-17 04:20:37.484208-07	328	810 - Sample Student 10	3		13	2
+252	2026-09-17 04:20:37.484228-07	329	811 - Sample Student 11	3		13	2
+253	2026-09-17 04:20:37.484248-07	330	812 - Sample Student 12	3		13	2
+254	2026-09-17 04:20:37.484268-07	331	813 - Sample Student 13	3		13	2
+255	2026-09-17 04:20:37.484288-07	332	814 - Sample Student 14	3		13	2
+256	2026-09-17 04:20:37.484309-07	333	815 - Sample Student 15	3		13	2
+257	2026-09-17 04:20:37.48433-07	334	816 - Sample Student 16	3		13	2
+258	2026-09-17 04:20:37.484349-07	335	817 - Sample Student 17	3		13	2
+259	2026-09-17 04:20:37.484369-07	336	818 - Sample Student 18	3		13	2
+260	2026-09-17 04:20:37.484388-07	337	819 - Sample Student 19	3		13	2
+261	2026-09-17 04:20:37.484408-07	338	820 - Sample Student 20	3		13	2
+262	2026-09-17 04:20:37.48443-07	339	821 - Sample Student 21	3		13	2
+263	2026-09-17 04:20:37.48445-07	340	822 - Sample Student 22	3		13	2
+264	2026-09-17 04:20:37.484469-07	341	823 - Sample Student 23	3		13	2
+265	2026-09-17 04:20:37.484488-07	342	824 - Sample Student 24	3		13	2
+266	2026-09-17 04:20:37.484508-07	343	825 - Sample Student 25	3		13	2
+267	2026-09-17 04:20:37.484527-07	344	826 - Sample Student 26	3		13	2
+268	2026-09-17 04:20:37.484547-07	345	827 - Sample Student 27	3		13	2
+269	2026-09-17 04:20:37.484567-07	346	828 - Sample Student 28	3		13	2
+270	2026-09-17 04:20:37.484585-07	347	829 - Sample Student 29	3		13	2
+271	2026-09-17 04:20:37.484604-07	348	830 - Sample Student 30	3		13	2
+272	2026-09-17 04:20:37.484624-07	349	831 - Sample Student 31	3		13	2
+273	2026-09-17 04:20:37.484643-07	350	832 - Sample Student 32	3		13	2
+274	2026-09-17 04:20:37.484662-07	351	833 - Sample Student 33	3		13	2
+275	2026-09-17 04:20:37.484682-07	352	834 - Sample Student 34	3		13	2
+276	2026-09-17 04:20:37.484701-07	353	835 - Sample Student 35	3		13	2
+277	2026-09-17 04:20:37.48472-07	354	836 - Sample Student 36	3		13	2
+278	2026-09-17 04:20:37.484738-07	355	837 - Sample Student 37	3		13	2
+279	2026-09-17 04:20:37.484757-07	356	838 - Sample Student 38	3		13	2
+280	2026-09-17 04:20:37.484776-07	357	839 - Sample Student 39	3		13	2
+281	2026-09-17 04:20:37.484799-07	358	840 - Sample Student 40	3		13	2
+282	2026-09-17 04:20:37.48482-07	359	841 - Sample Student 41	3		13	2
+283	2026-09-17 04:20:37.48484-07	360	842 - Sample Student 42	3		13	2
+284	2026-09-17 04:20:37.484859-07	361	843 - Sample Student 43	3		13	2
+285	2026-09-17 04:20:37.484878-07	362	844 - Sample Student 44	3		13	2
+286	2026-09-17 04:20:37.484896-07	363	845 - Sample Student 45	3		13	2
+287	2026-09-17 04:20:37.484916-07	364	846 - Sample Student 46	3		13	2
+288	2026-09-17 04:20:37.484935-07	365	847 - Sample Student 47	3		13	2
+289	2026-09-17 04:20:37.484954-07	366	848 - Sample Student 48	3		13	2
+290	2026-09-17 04:20:37.484974-07	367	849 - Sample Student 49	3		13	2
+291	2026-09-17 04:20:37.484992-07	368	850 - Sample Student 50	3		13	2
+292	2026-09-17 04:20:37.485011-07	269	901 - Zubair Khan	3		13	2
+293	2026-09-17 04:20:37.485031-07	369	901-Class9 - Zubair Khan	3		13	2
+294	2026-09-17 04:20:37.485051-07	270	902 - Shahid Afridi	3		13	2
+295	2026-09-17 04:20:37.485071-07	370	902-Class9 - Shahid Afridi	3		13	2
+296	2026-09-17 04:20:37.48509-07	271	903 - Naveed Khan	3		13	2
+297	2026-09-17 04:20:37.48511-07	371	903-Class9 - Naveed Khan	3		13	2
+298	2026-09-17 04:20:37.485128-07	272	904 - Imran Khan	3		13	2
+299	2026-09-17 04:20:37.485147-07	372	904-Class9 - Imran Khan	3		13	2
+300	2026-09-17 04:20:37.485167-07	273	905 - Rahim Khan	3		13	2
+301	2026-09-17 04:20:37.485186-07	373	905-Class9 - Rahim Khan	3		13	2
+302	2026-09-17 04:20:37.485204-07	274	906 - Sherzad Khan	3		13	2
+303	2026-09-17 04:20:37.485222-07	374	906-Class9 - Sherzad Khan	3		13	2
+304	2026-09-17 04:20:37.485241-07	275	907 - Bakht Zada	3		13	2
+305	2026-09-17 04:20:37.485259-07	375	907-Class9 - Bakht Zada	3		13	2
+306	2026-09-17 04:20:37.485278-07	276	908 - Yousaf Khan	3		13	2
+307	2026-09-17 04:20:37.485311-07	376	908-Class9 - Yousaf Khan	3		13	2
+308	2026-09-17 04:20:37.485354-07	277	909 - Farhan Khan	3		13	2
+309	2026-09-17 04:20:37.48538-07	377	909-Class9 - Farhan Khan	3		13	2
+310	2026-09-17 04:20:37.4854-07	278	910 - Nisar Ahmad	3		13	2
+311	2026-09-17 04:20:37.48542-07	378	910-Class9 - Nisar Ahmad	3		13	2
+312	2026-09-17 04:20:37.485439-07	279	911 - Hazrat Ali	3		13	2
+313	2026-09-17 04:20:37.485459-07	379	911-Class9 - Hazrat Ali	3		13	2
+314	2026-09-17 04:20:37.485478-07	280	912 - Sami Ullah	3		13	2
+315	2026-09-17 04:20:37.485497-07	380	912-Class9 - Sami Ullah	3		13	2
+316	2026-09-17 04:20:37.485516-07	281	913 - Rooh Ullah	3		13	2
+317	2026-09-17 04:20:37.485535-07	381	913-Class9 - Rooh Ullah	3		13	2
+318	2026-09-17 04:20:37.485554-07	282	914 - Zia Ur Rehman	3		13	2
+319	2026-09-17 04:20:37.485577-07	382	914-Class9 - Zia Ur Rehman	3		13	2
+320	2026-09-17 04:20:37.485597-07	283	915 - Fazal Rabbi	3		13	2
+321	2026-09-17 04:20:37.485616-07	383	915-Class9 - Fazal Rabbi	3		13	2
+322	2026-09-17 04:20:37.485635-07	284	916 - Asfandyar Khan	3		13	2
+323	2026-09-17 04:20:37.485655-07	384	916-Class9 - Asfandyar Khan	3		13	2
+324	2026-09-17 04:20:37.485674-07	285	917 - Bilal Khan	3		13	2
+325	2026-09-17 04:20:37.485693-07	385	917-Class9 - Bilal Khan	3		13	2
+326	2026-09-17 04:20:37.485713-07	286	918 - Rehmat Ullah	3		13	2
+327	2026-09-17 04:20:37.485732-07	386	918-Class9 - Rehmat Ullah	3		13	2
+328	2026-09-17 04:20:37.485751-07	287	919 - Noor Wali	3		13	2
+329	2026-09-17 04:20:37.485771-07	387	919-Class9 - Noor Wali	3		13	2
+330	2026-09-17 04:20:37.48579-07	288	920 - Gul Zaman	3		13	2
+331	2026-09-17 04:20:37.485809-07	388	920-Class9 - Gul Zaman	3		13	2
+332	2026-09-17 04:20:37.485829-07	289	921 - Iftikhar Khan	3		13	2
+333	2026-09-17 04:20:37.485848-07	389	921-Class9 - Iftikhar Khan	3		13	2
+334	2026-09-17 04:20:37.485867-07	290	922 - Junaid Khan	3		13	2
+335	2026-09-17 04:20:37.485888-07	390	922-Class9 - Junaid Khan	3		13	2
+336	2026-09-17 04:20:37.485907-07	291	923 - Shoaib Khan	3		13	2
+337	2026-09-17 04:20:37.485926-07	391	923-Class9 - Shoaib Khan	3		13	2
+338	2026-09-17 04:20:37.485945-07	292	924 - Adnan Khan	3		13	2
+339	2026-09-17 04:20:37.485964-07	392	924-Class9 - Adnan Khan	3		13	2
+340	2026-09-17 04:20:37.485983-07	293	925 - Waqar Ahmad	3		13	2
+341	2026-09-17 04:20:37.486003-07	393	925-Class9 - Waqar Ahmad	3		13	2
+342	2026-09-17 04:21:01.26198-07	294	926 - Hamid Ullah	3		13	2
+343	2026-09-17 04:21:01.262027-07	394	926-Class9 - Hamid Ullah	3		13	2
+344	2026-09-17 04:21:01.26205-07	295	927 - Karim Khan	3		13	2
+345	2026-09-17 04:21:01.262067-07	395	927-Class9 - Karim Khan	3		13	2
+346	2026-09-17 04:21:01.262085-07	296	928 - Ihsan Ullah	3		13	2
+347	2026-09-17 04:21:01.262101-07	396	928-Class9 - Ihsan Ullah	3		13	2
+348	2026-09-17 04:21:01.262118-07	297	929 - Aziz Ur Rehman	3		13	2
+349	2026-09-17 04:21:01.262134-07	397	929-Class9 - Aziz Ur Rehman	3		13	2
+350	2026-09-17 04:21:01.26215-07	298	930 - Sajjad Khan	3		13	2
+351	2026-09-17 04:21:01.262167-07	398	930-Class9 - Sajjad Khan	3		13	2
+352	2026-09-17 04:21:01.262183-07	299	931 - Tariq Khan	3		13	2
+353	2026-09-17 04:21:01.262199-07	399	931-Class9 - Tariq Khan	3		13	2
+354	2026-09-17 04:21:01.262214-07	300	932 - Wahid Ullah	3		13	2
+355	2026-09-17 04:21:01.26223-07	400	932-Class9 - Wahid Ullah	3		13	2
+356	2026-09-17 04:21:01.262245-07	301	933 - Israr Ahmad	3		13	2
+357	2026-09-17 04:21:01.262261-07	401	933-Class9 - Israr Ahmad	3		13	2
+358	2026-09-17 04:21:01.262276-07	302	934 - Muhammad Nawaz	3		13	2
+359	2026-09-17 04:21:01.262292-07	402	934-Class9 - Muhammad Nawaz	3		13	2
+360	2026-09-17 04:21:01.262308-07	303	935 - Riaz Khan	3		13	2
+361	2026-09-17 04:21:01.262324-07	403	935-Class9 - Riaz Khan	3		13	2
+362	2026-09-17 04:21:01.262339-07	304	936 - Shahzad Khan	3		13	2
+363	2026-09-17 04:21:01.262355-07	404	936-Class9 - Shahzad Khan	3		13	2
+364	2026-09-17 04:21:01.262372-07	305	937 - Faridoon Khan	3		13	2
+365	2026-09-17 04:21:01.262387-07	405	937-Class9 - Faridoon Khan	3		13	2
+366	2026-09-17 04:21:01.262403-07	306	938 - Khalid Khan	3		13	2
+367	2026-09-17 04:21:01.262418-07	406	938-Class9 - Khalid Khan	3		13	2
+368	2026-09-17 04:21:01.262434-07	307	939 - Rashid Khan	3		13	2
+369	2026-09-17 04:21:01.262453-07	407	939-Class9 - Rashid Khan	3		13	2
+370	2026-09-17 04:21:01.262468-07	308	940 - Fahim Ullah	3		13	2
+371	2026-09-17 04:21:01.262483-07	408	940-Class9 - Fahim Ullah	3		13	2
+372	2026-09-17 04:21:01.262498-07	309	941 - Salman Khan	3		13	2
+373	2026-09-17 04:21:01.262513-07	409	941-Class9 - Salman Khan	3		13	2
+374	2026-09-17 04:21:01.262529-07	310	942 - Umar Farooq	3		13	2
+375	2026-09-17 04:21:01.262545-07	410	942-Class9 - Umar Farooq	3		13	2
+376	2026-09-17 04:21:01.26256-07	311	943 - Abid Khan	3		13	2
+377	2026-09-17 04:21:01.262575-07	411	943-Class9 - Abid Khan	3		13	2
+378	2026-09-17 04:21:01.262591-07	312	944 - Sultan Wali	3		13	2
+379	2026-09-17 04:21:01.262606-07	412	944-Class9 - Sultan Wali	3		13	2
+380	2026-09-17 04:21:01.262621-07	313	945 - Daud Khan	3		13	2
+381	2026-09-17 04:21:01.262637-07	413	945-Class9 - Daud Khan	3		13	2
+382	2026-09-17 04:21:01.262653-07	314	946 - Naqeeb Ullah	3		13	2
+383	2026-09-17 04:21:01.262669-07	414	946-Class9 - Naqeeb Ullah	3		13	2
+384	2026-09-17 04:21:01.262684-07	315	947 - Shakir Ullah	3		13	2
+385	2026-09-17 04:21:01.2627-07	415	947-Class9 - Shakir Ullah	3		13	2
+386	2026-09-17 04:21:01.262715-07	316	948 - Anwar Khan	3		13	2
+387	2026-09-17 04:21:01.262731-07	416	948-Class9 - Anwar Khan	3		13	2
+388	2026-09-17 04:21:01.262747-07	317	949 - Zameer Khan	3		13	2
+389	2026-09-17 04:21:01.262765-07	417	949-Class9 - Zameer Khan	3		13	2
+390	2026-09-17 04:21:01.26278-07	318	950 - Haroon Khan	3		13	2
+391	2026-09-17 04:21:01.262796-07	418	950-Class9 - Haroon Khan	3		13	2
 \.
 
 
@@ -1318,6 +1548,9 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 25	exams	0001_initial	2026-09-08 19:08:21.360443-07
 26	students	0002_alter_student_contact_number_alter_student_dob_and_more	2026-09-08 20:17:30.806829-07
 27	teachers	0003_alter_teacher_address_alter_teacher_contact_number_and_more	2026-09-08 20:18:24.028442-07
+28	students	0003_alter_student_admission_no	2026-09-17 18:54:14.724601-07
+29	students	0004_alter_student_father_name	2026-09-17 19:06:05.573524-07
+30	finance	0002_alter_feepaymentreceipt_student	2026-09-19 05:37:51.177972-07
 \.
 
 
@@ -1326,74 +1559,96 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 --
 
 COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
-qdza2ipzegh65u8ilpby8c0w0tixzf0b	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2NaL:xyr344JeWIsqr6vjPtgS3El4j4ChtlzbrRlSOK9zxaM	2026-09-04 02:39:37.896815-07
-z2bwq5lydxyv951i92mztw0qvk44iazj	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZHr:bDV9s37FU9xthLwSTzYBguIo1pMHIM8mB-4lGK1CUUY	2026-09-04 15:09:19.68725-07
-7ckklprelow2bphbcw8yf4kah2js4nor	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2Mvq:XzXakCKxnlmeUvmSR1wokincN6680l1P0fah81YOvD8	2026-09-04 01:57:46.791-07
-je3p9jprqdxjuveiukwm8gjwsxv3khgv	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2gQH:UkhKqTUJb_SF_lX5zkQRIKilOfoLhTp1Gz1YIMN3bB0	2026-09-04 22:46:29.131373-07
-usi510srptux8nzok9256hy6i05hr4sq	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2Z0e:1hq0RQAxnhzWGOm_mbcCZk7bSjjIwEV8LYrbltSvU_I	2026-09-04 14:51:32.415758-07
-vpq5vmoi1bh99chrxdzxvkhztd6f2930	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fQ8:5krBVo8jUlWGFQHZ8q1MbE37hbcDBrLkbSiga4eLBCU	2026-09-04 21:42:16.143846-07
-8frs3vgkarff9sfips70nspe07gvc6ew	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2nek:imt52FSSIoBZcXMzujeo_KmdSsOxi6W0gPaq2p0rbdY	2026-09-05 06:29:54.804386-07
-y9sian8in24o4k9iwstede9quqk3625d	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZIP:s73buoPMEHufrtPvg8Q4KgXwZcD3zgNT8PEX-Lg4IA4	2026-09-04 15:09:53.758228-07
-8kx33l3qz7uieicxbe28gx08xn2xade0	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZJw:rWW9Xs726-wF0bqAjnvXMxMIwyVLJbEbHjk-rFip5KI	2026-09-04 15:11:28.605325-07
-lyob33aeiy9c7863r8h5qnxl90smgmb3	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2foK:YpLEQJc7_kR4XUNkZYVSHeXqiUxwwj1xZzknVYhzWyo	2026-09-04 22:07:16.711994-07
-6czo5u1jmxrowlvv6rs40i9fxcz028hu	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fbi:gOEI52GBo9GtsNQzL2U1XxjCyrevaGxl49e2DTHiT-I	2026-09-04 21:54:14.173525-07
-wgl2rvvlqc6yrkddkeir3zvnhk3xsvfz	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZK8:bOVGIqorU8RB2deaut0YkxEenMH7ixPtSdhRW125qPk	2026-09-04 15:11:40.849132-07
-z01qpf8vyo7c9cbwum3j4njpchhua8zh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2Ygo:xPc0zYP3m3nLlxOmXJqVD7gU6hSqtg_DTDwlygyuLKc	2026-09-04 14:31:02.167057-07
-1m488munavjkj1sx6ekmz4w9jnw83dsk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fME:Su8-xw80WPRx24OTs8ELzVb5kONHEQlM095hrEqaLiw	2026-09-04 21:38:14.696661-07
-kqpe5oylst5i7xsw8uyeeqmmbf61fngp	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOB:m7t205PS_zy5udSrnPmvlodaKuCKDdOncXS_vZpoMgk	2026-09-04 22:44:19.867896-07
-norf32iz03rhn8qs1qnb45yyhb8rx9i3	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2gOi:xjlTwDcQQQhq_WmApaDV91mp3xiM1_VviIRui7xy098	2026-09-04 22:44:52.921637-07
-1035zy1y6jk5ghyxt3jmlsxd8bi9aqwc	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fO4:JIowUnR_KJ-uld71YPi0zULbd6enNg-iohfTKQxBozQ	2026-09-04 21:40:08.957237-07
-cr8em6u7yzaq6xg2s3fm4wczx6stuc3n	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fbx:Ef0alotJSScOL8BM_IbntoBGE3LgH4LEeQngpVchXcE	2026-09-04 21:54:29.230791-07
-5ptn23360eb9ip7525udb1z8uk6x3o8t	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2NYn:xMjHUtaZJTVBlVtvcOCaGtqMTHjfntd1B-sVHzsh44w	2026-09-04 02:38:01.325735-07
-3io9ntjgtljohcrxsdw2fhozbm66pb1k	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZHF:7uv208Vnndecyu7JbSJxW_eOzbnchiNlX675NR-1vAg	2026-09-04 15:08:41.771146-07
-gstt76wf4q3r1bzi0t4euh88509tesr7	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fP1:pbSz4LYqpG7mqVZs1OSyDBI2L2NWOFo9yNfdMBu9DZ4	2026-09-04 21:41:07.060355-07
-0wqwtvghd89c13lx1l7n6l76fwy3vjba	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2feO:rOYYB1RypK8GtegvXqznA4x_cA__fH5575WmOkwLczM	2026-09-04 21:57:00.408759-07
-cuzz6va9vbadgbg1tqsvigg3fvx1ii9t	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fPH:QlkEt7ilcY-g4wsA3UYiMFtdlTJXQd09Xkf5avgi2bo	2026-09-04 21:41:23.481343-07
-rwiqg1akrrumur8hvlw8ufa022jknl3s	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fef:ZjRMrGF3Yefe7g65R_1ItZs0TYfMzRRD9yRqP7BE05Q	2026-09-04 21:57:17.719855-07
+nul9yt500swemi6uukw49mukq1eofnt9	e30:1x7O2o:tq5jzr7fPcs8-e5mviu2wiGLpVJE3y-kI4eNxXgXUoU	2026-09-17 22:09:42.14363-07
+j2cmnuycuja2f2cdt429fokvnzd8qd7p	e30:1x7O2o:tq5jzr7fPcs8-e5mviu2wiGLpVJE3y-kI4eNxXgXUoU	2026-09-17 22:09:42.352126-07
+0wqwtvghd89c13lx1l7n6l76fwy3vjba	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2feO:rOYYB1RypK8GtegvXqznA4x_cA__fH5575WmOkwLczM	2026-09-04 21:57:00.408-07
+v0pcmimjt0k90af7uqw519e7mxg1u3t4	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Hp3:AcvQzxD37s2cK4Wo3not7-ZRQt4JHTaTvxTKWuHUR4U	2026-09-12 03:06:49.854959-07
+rt4g0n3ht81zmryqlcxgzuqp0u0uyul4	.eJxVjjEOgzAMRe_iGUV2iNKGsXvPENlOArQIJAJT1btXVAzt-t_T039B5H0b4l7zGscEHVhofjdhfeb5AOnBc78YXeZtHcUcijlpNfcl5el2un-BgesAHXBwVgidK4ptEaSWrl4cW6eZgjokLEhtQLmIEhfvErGXwJm92KTQwMR1i_06pqgT1_q9S_j-AHfaQF4:1x7BXy:L6rVt4C0MmcAksYciY70fF7IMPARYf783dNpehgXFYo	2026-09-17 08:49:02.831498-07
+r60rx4bs9z4qv7ykoepxoxvnrmxatz4e	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x7qoo:cez-S2itNxb_E7bEqC_uUhK_tBeKcf_G8fLkCLJzbaA	2026-09-19 04:53:10.167755-07
+4ty5x64zs1hsm9sf2zri6264opg0ufpz	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x7NMv:BLlsJVnJ9jUULejFA1dIRZD41xE7ro5g2yPPlz7mrDs	2026-09-17 21:26:25.279965-07
+0zsbvui4rq45fq7muu38y8ni4kfm9wcc	.eJxVjjEOgzAMRe_iGUV2iNKGsXvPENlOArQIJAJT1btXVAzt-t_T039B5H0b4l7zGscEHVhofjdhfeb5AOnBc78YXeZtHcUcijlpNfcl5el2un-BgesAHXBwVgidK4ptEaSWrl4cW6eZgjokLEhtQLmIEhfvErGXwJm92KTQwMR1i_06pqgT1_q9S_j-AHfaQF4:1x79vF:oEXgMmvDx8kGjuk9fBSyblhZENcVgM-yzY8ZRlja-ZM	2026-09-17 07:04:57.994639-07
+q3v0tbxdsblyz3khm2pyvkdn7vak8wyd	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Eup:LSZYzmj6nKRzt9EApJrG818hkYVLffPurkJS6F3rJns	2026-09-12 00:00:35.420888-07
+sgxlstdo1jzklwjtf9y0uundgqms8jzn	.eJxVjjEOgzAMRe_iGUWhFCdh7N4zRHbsAC0CicBU9e4VFUO7_vf09F8Qad-GuBdd4yjQQQ3V78aUnjofQB4094tJy7ytI5tDMSct5r6ITrfT_QsMVAboQK1rrHOpTiGnkNscuA5sc8ueSawg-oZQiS5sGxXU5L1TRIeeWPIVKpiobLFfR4lpolK-d_H9AXmqQQ8:1x7uQY:IbfhtfG-8GeC8YgVrVHI0XsvjoAMCroOYzwTn7k-MAE	2026-09-19 08:44:22.000596-07
+j5jp6486imvceu9i2f1kvv24360avii5	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5IAl:yMinXPDTaXecZEEZyin6RYdy2Lxr2A8xoFnY3z8L7-o	2026-09-12 03:29:15.02171-07
+0lu2b08lp23be8n32idvm0xo94cdxdq2	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x3OTA:XgOdUzv93WlnrsTWBSLSppGgVThN0aeg1pWv__msWSI	2026-09-06 21:48:24.758-07
+1w18s5xkdzajo76au9808sxaaqkfv5d7	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOP:3V-3U-ij_FJetRZ8uTytNkRjZ0ii5rtY_T9bm3lEyWs	2026-09-04 22:44:33.418-07
+2625u32lcf9lqha5hlfcw8q0vckpwksq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47ql:pEyZCv-HQzLMMnQCmWFda5Ns7Cjt2cByAiplHc7b7oA	2026-09-08 22:15:47.052-07
+27axf9e2w3gznii4qhd0e32glbwm5pzk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qa5:BKTIencCo9U8cLXrn7qo6CFIYVKKE6y_j-U9JrFNMPk	2026-09-10 22:01:33.71-07
+cfd3aqa5mcsp7kfknkttt41v558k073w	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D01:tqH4M7wL7NEeUaRePZjRgCvAMl9qYjIO_e0KGt3Qdic	2026-09-11 21:57:49.466-07
+dk3nohh28oxddmv8echiszgdhqdmayyh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpZ:SRgK8dONHc3VbdFMqgGufTeGmOwVRc9CgX2xfCPG5CI	2026-09-04 22:08:33.402-07
+s21eg7o8l6zy0zf3zfkg5iczzx9y77ut	e30:1x7O3E:8VSKnxnNs5cA3ovAMkwtM3bY07oaJltx6Ss_ez91svM	2026-09-17 22:10:08.20566-07
+47bwxp8g8lvipd1gw7pb7uo7hvwx36ts	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x7A6C:_ffO7e1TXK-3bgq_jj_0lWbrKGeFeAcn5Iq3oriL16s	2026-09-17 07:16:16.329438-07
+psq0mqcpty570bpc1s2qy4bpk0eue221	.eJxVjjsOgzAQBe-yNbLsEPyhTJ8zWLveNZAgkGyootw9IqJI2jej0XtBxH0b416lxImhBwPN70aYnrIcgB-4DKtK67KVidShqJNWdV9Z5tvp_gVGrCP0INq12rlkUsgp5C4HMoF07sgTsmZrfYtWEC-kW2EryXsn1jrrkThfoYEZ6xaHMnFMM9b6vWv0-wO6jUE6:1x7OAW:p07GaP313-6O3josF29Na9i55ksrSCj_Nmm1wmyQjys	2026-09-17 22:17:40.288272-07
+kcatciqyf3hiip9pap71p5yqb06svagz	e30:1x7Nr8:nzwXvO08gNXXvuSOOk8xzbz6e9o4bktRvcurYat-5Mk	2026-09-17 21:57:38.618831-07
+6mwggj6mfklj0dr5o66ayrs7b9rokg89	.eJxVjjEOgzAMRe_iGUWhFCdh7N4zRHbsAC0CicBU9e4VFUO7_vf09F8Qad-GuBdd4yjQQQ3V78aUnjofQB4094tJy7ytI5tDMSct5r6ITrfT_QsMVAboQK1rrHOpTiGnkNscuA5sc8ueSawg-oZQiS5sGxXU5L1TRIeeWPIVKpiobLFfR4lpolK-d_H9AXmqQQ8:1x7q0Y:X5IsR5w9C8eK0eKRchn4iJfLePG15WC29rZlS3KR_94	2026-09-19 04:01:14.907057-07
+2hpgda3wqlmav4eobzehafbh2uxzu99o	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5IgJ:Ey4lTHacNepUK0Gi74zd34lW5jy_Lu8bzJC23Jv3Y5Q	2026-09-12 04:01:51.583432-07
+bmmj9doumnzjsptcazd5l4drn1zfdafk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x79k5:9K4_qQPzDR1gVnpdfFyEO6wpm51WLDb-mcrGPPteFnY	2026-09-17 06:53:25.268734-07
+6ohnbdiam9j9fkihrloc2tv6ac4xzsg2	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5HS5:tGmvMVs3dek4ufQsKz-yAWsY6k6woeXP3v64Y3CjeNY	2026-09-12 02:43:05.116065-07
+1320l0q23egb5b6j9c5v0m0sa0kr7wi8	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpM:5753JiAHCZO1wshFB4vneMGw19KJnaS9T6FjiOWk6Jg	2026-09-04 22:08:20.464-07
+2k7p0wm5s6tvm7wnxlz63mobq71uirbq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48HT:amMkGtq_MOw6CJd4qCKV6L7u_tKgzDthgRPmZSdzeFw	2026-09-08 22:43:23.725-07
+5ylymlznwqyow2429izra2wum64kmaxd	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qen:VnQVOVjMwCenJHJWOQhLWmwI6xA8zvVkRuNgIhgTXhQ	2026-09-10 22:06:25.7-07
+7vl8nxc7um0l5cs9d3jslxktci8hovof	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x485i:Dz1YdZ9pHEx8PlNoBG6JBRmO9gN93nHWejFg7BtWjPg	2026-09-08 22:31:14.323-07
+7zmrk41l91mqdv1yjkpqamzis0562gjw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qVS:WPbEN-19OZE2XZX0lzUSwF-f-6qcXF_ZigRnXTlI5X0	2026-09-10 21:56:46.469-07
+9t6bhtzchjsgfasj2rvl7rner6wjqu22	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x5EIH:3gPhC1sqFPgttlyeGhDz0nfwmXYLE4wuuG5f_E4Me0E	2026-09-11 23:20:45.704-07
+dzqft5yrceqdizwxtiuxeuv3grhrpke6	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47qY:DJOw5RvseYZLipaqU_lrn8tAwdUJHvJJlm5GOxMyRAo	2026-09-08 22:15:34.274-07
 ebsnlwliyjechwycrn1t6r8xv3gihb4q	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2Mug:os_YHXJW5eaOktlt7v54s0moCSM6nPhsc_Nx3U1br94	2026-09-04 01:56:34.544-07
+el9xcx1amaikow5x6unjrgeypok3w3ty	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOr:JDl8BOKp6vA3VndXBL7JL96ZFopOOWxHDgadaLpVqo4	2026-09-04 22:45:01.587-07
+fvzxqab7sr336p18v0a7rbzbczajo6ag	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUb:Mb-l-CTSTZfYNJ2ybrq65JZ79KhvPR8hH4gnpvU3RfM	2026-09-10 21:55:53.95-07
+gb5dit08x9cmj0zkaa1qt2qa7m2a0e7s	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpB:AeyA362lf3Gb5Dwb1b9W1EsXeyhwFD1-RTT7hdzNRn0	2026-09-04 22:08:09.42-07
+gpo171vilxaq2gu084e68wk1ptooxdu3	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUA:yh8rZoJteUw4WOo26K9Js__IYQiqN43UJrbcBkNIcaE	2026-09-10 21:55:26.16-07
+0qsvwrepq98amte3uop7pcm8goztyw92	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x48rL:Dl5Jh0ztA0U-gS6_uZFuTfJv0SmON9EFemgfZ0Jrxoo	2026-09-08 23:20:27.379-07
+01zk8na9vd27tpfd6wvjkt2u9kogno0g	e30:1x7NrX:A5mW0w2LFfs_7qO7lTkB95NhKmzNQ-q6oUcAf7aLih4	2026-09-17 21:58:03.041522-07
+1035zy1y6jk5ghyxt3jmlsxd8bi9aqwc	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fO4:JIowUnR_KJ-uld71YPi0zULbd6enNg-iohfTKQxBozQ	2026-09-04 21:40:08.957-07
+1m488munavjkj1sx6ekmz4w9jnw83dsk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fME:Su8-xw80WPRx24OTs8ELzVb5kONHEQlM095hrEqaLiw	2026-09-04 21:38:14.696-07
+3io9ntjgtljohcrxsdw2fhozbm66pb1k	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZHF:7uv208Vnndecyu7JbSJxW_eOzbnchiNlX675NR-1vAg	2026-09-04 15:08:41.771-07
+55y44h07zk85w45dblim86r001u3spxd	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5CtJ:v-mKG3VUujkLOD6Dd2YZYkGrBjuzKI4NeahN4mDboNg	2026-09-11 21:50:53.258-07
+x18irr3hytz3t1trk378m39opaorux38	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Iet:FowZ9KkqlSc0HR5J14-ZIsHixmJD9e_r8uibgO_-XSo	2026-09-12 04:00:23.026577-07
+5ptn23360eb9ip7525udb1z8uk6x3o8t	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2NYn:xMjHUtaZJTVBlVtvcOCaGtqMTHjfntd1B-sVHzsh44w	2026-09-04 02:38:01.325-07
+6czo5u1jmxrowlvv6rs40i9fxcz028hu	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fbi:gOEI52GBo9GtsNQzL2U1XxjCyrevaGxl49e2DTHiT-I	2026-09-04 21:54:14.173-07
+7ckklprelow2bphbcw8yf4kah2js4nor	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2Mvq:XzXakCKxnlmeUvmSR1wokincN6680l1P0fah81YOvD8	2026-09-04 01:57:46.791-07
+8frs3vgkarff9sfips70nspe07gvc6ew	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2nek:imt52FSSIoBZcXMzujeo_KmdSsOxi6W0gPaq2p0rbdY	2026-09-05 06:29:54.804-07
+8kx33l3qz7uieicxbe28gx08xn2xade0	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZJw:rWW9Xs726-wF0bqAjnvXMxMIwyVLJbEbHjk-rFip5KI	2026-09-04 15:11:28.605-07
+9y846ifbjnppfk72mbcyhgeqt5bjg5pw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qZY:6_BUYrAEMkYwKOe-tL5SVem41V2KHno0GOQLXA2uMSY	2026-09-10 22:01:00.489-07
+cqybmz4sfr4rp7u7hin815my0zgst13e	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48fZ:ejiQLd1iENyNkJubSIInFpZGs9pW7SeCZ-5yo-jv2q4	2026-09-08 23:08:17.056-07
+cr8em6u7yzaq6xg2s3fm4wczx6stuc3n	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fbx:Ef0alotJSScOL8BM_IbntoBGE3LgH4LEeQngpVchXcE	2026-09-04 21:54:29.23-07
+cuzz6va9vbadgbg1tqsvigg3fvx1ii9t	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fPH:QlkEt7ilcY-g4wsA3UYiMFtdlTJXQd09Xkf5avgi2bo	2026-09-04 21:41:23.481-07
+gqj0ndip9b5h7unqbftg7zstwrns3xpb	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ERh:rkVhLtIKNXEFFRWGmr3QzOiWfD9ftwHKgMpI2uRJ350	2026-09-11 23:30:29.302-07
+gstt76wf4q3r1bzi0t4euh88509tesr7	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fP1:pbSz4LYqpG7mqVZs1OSyDBI2L2NWOFo9yNfdMBu9DZ4	2026-09-04 21:41:07.06-07
+jbchm46aqbfb1phgewekrdnstkcee6wk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Zg:nqsvYg_e8WBaA6mMMh5Hyba5YfRUvsTeqdd1K32wXMc	2026-09-08 23:02:12.9-07
+je3p9jprqdxjuveiukwm8gjwsxv3khgv	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2gQH:UkhKqTUJb_SF_lX5zkQRIKilOfoLhTp1Gz1YIMN3bB0	2026-09-04 22:46:29.131-07
+jnp0jzb3kn00wbuce7sv7v8btt5v56vh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Ok:aIIQY8-ab_QNboo3LNqD4rfGsy5pC7vIfUizPofJIbk	2026-09-08 22:50:54.668-07
+k66arh5gllt5p5l7bafi2nnmrj4ailse	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ES1:yjWwsG-6CDHIc0AIIed-PtK3jYueAPW5kTIBnNvUsNM	2026-09-11 23:30:49.743-07
+kqpe5oylst5i7xsw8uyeeqmmbf61fngp	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOB:m7t205PS_zy5udSrnPmvlodaKuCKDdOncXS_vZpoMgk	2026-09-04 22:44:19.867-07
+kvm3iq3an2dfw3ij10ut7u7bzdast9cm	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qd9:F3TB9Bar6jYwvD-JLnoFCh5LAcUJ4jOdWbSeMMlrdqY	2026-09-10 22:04:43.425-07
+l53eveqecnn9tw149a85ktiif9lsxgwy	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUQ:j-I_-Mk2wxTlbLZAVaY_xNZD3lKtECR-pJK7R683q64	2026-09-10 21:55:42.881-07
+lyob33aeiy9c7863r8h5qnxl90smgmb3	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2foK:YpLEQJc7_kR4XUNkZYVSHeXqiUxwwj1xZzknVYhzWyo	2026-09-04 22:07:16.711-07
+ncf6kg7o3a3b0qe8od4bujd1e9eaf8cw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48KK:EpLQz2CRjn8V2c3cEuc9wFLQfwkUMFqEweLnt3srH2M	2026-09-08 22:46:20.907-07
+norf32iz03rhn8qs1qnb45yyhb8rx9i3	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2gOi:xjlTwDcQQQhq_WmApaDV91mp3xiM1_VviIRui7xy098	2026-09-04 22:44:52.921-07
+pq6cc1a1562t8rc8wvq0p2i2l4wgbx2a	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4yZf:Nh01Zg22qcOalZdfhazn7fsKfUxrsrBIPXVdHNugaoc	2026-09-11 06:33:39.221-07
+priudnpf392bx143wf6kzx62k9eoqudp	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4882:FmyuAJdFoRAtEuxH-KSQBAFO-xBkBKlqEplIWWKiJMg	2026-09-08 22:33:38.799-07
+psme3m699usqa42t5wdycpioh1idowg5	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Oa:H-An5imGtUMYGZ7TSBOA8KoYNTg3d8BXcppEeE36QNI	2026-09-08 22:50:44.05-07
+qdza2ipzegh65u8ilpby8c0w0tixzf0b	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2NaL:xyr344JeWIsqr6vjPtgS3El4j4ChtlzbrRlSOK9zxaM	2026-09-04 02:39:37.896-07
+rs8mw1g06nnzq54v9zysg46ten55rznq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5E33:fbOurC1s2b1ke_6VbDQfkq5YpXrrDbtyx0KsQwQFSqo	2026-09-11 23:05:01.877-07
+rwiqg1akrrumur8hvlw8ufa022jknl3s	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fef:ZjRMrGF3Yefe7g65R_1ItZs0TYfMzRRD9yRqP7BE05Q	2026-09-04 21:57:17.719-07
+s8sf8xrtjh2ixdzvnqg3ki6tmlwy7qew	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Ctc:XjiMeRjIUxSVtAGfFL5pJfOi2vKTkg4GOVc6tSmbAIo	2026-09-11 21:51:12.371-07
+tkgwpblrte0kjl0c86mqqgrdvkylbf3w	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOb:bAE341_Y-TYY-E-FCciPgzzxT9oT0Jd3nPg0xKdQRTo	2026-09-04 22:44:45.576-07
+usi510srptux8nzok9256hy6i05hr4sq	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x2Z0e:1hq0RQAxnhzWGOm_mbcCZk7bSjjIwEV8LYrbltSvU_I	2026-09-04 14:51:32.415-07
+vpq5vmoi1bh99chrxdzxvkhztd6f2930	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fQ8:5krBVo8jUlWGFQHZ8q1MbE37hbcDBrLkbSiga4eLBCU	2026-09-04 21:42:16.143-07
+vv3nalgno37vf7x5z8lf9fweha213iq0	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4E7x:QWP7JDU26eyOe4na703Z-Qu3_smcAKdvb3_uvZQSQr4	2026-09-09 04:57:57.763-07
+w25x2ao4a66j6zggvc6m5lpjfdpoqeuw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x485R:DK1U7tJljImXhFrrZhCGAk_Z4htJHCEx61qtJyoUjB8	2026-09-08 22:30:57.527-07
+w6z8v672yjcsz8nrfyim9sk2oqu0a665	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gKg:ppg2112Kd335Pg5Kjp1OXDvgUh6rbH5zJoQ8x_-1yFg	2026-09-04 22:40:42.07-07
+wgl2rvvlqc6yrkddkeir3zvnhk3xsvfz	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZK8:bOVGIqorU8RB2deaut0YkxEenMH7ixPtSdhRW125qPk	2026-09-04 15:11:40.849-07
 wifcgmclwx45l7q43qv5iab2jl8vzh3u	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2N0e:wRapy3JRW4CNA5w3cEG0No-m9VD4qWivbcc5Qicd0pk	2026-09-04 02:02:44.081-07
-2625u32lcf9lqha5hlfcw8q0vckpwksq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47ql:pEyZCv-HQzLMMnQCmWFda5Ns7Cjt2cByAiplHc7b7oA	2026-09-08 22:15:47.052714-07
-jbchm46aqbfb1phgewekrdnstkcee6wk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Zg:nqsvYg_e8WBaA6mMMh5Hyba5YfRUvsTeqdd1K32wXMc	2026-09-08 23:02:12.900229-07
-gb5dit08x9cmj0zkaa1qt2qa7m2a0e7s	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpB:AeyA362lf3Gb5Dwb1b9W1EsXeyhwFD1-RTT7hdzNRn0	2026-09-04 22:08:09.420338-07
-w25x2ao4a66j6zggvc6m5lpjfdpoqeuw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x485R:DK1U7tJljImXhFrrZhCGAk_Z4htJHCEx61qtJyoUjB8	2026-09-08 22:30:57.527462-07
-cfd3aqa5mcsp7kfknkttt41v558k073w	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D01:tqH4M7wL7NEeUaRePZjRgCvAMl9qYjIO_e0KGt3Qdic	2026-09-11 21:57:49.466731-07
-fvzxqab7sr336p18v0a7rbzbczajo6ag	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUb:Mb-l-CTSTZfYNJ2ybrq65JZ79KhvPR8hH4gnpvU3RfM	2026-09-10 21:55:53.950924-07
-27axf9e2w3gznii4qhd0e32glbwm5pzk	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qa5:BKTIencCo9U8cLXrn7qo6CFIYVKKE6y_j-U9JrFNMPk	2026-09-10 22:01:33.710395-07
-ncf6kg7o3a3b0qe8od4bujd1e9eaf8cw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48KK:EpLQz2CRjn8V2c3cEuc9wFLQfwkUMFqEweLnt3srH2M	2026-09-08 22:46:20.907788-07
-1w18s5xkdzajo76au9808sxaaqkfv5d7	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOP:3V-3U-ij_FJetRZ8uTytNkRjZ0ii5rtY_T9bm3lEyWs	2026-09-04 22:44:33.418561-07
-wpe2iom06tlov15xxsg9fiu035rk6aoj	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Go:n_iLZ9fQgvJ5NxKi0WvhmMI11GKrhdh7c00zguzA8_c	2026-09-08 22:42:42.429782-07
-vv3nalgno37vf7x5z8lf9fweha213iq0	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4E7x:QWP7JDU26eyOe4na703Z-Qu3_smcAKdvb3_uvZQSQr4	2026-09-09 04:57:57.763938-07
-l53eveqecnn9tw149a85ktiif9lsxgwy	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUQ:j-I_-Mk2wxTlbLZAVaY_xNZD3lKtECR-pJK7R683q64	2026-09-10 21:55:42.881621-07
-s8sf8xrtjh2ixdzvnqg3ki6tmlwy7qew	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5Ctc:XjiMeRjIUxSVtAGfFL5pJfOi2vKTkg4GOVc6tSmbAIo	2026-09-11 21:51:12.371715-07
-0lu2b08lp23be8n32idvm0xo94cdxdq2	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x3OTA:XgOdUzv93WlnrsTWBSLSppGgVThN0aeg1pWv__msWSI	2026-09-06 21:48:24.758545-07
-dzqft5yrceqdizwxtiuxeuv3grhrpke6	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47qY:DJOw5RvseYZLipaqU_lrn8tAwdUJHvJJlm5GOxMyRAo	2026-09-08 22:15:34.274418-07
-rs8mw1g06nnzq54v9zysg46ten55rznq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5E33:fbOurC1s2b1ke_6VbDQfkq5YpXrrDbtyx0KsQwQFSqo	2026-09-11 23:05:01.877503-07
-k66arh5gllt5p5l7bafi2nnmrj4ailse	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ES1:yjWwsG-6CDHIc0AIIed-PtK3jYueAPW5kTIBnNvUsNM	2026-09-11 23:30:49.743169-07
-1320l0q23egb5b6j9c5v0m0sa0kr7wi8	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpM:5753JiAHCZO1wshFB4vneMGw19KJnaS9T6FjiOWk6Jg	2026-09-04 22:08:20.464369-07
-w6z8v672yjcsz8nrfyim9sk2oqu0a665	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gKg:ppg2112Kd335Pg5Kjp1OXDvgUh6rbH5zJoQ8x_-1yFg	2026-09-04 22:40:42.070782-07
-7vl8nxc7um0l5cs9d3jslxktci8hovof	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x485i:Dz1YdZ9pHEx8PlNoBG6JBRmO9gN93nHWejFg7BtWjPg	2026-09-08 22:31:14.323666-07
-psme3m699usqa42t5wdycpioh1idowg5	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Oa:H-An5imGtUMYGZ7TSBOA8KoYNTg3d8BXcppEeE36QNI	2026-09-08 22:50:44.050482-07
-y3nq4fvpxvv8rjf119tson0z9885ap5c	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48aC:W_iyrGMl6WVQ4Z-XyujJIFD0B5Um-nUWrLQ16BbaSpc	2026-09-08 23:02:44.912799-07
-7zmrk41l91mqdv1yjkpqamzis0562gjw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qVS:WPbEN-19OZE2XZX0lzUSwF-f-6qcXF_ZigRnXTlI5X0	2026-09-10 21:56:46.469473-07
-tkgwpblrte0kjl0c86mqqgrdvkylbf3w	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOb:bAE341_Y-TYY-E-FCciPgzzxT9oT0Jd3nPg0xKdQRTo	2026-09-04 22:44:45.576877-07
-2k7p0wm5s6tvm7wnxlz63mobq71uirbq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48HT:amMkGtq_MOw6CJd4qCKV6L7u_tKgzDthgRPmZSdzeFw	2026-09-08 22:43:23.72518-07
-9t6bhtzchjsgfasj2rvl7rner6wjqu22	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x5EZE:FW6HcPUiOgi0oEDFllbWuQjKkl5bYmylrf3XCEugMA8	2026-09-11 23:38:16.468112-07
-y7i53ipvn3ol7kx7wt1u2407vwlf7cab	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D0M:NpsPy84UmvbFJyh7XcNUppFi6kQC9LBhUmSO-dfNU6o	2026-09-11 21:58:10.731731-07
-y5gjud2l19ij5aeiyk3z585pwsa651a1	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47l5:mlQZNQw50H7foRWddHzPPqsM_HVPkSgVyxdeKFyzJ5g	2026-09-08 22:09:55.896392-07
-kvm3iq3an2dfw3ij10ut7u7bzdast9cm	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qd9:F3TB9Bar6jYwvD-JLnoFCh5LAcUJ4jOdWbSeMMlrdqY	2026-09-10 22:04:43.425997-07
-5ylymlznwqyow2429izra2wum64kmaxd	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qen:VnQVOVjMwCenJHJWOQhLWmwI6xA8zvVkRuNgIhgTXhQ	2026-09-10 22:06:25.700319-07
-el9xcx1amaikow5x6unjrgeypok3w3ty	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gOr:JDl8BOKp6vA3VndXBL7JL96ZFopOOWxHDgadaLpVqo4	2026-09-04 22:45:01.587866-07
-yeof3h8166dz6hh27osglbphfxnlk2hv	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gL5:PQXmGrje8WdXn8AYe2G9uO-BfABpprDat4wvtKJsEyQ	2026-09-04 22:41:07.078674-07
-9y846ifbjnppfk72mbcyhgeqt5bjg5pw	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qZY:6_BUYrAEMkYwKOe-tL5SVem41V2KHno0GOQLXA2uMSY	2026-09-10 22:01:00.489485-07
-dk3nohh28oxddmv8echiszgdhqdmayyh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2fpZ:SRgK8dONHc3VbdFMqgGufTeGmOwVRc9CgX2xfCPG5CI	2026-09-04 22:08:33.402828-07
-55y44h07zk85w45dblim86r001u3spxd	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5CtJ:v-mKG3VUujkLOD6Dd2YZYkGrBjuzKI4NeahN4mDboNg	2026-09-11 21:50:53.258996-07
-gqj0ndip9b5h7unqbftg7zstwrns3xpb	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5ERh:rkVhLtIKNXEFFRWGmr3QzOiWfD9ftwHKgMpI2uRJ350	2026-09-11 23:30:29.302798-07
-pq6cc1a1562t8rc8wvq0p2i2l4wgbx2a	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4yZf:Nh01Zg22qcOalZdfhazn7fsKfUxrsrBIPXVdHNugaoc	2026-09-11 06:33:39.221143-07
-priudnpf392bx143wf6kzx62k9eoqudp	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4882:FmyuAJdFoRAtEuxH-KSQBAFO-xBkBKlqEplIWWKiJMg	2026-09-08 22:33:38.799937-07
-jnp0jzb3kn00wbuce7sv7v8btt5v56vh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Ok:aIIQY8-ab_QNboo3LNqD4rfGsy5pC7vIfUizPofJIbk	2026-09-08 22:50:54.668015-07
-0qsvwrepq98amte3uop7pcm8goztyw92	.eJxVjLsOwjAMAP_FM4rs1AqkIzvfUNlOQgoolfqYEP-OKnWA9e50bxhkW-uwLXkexgQ9eDj9MhV75raL9JB2n5xNbZ1HdXviDru425Ty63q0f4MqS4UeJLJXQuZi2BVF6ugSlMWzZYrGSFiQuoh6ViMpgRNJ0ChZgvpk8PkCzuE3-Q:1x48rL:Dl5Jh0ztA0U-gS6_uZFuTfJv0SmON9EFemgfZ0Jrxoo	2026-09-08 23:20:27.379102-07
-gpo171vilxaq2gu084e68wk1ptooxdu3	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x4qUA:yh8rZoJteUw4WOo26K9Js__IYQiqN43UJrbcBkNIcaE	2026-09-10 21:55:26.160629-07
-cqybmz4sfr4rp7u7hin815my0zgst13e	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48fZ:ejiQLd1iENyNkJubSIInFpZGs9pW7SeCZ-5yo-jv2q4	2026-09-08 23:08:17.056257-07
+wpe2iom06tlov15xxsg9fiu035rk6aoj	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48Go:n_iLZ9fQgvJ5NxKi0WvhmMI11GKrhdh7c00zguzA8_c	2026-09-08 22:42:42.429-07
+y3nq4fvpxvv8rjf119tson0z9885ap5c	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x48aC:W_iyrGMl6WVQ4Z-XyujJIFD0B5Um-nUWrLQ16BbaSpc	2026-09-08 23:02:44.912-07
+y5gjud2l19ij5aeiyk3z585pwsa651a1	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x47l5:mlQZNQw50H7foRWddHzPPqsM_HVPkSgVyxdeKFyzJ5g	2026-09-08 22:09:55.896-07
+y7i53ipvn3ol7kx7wt1u2407vwlf7cab	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5D0M:NpsPy84UmvbFJyh7XcNUppFi6kQC9LBhUmSO-dfNU6o	2026-09-11 21:58:10.731-07
+y9sian8in24o4k9iwstede9quqk3625d	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZIP:s73buoPMEHufrtPvg8Q4KgXwZcD3zgNT8PEX-Lg4IA4	2026-09-04 15:09:53.758-07
+yeof3h8166dz6hh27osglbphfxnlk2hv	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2gL5:PQXmGrje8WdXn8AYe2G9uO-BfABpprDat4wvtKJsEyQ	2026-09-04 22:41:07.078-07
+z01qpf8vyo7c9cbwum3j4njpchhua8zh	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2Ygo:xPc0zYP3m3nLlxOmXJqVD7gU6hSqtg_DTDwlygyuLKc	2026-09-04 14:31:02.167-07
+z2bwq5lydxyv951i92mztw0qvk44iazj	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x2ZHr:bDV9s37FU9xthLwSTzYBguIo1pMHIM8mB-4lGK1CUUY	2026-09-04 15:09:19.687-07
+2ec8svp90zigd1opxx51otjinbu4ki3d	.eJxVjjEOgzAMRe_iGUWhFCdh7N4zRHbsAC0CicBU9e4VFUO7_vf09F8Qad-GuBdd4yjQQQ3V78aUnjofQB4094tJy7ytI5tDMSct5r6ITrfT_QsMVAboQK1rrHOpTiGnkNscuA5sc8ueSawg-oZQiS5sGxXU5L1TRIeeWPIVKpiobLFfR4lpolK-d_37A3muQRE:1x7Nw1:_j0UkkL02qhHSofl3SSL7PD7gdKTIN4TaR1fasnNOn8	2026-09-17 22:02:41.302839-07
+yj0k5s8az1se7iayxav1kbxq1ceoauaq	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlTrAene6N4y0rWXcmi7jJDBAB6dfxpSeWnchD6r32aS5rsvEZk_MYZu5zaKv69H-DQq1AgOo9c56n7oUc4q5z5G7yDb3HJjECmJwhEp0ZutUUFMIXhE9BmLJF_h8Afz0ONU:1x5HoD:pZewfXDltYarNxQ8vdV_Hq6xpFzmDQXKGhsA1RR6EMc	2026-09-12 03:05:57.771116-07
 \.
 
 
@@ -1402,6 +1657,15 @@ cqybmz4sfr4rp7u7hin815my0zgst13e	.eJxVjDEOwjAMAP_iGUUpoU7SkZ03VHbskAJKpaadEH9HlT
 --
 
 COPY public.exams_classsubject (id, total_marks, passing_marks, "order", class_level_id, subject_id) FROM stdin;
+2	75.0	25.0	2	15	2
+80	100.0	33.0	3	7	3
+1	75.0	25.0	1	15	1
+3	75.0	25.0	3	15	3
+5	50.0	17.0	5	15	5
+6	75.0	25.0	6	15	6
+7	75.0	25.0	7	15	7
+8	75.0	25.0	8	15	8
+9	50.0	17.0	9	15	9
 10	75.0	25.0	1	13	1
 11	75.0	25.0	2	13	2
 12	75.0	25.0	3	13	3
@@ -1472,7 +1736,6 @@ COPY public.exams_classsubject (id, total_marks, passing_marks, "order", class_l
 77	50.0	17.0	8	6	12
 78	100.0	33.0	1	7	1
 79	100.0	33.0	2	7	2
-80	100.0	33.0	3	7	3
 81	100.0	33.0	4	7	11
 82	50.0	17.0	5	7	5
 83	50.0	17.0	6	7	4
@@ -1513,13 +1776,6 @@ COPY public.exams_classsubject (id, total_marks, passing_marks, "order", class_l
 118	50.0	17.0	9	11	9
 119	75.0	25.0	1	17	1
 120	75.0	25.0	2	17	2
-3	75.0	25.0	3	15	3
-5	50.0	17.0	5	15	5
-6	75.0	25.0	6	15	6
-7	75.0	25.0	7	15	7
-8	75.0	25.0	8	15	8
-9	50.0	17.0	9	15	9
-2	75.0	25.0	2	15	2
 121	75.0	25.0	3	17	3
 122	75.0	25.0	4	17	4
 123	50.0	17.0	5	17	5
@@ -1548,7 +1804,6 @@ COPY public.exams_classsubject (id, total_marks, passing_marks, "order", class_l
 146	50.0	17.0	4	2	14
 147	50.0	17.0	5	2	15
 148	50.0	17.0	6	2	13
-1	75.0	25.0	1	15	1
 \.
 
 
@@ -1557,9 +1812,9 @@ COPY public.exams_classsubject (id, total_marks, passing_marks, "order", class_l
 --
 
 COPY public.exams_exam (id, name, start_date, end_date, is_active, created_at, session_id) FROM stdin;
-1	First Term Examination 2026	\N	\N	t	2026-09-08 19:11:56.62528-07	2
-2	Annual Examination 2026	\N	\N	f	2026-09-08 19:11:56.63235-07	2
-3	Mid Term Exam	2026-09-12	2026-09-30	t	2026-09-08 19:19:17.608429-07	2
+1	First Term Examination 2026	\N	\N	t	2026-09-08 19:11:56.625-07	2
+2	Annual Examination 2026	\N	\N	f	2026-09-08 19:11:56.632-07	2
+3	Mid Term Exam	2026-09-12	2026-09-30	t	2026-09-08 19:19:17.608-07	2
 \.
 
 
@@ -1568,125 +1823,307 @@ COPY public.exams_exam (id, name, start_date, end_date, is_active, created_at, s
 --
 
 COPY public.exams_exammark (id, total_marks, obtained_marks, is_absent, remarks, updated_at, class_level_id, exam_id, student_id, subject_id) FROM stdin;
-2	75.0	32.0	f		2026-09-08 19:12:22.868128-07	11	1	11	2
-3	75.0	26.0	f		2026-09-08 19:12:22.872476-07	11	1	11	3
-4	75.0	72.0	f		2026-09-08 19:12:22.877119-07	11	1	11	4
-5	50.0	34.0	f		2026-09-08 19:12:22.882927-07	11	1	11	5
-6	75.0	40.0	f		2026-09-08 19:12:22.888552-07	11	1	11	6
-7	75.0	39.0	f		2026-09-08 19:12:22.89419-07	11	1	11	7
-8	75.0	33.0	f		2026-09-08 19:12:22.901176-07	11	1	11	8
-9	50.0	23.0	f		2026-09-08 19:12:22.906561-07	11	1	11	9
-11	75.0	72.0	f		2026-09-08 19:12:22.914401-07	11	1	29	2
-12	75.0	59.0	f		2026-09-08 19:12:22.919626-07	11	1	29	3
-13	75.0	30.0	f		2026-09-08 19:12:22.924183-07	11	1	29	4
-14	50.0	44.0	f		2026-09-08 19:12:22.928759-07	11	1	29	5
-15	75.0	27.0	f		2026-09-08 19:12:22.935238-07	11	1	29	6
-16	75.0	26.0	f		2026-09-08 19:12:22.938609-07	11	1	29	7
-17	75.0	30.0	f		2026-09-08 19:12:22.941857-07	11	1	29	8
-18	50.0	30.0	f		2026-09-08 19:12:22.945005-07	11	1	29	9
-20	75.0	57.0	f		2026-09-08 19:12:22.954093-07	11	1	47	2
-21	75.0	63.0	f		2026-09-08 19:12:22.957825-07	11	1	47	3
-22	75.0	26.0	f		2026-09-08 19:12:22.961023-07	11	1	47	4
-23	50.0	29.0	f		2026-09-08 19:12:22.965298-07	11	1	47	5
-24	75.0	70.0	f		2026-09-08 19:12:22.969297-07	11	1	47	6
-25	75.0	66.0	f		2026-09-08 19:12:22.972626-07	11	1	47	7
-26	75.0	69.0	f		2026-09-08 19:12:22.975804-07	11	1	47	8
-27	50.0	43.0	f		2026-09-08 19:12:22.978972-07	11	1	47	9
-29	75.0	53.0	f		2026-09-08 19:12:22.987336-07	11	1	65	2
-30	75.0	62.0	f		2026-09-08 19:12:22.991018-07	11	1	65	3
-31	75.0	42.0	f		2026-09-08 19:12:22.994206-07	11	1	65	4
-32	50.0	17.0	f		2026-09-08 19:12:22.998412-07	11	1	65	5
-33	75.0	73.0	f		2026-09-08 19:12:23.002724-07	11	1	65	6
-34	75.0	35.0	f		2026-09-08 19:12:23.005834-07	11	1	65	7
-35	75.0	69.0	f		2026-09-08 19:12:23.008992-07	11	1	65	8
-36	50.0	44.0	f		2026-09-08 19:12:23.012007-07	11	1	65	9
-60	75.0	34.0	f		2026-09-11 18:46:39.409687-07	15	3	33	6
-49	75.0	55.0	f		2026-09-11 18:46:39.350924-07	15	3	15	2
-50	75.0	55.0	f		2026-09-11 18:46:39.360197-07	15	3	15	3
-51	50.0	34.0	f		2026-09-11 18:46:39.363401-07	15	3	15	5
-52	75.0	47.0	f		2026-09-11 18:46:39.366795-07	15	3	15	6
-53	75.0	34.0	f		2026-09-11 18:46:39.374417-07	15	3	15	7
-1	75.0	71.0	f		2026-09-08 19:15:20.654559-07	11	1	11	1
-10	75.0	0.0	t		2026-09-08 19:15:20.657506-07	11	1	29	1
-19	75.0	39.0	f		2026-09-08 19:15:20.659788-07	11	1	47	1
-28	75.0	39.0	f		2026-09-08 19:15:20.662386-07	11	1	65	1
-54	75.0	44.0	f		2026-09-11 18:46:39.377928-07	15	3	15	8
-46	100.0	85.0	f		2026-09-08 19:31:14.290693-07	9	3	9	1
-47	100.0	90.0	f		2026-09-08 19:31:14.293716-07	9	3	9	2
-55	50.0	23.0	f		2026-09-11 18:46:39.381062-07	15	3	15	9
-57	75.0	44.0	f		2026-09-11 18:46:39.392099-07	15	3	33	2
-58	75.0	34.0	f		2026-09-11 18:46:39.396899-07	15	3	33	3
-59	50.0	34.0	f		2026-09-11 18:46:39.401496-07	15	3	33	5
-61	75.0	44.0	f		2026-09-11 18:46:39.414039-07	15	3	33	7
-62	75.0	44.0	f		2026-09-11 18:46:39.417813-07	15	3	33	8
-63	50.0	44.0	f		2026-09-11 18:46:39.425753-07	15	3	33	9
-65	75.0	34.0	f		2026-09-11 18:46:39.43212-07	15	3	51	2
-66	75.0	34.0	f		2026-09-11 18:46:39.435791-07	15	3	51	3
-67	50.0	34.0	f		2026-09-11 18:46:39.441468-07	15	3	51	5
-68	75.0	34.0	f		2026-09-11 18:46:39.444846-07	15	3	51	6
-69	75.0	34.0	f		2026-09-11 18:46:39.447762-07	15	3	51	7
-70	75.0	34.0	f		2026-09-11 18:46:39.451121-07	15	3	51	8
-48	75.0	44.0	f		2026-09-11 18:46:39.346898-07	15	3	15	1
-56	75.0	55.0	f		2026-09-11 18:46:39.38425-07	15	3	33	1
-64	75.0	56.0	f		2026-09-11 18:46:39.429128-07	15	3	51	1
-71	50.0	24.0	f		2026-09-11 18:46:39.457282-07	15	3	51	9
-72	75.0	67.0	f		2026-09-11 18:46:39.473412-07	15	3	69	1
-73	75.0	34.0	f		2026-09-11 18:46:39.477177-07	15	3	69	2
-74	75.0	43.0	f		2026-09-11 18:46:39.480199-07	15	3	69	3
-75	50.0	34.0	f		2026-09-11 18:46:39.483478-07	15	3	69	5
-76	75.0	44.0	f		2026-09-11 18:46:39.489346-07	15	3	69	6
-77	75.0	34.0	f		2026-09-11 18:46:39.492664-07	15	3	69	7
-78	75.0	34.0	f		2026-09-11 18:46:39.496224-07	15	3	69	8
-79	50.0	34.0	f		2026-09-11 18:46:39.499506-07	15	3	69	9
-156	50.0	33.0	f		2026-09-11 18:46:39.515459-07	15	3	160	5
-157	75.0	23.0	f		2026-09-11 18:46:39.527795-07	15	3	160	6
-158	75.0	24.0	f		2026-09-11 18:46:39.531292-07	15	3	160	7
-159	75.0	44.0	f		2026-09-11 18:46:39.534887-07	15	3	160	8
-112	100.0	44.0	f		2026-09-08 20:19:39.377503-07	1	3	1	1
-113	100.0	44.0	f		2026-09-08 20:19:39.38193-07	1	3	1	2
-114	100.0	44.0	f		2026-09-08 20:19:39.385668-07	1	3	1	3
-115	50.0	44.0	f		2026-09-08 20:19:39.389781-07	1	3	1	14
-116	50.0	44.0	f		2026-09-08 20:19:39.39456-07	1	3	1	15
-117	50.0	44.0	f		2026-09-08 20:19:39.398654-07	1	3	1	13
-118	100.0	44.0	f		2026-09-08 20:19:39.403012-07	1	3	19	1
-119	100.0	44.0	f		2026-09-08 20:19:39.407517-07	1	3	19	2
-120	100.0	44.0	f		2026-09-08 20:19:39.411567-07	1	3	19	3
-121	50.0	44.0	f		2026-09-08 20:19:39.415954-07	1	3	19	14
-122	50.0	44.0	f		2026-09-08 20:19:39.420226-07	1	3	19	15
-123	50.0	44.0	f		2026-09-08 20:19:39.42464-07	1	3	19	13
-124	100.0	44.0	f		2026-09-08 20:19:39.429809-07	1	3	37	1
-125	100.0	44.0	f		2026-09-08 20:19:39.434266-07	1	3	37	2
-126	100.0	44.0	f		2026-09-08 20:19:39.438652-07	1	3	37	3
-127	50.0	44.0	f		2026-09-08 20:19:39.443178-07	1	3	37	14
-128	50.0	44.0	f		2026-09-08 20:19:39.447988-07	1	3	37	15
-129	50.0	44.0	f		2026-09-08 20:19:39.452423-07	1	3	37	13
-130	100.0	44.0	f		2026-09-08 20:19:39.456036-07	1	3	55	1
-131	100.0	44.0	f		2026-09-08 20:19:39.46068-07	1	3	55	2
-132	100.0	44.0	f		2026-09-08 20:19:39.465851-07	1	3	55	3
-133	50.0	44.0	f		2026-09-08 20:19:39.470724-07	1	3	55	14
-134	50.0	44.0	f		2026-09-08 20:19:39.475289-07	1	3	55	15
-135	50.0	44.0	f		2026-09-08 20:19:39.479324-07	1	3	55	13
-160	50.0	50.0	f		2026-09-11 18:46:39.539537-07	15	3	160	9
-154	75.0	55.0	f		2026-09-11 18:46:39.542786-07	15	3	162	1
-155	75.0	60.0	f		2026-09-11 18:46:39.547954-07	15	3	162	2
-142	75.0	65.0	f		2026-09-11 18:46:39.505435-07	15	3	160	1
-143	75.0	70.0	f		2026-09-11 18:46:39.508513-07	15	3	160	2
-148	100.0	55.0	f		2026-09-08 20:19:42.114131-07	1	3	161	1
-149	100.0	45.0	f		2026-09-08 20:19:42.118504-07	1	3	161	2
-150	100.0	55.0	f		2026-09-08 20:19:42.12318-07	1	3	161	3
-144	75.0	72.0	f		2026-09-11 18:46:39.512034-07	15	3	160	3
-145	50.0	44.0	f		2026-09-08 20:19:40.83857-07	1	3	160	14
-146	50.0	44.0	f		2026-09-08 20:19:40.842837-07	1	3	160	15
-147	50.0	44.0	f		2026-09-08 20:19:40.846742-07	1	3	160	13
-151	50.0	50.0	f		2026-09-08 20:19:42.127768-07	1	3	161	14
-152	50.0	45.0	f		2026-09-08 20:19:42.133323-07	1	3	161	15
-153	50.0	44.0	f		2026-09-08 20:19:42.136949-07	1	3	161	13
-136	100.0	44.0	f		2026-09-08 20:19:44.785497-07	1	3	73	1
-137	100.0	44.0	f		2026-09-08 20:19:44.792451-07	1	3	73	2
-138	100.0	44.0	f		2026-09-08 20:19:44.797808-07	1	3	73	3
-139	50.0	44.0	f		2026-09-08 20:19:44.803165-07	1	3	73	14
-140	50.0	44.0	f		2026-09-08 20:19:44.808801-07	1	3	73	15
-141	50.0	44.0	f		2026-09-08 20:19:44.814279-07	1	3	73	13
+430	100.0	0.0	t		2026-09-19 05:43:50.557842-07	6	3	588	1
+458	50.0	50.0	f		2026-09-19 05:43:50.573708-07	6	3	588	5
+431	100.0	25.0	f		2026-09-19 05:43:50.588788-07	6	3	589	1
+432	100.0	25.0	f		2026-09-19 05:43:50.625204-07	6	3	590	1
+433	100.0	25.0	f		2026-09-19 05:43:50.661583-07	6	3	591	1
+434	100.0	25.0	f		2026-09-19 05:43:50.666286-07	6	3	592	1
+171	100.0	66.0	f		2026-09-17 19:16:56.606597-07	10	3	469	1
+172	100.0	77.0	f		2026-09-17 19:16:56.611129-07	10	3	469	2
+173	100.0	77.0	f		2026-09-17 19:16:56.614086-07	10	3	469	3
+174	100.0	88.0	f		2026-09-17 19:16:56.617198-07	10	3	469	11
+175	50.0	33.0	f		2026-09-17 19:16:56.62047-07	10	3	469	5
+441	100.0	25.0	f		2026-09-19 01:01:14.708631-07	6	3	599	1
+435	100.0	25.0	f		2026-09-19 05:43:50.670113-07	6	3	593	1
+436	100.0	25.0	f		2026-09-19 05:43:50.67396-07	6	3	594	1
+437	100.0	25.0	f		2026-09-19 05:43:50.678477-07	6	3	595	1
+438	100.0	25.0	f		2026-09-19 05:43:50.683909-07	6	3	596	1
+439	100.0	25.0	f		2026-09-19 05:43:50.687687-07	6	3	597	1
+440	100.0	25.0	f		2026-09-19 05:43:50.691789-07	6	3	598	1
+442	100.0	25.0	f		2026-09-19 05:43:50.694924-07	6	3	600	1
+443	100.0	25.0	f		2026-09-19 05:43:50.698964-07	6	3	601	1
+444	100.0	25.0	f		2026-09-19 05:43:50.701857-07	6	3	602	1
+445	100.0	25.0	f		2026-09-19 05:43:50.704161-07	6	3	603	1
+446	100.0	25.0	f		2026-09-19 05:43:50.706411-07	6	3	604	1
+447	100.0	25.0	f		2026-09-19 05:43:50.708656-07	6	3	605	1
+448	100.0	25.0	f		2026-09-19 05:43:50.710985-07	6	3	606	1
+449	100.0	25.0	f		2026-09-19 05:43:50.715169-07	6	3	607	1
+450	100.0	25.0	f		2026-09-19 05:43:50.718946-07	6	3	608	1
+451	100.0	25.0	f		2026-09-19 05:43:50.722121-07	6	3	609	1
+452	100.0	25.0	f		2026-09-19 05:43:50.725049-07	6	3	610	1
+453	100.0	25.0	f		2026-09-19 05:43:50.728209-07	6	3	611	1
+454	100.0	25.0	f		2026-09-19 05:43:50.73353-07	6	3	612	1
+455	100.0	25.0	f		2026-09-19 05:43:50.737797-07	6	3	613	1
+456	100.0	25.0	f		2026-09-19 05:43:50.741403-07	6	3	614	1
+457	100.0	50.0	f		2026-09-19 05:43:50.560791-07	6	3	588	2
+484	100.0	66.0	f		2026-09-19 05:43:50.565738-07	6	3	588	3
+485	100.0	66.0	f		2026-09-19 05:43:50.570299-07	6	3	588	11
+486	50.0	45.0	f		2026-09-19 05:43:50.577332-07	6	3	588	4
+487	50.0	44.0	f		2026-09-19 05:43:50.581134-07	6	3	588	9
+488	50.0	45.0	f		2026-09-19 05:43:50.58493-07	6	3	588	12
+489	100.0	66.0	f		2026-09-19 05:43:50.592604-07	6	3	589	2
+490	100.0	76.0	f		2026-09-19 05:43:50.596537-07	6	3	589	3
+491	100.0	77.0	f		2026-09-19 05:43:50.602543-07	6	3	589	11
+492	50.0	44.0	f		2026-09-19 05:43:50.606632-07	6	3	589	5
+493	50.0	44.0	f		2026-09-19 05:43:50.610284-07	6	3	589	4
+494	50.0	44.0	f		2026-09-19 05:43:50.616069-07	6	3	589	9
+495	50.0	44.0	f		2026-09-19 05:43:50.620474-07	6	3	589	12
+496	100.0	66.0	f		2026-09-19 05:43:50.629127-07	6	3	590	2
+497	100.0	66.0	f		2026-09-19 05:43:50.636449-07	6	3	590	3
+498	100.0	44.0	f		2026-09-19 05:43:50.639669-07	6	3	590	11
+499	50.0	50.0	f		2026-09-19 05:43:50.644174-07	6	3	590	5
+500	50.0	50.0	f		2026-09-19 05:43:50.650773-07	6	3	590	4
+501	50.0	50.0	f		2026-09-19 05:43:50.654848-07	6	3	590	9
+502	50.0	44.0	f		2026-09-19 05:43:50.658198-07	6	3	590	12
+176	50.0	50.0	f		2026-09-17 19:16:56.625386-07	10	3	469	4
+177	50.0	33.0	f		2026-09-17 19:16:56.636239-07	10	3	469	9
+178	50.0	44.0	f		2026-09-17 19:16:56.640676-07	10	3	469	12
+185	100.0	66.0	f		2026-09-17 19:16:56.644471-07	10	3	470	1
+186	100.0	77.0	f		2026-09-17 19:16:56.647301-07	10	3	470	2
+187	100.0	77.0	f		2026-09-17 19:16:56.650563-07	10	3	470	3
+188	50.0	44.0	f		2026-09-17 19:16:56.653596-07	10	3	470	5
+189	50.0	50.0	f		2026-09-17 19:16:56.658422-07	10	3	470	12
+190	100.0	66.0	f		2026-09-17 19:16:56.661967-07	10	3	471	1
+191	100.0	77.0	f		2026-09-17 19:16:56.664784-07	10	3	471	2
+192	100.0	77.0	f		2026-09-17 19:16:56.667452-07	10	3	471	3
+193	50.0	50.0	f		2026-09-17 19:16:56.669953-07	10	3	471	5
+194	50.0	50.0	f		2026-09-17 19:16:56.674062-07	10	3	471	12
+195	100.0	66.0	f		2026-09-17 19:16:56.676848-07	10	3	472	1
+196	100.0	77.0	f		2026-09-17 19:16:56.67944-07	10	3	472	2
+197	100.0	77.0	f		2026-09-17 19:16:56.682237-07	10	3	472	3
+198	50.0	50.0	f		2026-09-17 19:16:56.684819-07	10	3	472	5
+199	50.0	50.0	f		2026-09-17 19:16:56.687483-07	10	3	472	12
+200	100.0	66.0	f		2026-09-17 19:16:56.69149-07	10	3	473	1
+201	100.0	88.0	f		2026-09-17 19:16:56.694818-07	10	3	473	2
+202	100.0	77.0	f		2026-09-17 19:16:56.697482-07	10	3	473	3
+203	50.0	50.0	f		2026-09-17 19:16:56.700064-07	10	3	473	5
+204	50.0	50.0	f		2026-09-17 19:16:56.702571-07	10	3	473	12
+205	100.0	66.0	f		2026-09-17 19:16:56.705791-07	10	3	474	1
+206	100.0	88.0	f		2026-09-17 19:16:56.709388-07	10	3	474	2
+207	100.0	77.0	f		2026-09-17 19:16:56.711889-07	10	3	474	3
+208	50.0	44.0	f		2026-09-17 19:16:56.714693-07	10	3	474	5
+209	50.0	50.0	f		2026-09-17 19:16:56.717474-07	10	3	474	12
+210	100.0	66.0	f		2026-09-17 19:16:56.720167-07	10	3	475	1
+211	100.0	88.0	f		2026-09-17 19:16:56.72412-07	10	3	475	2
+212	100.0	77.0	f		2026-09-17 19:16:56.727355-07	10	3	475	3
+213	50.0	44.0	f		2026-09-17 19:16:56.730182-07	10	3	475	5
+214	50.0	50.0	f		2026-09-17 19:16:56.732885-07	10	3	475	12
+215	100.0	66.0	f		2026-09-17 19:16:56.735419-07	10	3	476	1
+216	100.0	88.0	f		2026-09-17 19:16:56.73793-07	10	3	476	2
+217	100.0	77.0	f		2026-09-17 19:16:56.74214-07	10	3	476	3
+218	50.0	44.0	f		2026-09-17 19:16:56.744944-07	10	3	476	5
+219	50.0	50.0	f		2026-09-17 19:16:56.747511-07	10	3	476	12
+220	100.0	66.0	f		2026-09-17 19:16:56.749948-07	10	3	477	1
+221	100.0	88.0	f		2026-09-17 19:16:56.752362-07	10	3	477	2
+222	100.0	77.0	f		2026-09-17 19:16:56.754823-07	10	3	477	3
+223	50.0	44.0	f		2026-09-17 19:16:56.758883-07	10	3	477	5
+224	50.0	50.0	f		2026-09-17 19:16:56.761738-07	10	3	477	12
+225	100.0	66.0	f		2026-09-17 19:16:56.764347-07	10	3	478	1
+226	100.0	88.0	f		2026-09-17 19:16:56.76693-07	10	3	478	2
+227	100.0	77.0	f		2026-09-17 19:16:56.769393-07	10	3	478	3
+228	50.0	44.0	f		2026-09-17 19:16:56.772187-07	10	3	478	5
+229	50.0	50.0	f		2026-09-17 19:16:56.776452-07	10	3	478	12
+230	100.0	66.0	f		2026-09-17 19:16:56.779018-07	10	3	479	1
+231	100.0	88.0	f		2026-09-17 19:16:56.781645-07	10	3	479	2
+232	100.0	77.0	f		2026-09-17 19:16:56.784198-07	10	3	479	3
+233	50.0	44.0	f		2026-09-17 19:16:56.786665-07	10	3	479	5
+234	50.0	50.0	f		2026-09-17 19:16:56.790541-07	10	3	479	12
+235	100.0	66.0	f		2026-09-17 19:16:56.793823-07	10	3	480	1
+236	100.0	88.0	f		2026-09-17 19:16:56.797314-07	10	3	480	2
+237	100.0	77.0	f		2026-09-17 19:16:56.80083-07	10	3	480	3
+238	50.0	44.0	f		2026-09-17 19:16:56.804583-07	10	3	480	5
+239	50.0	50.0	f		2026-09-17 19:16:56.80942-07	10	3	480	12
+240	100.0	66.0	f		2026-09-17 19:16:56.812486-07	10	3	481	1
+241	100.0	88.0	f		2026-09-17 19:16:56.816006-07	10	3	481	2
+242	100.0	77.0	f		2026-09-17 19:16:56.819742-07	10	3	481	3
+243	50.0	44.0	f		2026-09-17 19:16:56.824539-07	10	3	481	5
+244	50.0	50.0	f		2026-09-17 19:16:56.828659-07	10	3	481	12
+245	100.0	66.0	f		2026-09-17 19:16:56.831525-07	10	3	573	1
+246	100.0	88.0	f		2026-09-17 19:16:56.834102-07	10	3	573	2
+247	100.0	77.0	f		2026-09-17 19:16:56.836723-07	10	3	573	3
+248	50.0	44.0	f		2026-09-17 19:16:56.840325-07	10	3	573	5
+249	50.0	50.0	f		2026-09-17 19:16:56.844033-07	10	3	573	12
+250	100.0	66.0	f		2026-09-17 19:16:56.847826-07	10	3	482	1
+251	100.0	88.0	f		2026-09-17 19:16:56.851524-07	10	3	482	2
+252	100.0	77.0	f		2026-09-17 19:16:56.85541-07	10	3	482	3
+253	50.0	44.0	f		2026-09-17 19:16:56.859623-07	10	3	482	5
+254	50.0	50.0	f		2026-09-17 19:16:56.862872-07	10	3	482	12
+255	100.0	3.0	f		2026-09-17 19:16:56.865177-07	10	3	574	1
+256	100.0	88.0	f		2026-09-17 19:16:56.86765-07	10	3	574	2
+257	100.0	77.0	f		2026-09-17 19:16:56.86992-07	10	3	574	3
+258	50.0	44.0	f		2026-09-17 19:16:56.872869-07	10	3	574	5
+259	50.0	50.0	f		2026-09-17 19:16:56.875626-07	10	3	574	12
+260	100.0	66.0	f		2026-09-17 19:16:56.878021-07	10	3	483	1
+261	100.0	88.0	f		2026-09-17 19:16:56.880298-07	10	3	483	2
+262	100.0	77.0	f		2026-09-17 19:16:56.88253-07	10	3	483	3
+263	50.0	44.0	f		2026-09-17 19:16:56.884871-07	10	3	483	5
+264	50.0	50.0	f		2026-09-17 19:16:56.887282-07	10	3	483	12
+265	100.0	3.0	f		2026-09-17 19:16:56.890635-07	10	3	484	1
+266	100.0	88.0	f		2026-09-17 19:16:56.893166-07	10	3	484	2
+267	100.0	77.0	f		2026-09-17 19:16:56.895485-07	10	3	484	3
+268	50.0	44.0	f		2026-09-17 19:16:56.897832-07	10	3	484	5
+269	50.0	50.0	f		2026-09-17 19:16:56.900259-07	10	3	484	12
+270	100.0	66.0	f		2026-09-17 19:16:56.902593-07	10	3	485	1
+271	100.0	88.0	f		2026-09-17 19:16:56.905389-07	10	3	485	2
+272	100.0	77.0	f		2026-09-17 19:16:56.908899-07	10	3	485	3
+273	50.0	44.0	f		2026-09-17 19:16:56.911268-07	10	3	485	5
+274	50.0	50.0	f		2026-09-17 19:16:56.913553-07	10	3	485	12
+275	100.0	3.0	f		2026-09-17 19:16:56.915851-07	10	3	575	1
+276	100.0	88.0	f		2026-09-17 19:16:56.918248-07	10	3	575	2
+277	100.0	77.0	f		2026-09-17 19:16:56.920793-07	10	3	575	3
+278	50.0	44.0	f		2026-09-17 19:16:56.924339-07	10	3	575	5
+279	50.0	50.0	f		2026-09-17 19:16:56.926758-07	10	3	575	12
+280	100.0	66.0	f		2026-09-17 19:16:56.929042-07	10	3	486	1
+281	100.0	88.0	f		2026-09-17 19:16:56.931287-07	10	3	486	2
+282	100.0	77.0	f		2026-09-17 19:16:56.933533-07	10	3	486	3
+283	50.0	44.0	f		2026-09-17 19:16:56.935918-07	10	3	486	5
+284	50.0	50.0	f		2026-09-17 19:16:56.938449-07	10	3	486	12
+285	100.0	2.0	f		2026-09-17 19:16:56.941191-07	10	3	576	1
+286	100.0	88.0	f		2026-09-17 19:16:56.943473-07	10	3	576	2
+287	100.0	77.0	f		2026-09-17 19:16:56.945669-07	10	3	576	3
+288	50.0	44.0	f		2026-09-17 19:16:56.947944-07	10	3	576	5
+289	50.0	50.0	f		2026-09-17 19:16:56.950185-07	10	3	576	12
+290	100.0	66.0	f		2026-09-17 19:16:56.95294-07	10	3	487	1
+291	100.0	88.0	f		2026-09-17 19:16:56.955694-07	10	3	487	2
+292	100.0	77.0	f		2026-09-17 19:16:56.958365-07	10	3	487	3
+293	50.0	44.0	f		2026-09-17 19:16:56.960625-07	10	3	487	5
+294	50.0	50.0	f		2026-09-17 19:16:56.962887-07	10	3	487	12
+295	100.0	2.0	f		2026-09-17 19:16:56.965197-07	10	3	488	1
+296	100.0	88.0	f		2026-09-17 19:16:56.967734-07	10	3	488	2
+297	100.0	77.0	f		2026-09-17 19:16:56.970593-07	10	3	488	3
+298	50.0	44.0	f		2026-09-17 19:16:56.974224-07	10	3	488	5
+299	50.0	50.0	f		2026-09-17 19:16:56.976615-07	10	3	488	12
+300	100.0	66.0	f		2026-09-17 19:16:56.978876-07	10	3	489	1
+301	100.0	88.0	f		2026-09-17 19:16:56.98109-07	10	3	489	2
+302	100.0	77.0	f		2026-09-17 19:16:56.983475-07	10	3	489	3
+303	50.0	44.0	f		2026-09-17 19:16:56.985986-07	10	3	489	5
+304	50.0	50.0	f		2026-09-17 19:16:56.988639-07	10	3	489	12
+305	100.0	2.0	f		2026-09-17 19:16:56.992011-07	10	3	490	1
+306	100.0	88.0	f		2026-09-17 19:16:56.99429-07	10	3	490	2
+307	100.0	77.0	f		2026-09-17 19:16:56.996684-07	10	3	490	3
+308	50.0	44.0	f		2026-09-17 19:16:56.999134-07	10	3	490	5
+309	50.0	50.0	f		2026-09-17 19:16:57.001412-07	10	3	490	12
+310	100.0	66.0	f		2026-09-17 19:16:57.00366-07	10	3	491	1
+311	100.0	88.0	f		2026-09-17 19:16:57.006398-07	10	3	491	2
+312	100.0	77.0	f		2026-09-17 19:16:57.009063-07	10	3	491	3
+313	50.0	44.0	f		2026-09-17 19:16:57.011359-07	10	3	491	5
+314	50.0	50.0	f		2026-09-17 19:16:57.013591-07	10	3	491	12
+315	100.0	2.0	f		2026-09-17 19:16:57.015981-07	10	3	492	1
+316	100.0	88.0	f		2026-09-17 19:16:57.018434-07	10	3	492	2
+317	100.0	77.0	f		2026-09-17 19:16:57.020821-07	10	3	492	3
+318	50.0	44.0	f		2026-09-17 19:16:57.023609-07	10	3	492	5
+319	50.0	50.0	f		2026-09-17 19:16:57.02589-07	10	3	492	12
+320	100.0	66.0	f		2026-09-17 19:16:57.028213-07	10	3	577	1
+321	100.0	88.0	f		2026-09-17 19:16:57.03079-07	10	3	577	2
+322	100.0	77.0	f		2026-09-17 19:16:57.033098-07	10	3	577	3
+323	50.0	44.0	f		2026-09-17 19:16:57.035343-07	10	3	577	5
+324	50.0	50.0	f		2026-09-17 19:16:57.037607-07	10	3	577	12
+325	100.0	44.0	f		2026-09-17 19:16:57.041275-07	10	3	493	1
+326	100.0	88.0	f		2026-09-17 19:16:57.043616-07	10	3	493	2
+327	100.0	77.0	f		2026-09-17 19:16:57.046068-07	10	3	493	3
+328	50.0	44.0	f		2026-09-17 19:16:57.048455-07	10	3	493	5
+329	50.0	50.0	f		2026-09-17 19:16:57.050824-07	10	3	493	12
+330	100.0	66.0	f		2026-09-17 19:16:57.05315-07	10	3	578	1
+331	100.0	88.0	f		2026-09-17 19:16:57.056829-07	10	3	578	2
+332	100.0	77.0	f		2026-09-17 19:16:57.05938-07	10	3	578	3
+333	50.0	44.0	f		2026-09-17 19:16:57.062073-07	10	3	578	5
+334	50.0	50.0	f		2026-09-17 19:16:57.064364-07	10	3	578	12
+335	100.0	5.0	f		2026-09-17 19:16:57.066909-07	10	3	494	1
+336	100.0	88.0	f		2026-09-17 19:16:57.069379-07	10	3	494	2
+337	100.0	77.0	f		2026-09-17 19:16:57.071935-07	10	3	494	3
+338	50.0	44.0	f		2026-09-17 19:16:57.075454-07	10	3	494	5
+339	50.0	50.0	f		2026-09-17 19:16:57.078354-07	10	3	494	12
+340	100.0	5.0	f		2026-09-17 19:16:57.081013-07	10	3	495	1
+341	100.0	88.0	f		2026-09-17 19:16:57.083673-07	10	3	495	2
+342	100.0	77.0	f		2026-09-17 19:16:57.086459-07	10	3	495	3
+343	50.0	44.0	f		2026-09-17 19:16:57.089413-07	10	3	495	5
+344	50.0	50.0	f		2026-09-17 19:16:57.09231-07	10	3	495	12
+345	100.0	5.0	f		2026-09-17 19:16:57.095052-07	10	3	496	1
+346	100.0	88.0	f		2026-09-17 19:16:57.097635-07	10	3	496	2
+347	100.0	77.0	f		2026-09-17 19:16:57.100201-07	10	3	496	3
+348	50.0	44.0	f		2026-09-17 19:16:57.102726-07	10	3	496	5
+349	50.0	50.0	f		2026-09-17 19:16:57.105559-07	10	3	496	12
+350	100.0	66.0	f		2026-09-17 19:16:57.109217-07	10	3	497	1
+351	100.0	88.0	f		2026-09-17 19:16:57.111748-07	10	3	497	2
+352	100.0	77.0	f		2026-09-17 19:16:57.114306-07	10	3	497	3
+353	50.0	44.0	f		2026-09-17 19:16:57.117096-07	10	3	497	5
+354	50.0	50.0	f		2026-09-17 19:16:57.119883-07	10	3	497	12
+355	100.0	66.0	f		2026-09-17 19:16:57.123705-07	10	3	498	1
+356	100.0	88.0	f		2026-09-17 19:16:57.126563-07	10	3	498	2
+357	100.0	77.0	f		2026-09-17 19:16:57.129128-07	10	3	498	3
+358	50.0	44.0	f		2026-09-17 19:16:57.131802-07	10	3	498	5
+359	50.0	50.0	f		2026-09-17 19:16:57.134317-07	10	3	498	12
+360	100.0	66.0	f		2026-09-17 19:16:57.137089-07	10	3	579	1
+361	100.0	88.0	f		2026-09-17 19:16:57.140291-07	10	3	579	2
+362	100.0	77.0	f		2026-09-17 19:16:57.142903-07	10	3	579	3
+363	50.0	44.0	f		2026-09-17 19:16:57.145416-07	10	3	579	5
+364	50.0	50.0	f		2026-09-17 19:16:57.148028-07	10	3	579	12
+365	100.0	4.0	f		2026-09-17 19:16:57.150664-07	10	3	499	1
+366	100.0	88.0	f		2026-09-17 19:16:57.153192-07	10	3	499	2
+367	100.0	77.0	f		2026-09-17 19:16:57.156538-07	10	3	499	3
+368	50.0	44.0	f		2026-09-17 19:16:57.159185-07	10	3	499	5
+369	50.0	50.0	f		2026-09-17 19:16:57.161742-07	10	3	499	12
+370	100.0	66.0	f		2026-09-17 19:16:57.164509-07	10	3	580	1
+371	100.0	88.0	f		2026-09-17 19:16:57.167245-07	10	3	580	2
+372	100.0	77.0	f		2026-09-17 19:16:57.16992-07	10	3	580	3
+373	50.0	44.0	f		2026-09-17 19:16:57.173727-07	10	3	580	5
+374	50.0	50.0	f		2026-09-17 19:16:57.176553-07	10	3	580	12
+375	100.0	44.0	f		2026-09-17 19:16:57.179945-07	10	3	581	1
+376	100.0	88.0	f		2026-09-17 19:16:57.18327-07	10	3	581	2
+377	100.0	77.0	f		2026-09-17 19:16:57.186871-07	10	3	581	3
+378	50.0	44.0	f		2026-09-17 19:16:57.191804-07	10	3	581	5
+379	50.0	50.0	f		2026-09-17 19:16:57.195803-07	10	3	581	12
+380	100.0	66.0	f		2026-09-17 19:16:57.199271-07	10	3	582	1
+381	100.0	88.0	f		2026-09-17 19:16:57.201901-07	10	3	582	2
+382	100.0	77.0	f		2026-09-17 19:16:57.205594-07	10	3	582	3
+383	50.0	44.0	f		2026-09-17 19:16:57.208646-07	10	3	582	5
+384	50.0	50.0	f		2026-09-17 19:16:57.211313-07	10	3	582	12
+385	100.0	34.0	f		2026-09-17 19:16:57.214021-07	10	3	500	1
+386	100.0	88.0	f		2026-09-17 19:16:57.21661-07	10	3	500	2
+387	100.0	77.0	f		2026-09-17 19:16:57.219146-07	10	3	500	3
+388	50.0	44.0	f		2026-09-17 19:16:57.222727-07	10	3	500	5
+389	50.0	50.0	f		2026-09-17 19:16:57.225524-07	10	3	500	12
+390	100.0	66.0	f		2026-09-17 19:16:57.228867-07	10	3	501	1
+391	100.0	88.0	f		2026-09-17 19:16:57.231371-07	10	3	501	2
+392	100.0	77.0	f		2026-09-17 19:16:57.233938-07	10	3	501	3
+393	50.0	44.0	f		2026-09-17 19:16:57.236925-07	10	3	501	5
+394	50.0	50.0	f		2026-09-17 19:16:57.240969-07	10	3	501	12
+395	100.0	22.0	f		2026-09-17 19:16:57.243625-07	10	3	502	1
+396	100.0	88.0	f		2026-09-17 19:16:57.246304-07	10	3	502	2
+397	100.0	77.0	f		2026-09-17 19:16:57.249021-07	10	3	502	3
+398	50.0	44.0	f		2026-09-17 19:16:57.252109-07	10	3	502	5
+399	50.0	50.0	f		2026-09-17 19:16:57.25494-07	10	3	502	12
+400	100.0	66.0	f		2026-09-17 19:16:57.259642-07	10	3	583	1
+401	100.0	88.0	f		2026-09-17 19:16:57.262286-07	10	3	583	2
+402	100.0	77.0	f		2026-09-17 19:16:57.264985-07	10	3	583	3
+403	50.0	44.0	f		2026-09-17 19:16:57.268129-07	10	3	583	5
+404	50.0	50.0	f		2026-09-17 19:16:57.270812-07	10	3	583	12
+405	100.0	34.0	f		2026-09-17 19:16:57.274294-07	10	3	503	1
+406	100.0	88.0	f		2026-09-17 19:16:57.277162-07	10	3	503	2
+407	100.0	77.0	f		2026-09-17 19:16:57.279892-07	10	3	503	3
+408	50.0	44.0	f		2026-09-17 19:16:57.282709-07	10	3	503	5
+409	50.0	50.0	f		2026-09-17 19:16:57.285568-07	10	3	503	12
+410	100.0	66.0	f		2026-09-17 19:16:57.288596-07	10	3	504	1
+411	100.0	88.0	f		2026-09-17 19:16:57.292061-07	10	3	504	2
+412	100.0	77.0	f		2026-09-17 19:16:57.294768-07	10	3	504	3
+413	50.0	44.0	f		2026-09-17 19:16:57.29744-07	10	3	504	5
+414	50.0	50.0	f		2026-09-17 19:16:57.300026-07	10	3	504	12
+415	100.0	87.0	f		2026-09-17 19:16:57.302625-07	10	3	505	1
+416	100.0	88.0	f		2026-09-17 19:16:57.306539-07	10	3	505	2
+417	100.0	77.0	f		2026-09-17 19:16:57.309638-07	10	3	505	3
+418	50.0	44.0	f		2026-09-17 19:16:57.312449-07	10	3	505	5
+419	50.0	50.0	f		2026-09-17 19:16:57.31513-07	10	3	505	12
+420	100.0	66.0	f		2026-09-17 19:16:57.317847-07	10	3	506	1
+421	100.0	88.0	f		2026-09-17 19:16:57.320577-07	10	3	506	2
+422	100.0	77.0	f		2026-09-17 19:16:57.324689-07	10	3	506	3
+423	50.0	44.0	f		2026-09-17 19:16:57.327396-07	10	3	506	5
+424	50.0	50.0	f		2026-09-17 19:16:57.33016-07	10	3	506	12
+425	100.0	77.0	f		2026-09-17 19:16:57.332807-07	10	3	584	1
+426	100.0	88.0	f		2026-09-17 19:16:57.335434-07	10	3	584	2
+427	100.0	77.0	f		2026-09-17 19:16:57.338599-07	10	3	584	3
+428	50.0	44.0	f		2026-09-17 19:16:57.341548-07	10	3	584	5
+429	50.0	50.0	f		2026-09-17 19:16:57.344275-07	10	3	584	12
 \.
 
 
@@ -1719,64 +2156,7 @@ COPY public.exams_subject (id, name, code, "order", is_active) FROM stdin;
 --
 
 COPY public.finance_feepaymentreceipt (id, receipt_no, payment_date, amount_paid, remarks, student_id) FROM stdin;
-51	REC-1051	2026-09-04	19500.00	he /just pay	69
-53	REC-1053	2026-09-04	6000.00		1
-55	REC-1055	2026-09-05	2300.00		1
-1	REC-1001	2026-05-22	7500.00	Cash payment cleared at accounts counter	1
-2	REC-1002	2026-08-17	2800.00	Cash payment cleared at accounts counter	2
-3	REC-1003	2026-04-23	9000.00	Cash payment cleared at accounts counter	3
-4	REC-1004	2026-03-09	3000.00	Cash payment cleared at accounts counter	4
-5	REC-1005	2026-03-21	19200.00	Cash payment cleared at accounts counter	5
-6	REC-1006	2026-08-28	3200.00	Cash payment cleared at accounts counter	6
-7	REC-1007	2026-03-02	3500.00	Cash payment cleared at accounts counter	7
-8	REC-1008	2026-05-03	11400.00	Cash payment cleared at accounts counter	8
-9	REC-1009	2026-01-26	4000.00	Cash payment cleared at accounts counter	9
-10	REC-1010	2026-07-18	25200.00	Cash payment cleared at accounts counter	10
-11	REC-1011	2026-03-10	14400.00	Cash payment cleared at accounts counter	11
-12	REC-1012	2026-07-20	5000.00	Cash payment cleared at accounts counter	12
-13	REC-1013	2026-02-11	39000.00	Cash payment cleared at accounts counter	13
-14	REC-1014	2026-01-22	6800.00	Cash payment cleared at accounts counter	14
-15	REC-1015	2026-02-21	19500.00	Cash payment cleared at accounts counter	15
-17	REC-1017	2026-07-16	36000.00	Cash payment cleared at accounts counter	17
-18	REC-1018	2026-07-15	6200.00	Cash payment cleared at accounts counter	18
-19	REC-1019	2026-06-09	15000.00	Cash payment cleared at accounts counter	19
-20	REC-1020	2026-08-14	8400.00	Cash payment cleared at accounts counter	20
-21	REC-1021	2026-08-16	9000.00	Cash payment cleared at accounts counter	21
-22	REC-1022	2026-04-22	3000.00	Cash payment cleared at accounts counter	22
-23	REC-1023	2026-05-11	19200.00	Cash payment cleared at accounts counter	23
-24	REC-1024	2026-06-22	19200.00	Cash payment cleared at accounts counter	24
-25	REC-1025	2026-06-21	3500.00	Cash payment cleared at accounts counter	25
-58	REC-1056	2026-09-05	40000.00	Family Payment: FAM-0019 (Sardar Jan).	19
-59	REC-1057	2026-09-09	1200.00		8
-16	REC-1016	2026-01-03	40800.00	Cash payment cleared at accounts counter	16
-42	REC-1042	2026-01-02	9600.00	Cash payment cleared at accounts counter	42
-43	REC-1043	2026-02-15	10500.00	Cash payment cleared at accounts counter	43
-44	REC-1044	2026-07-12	3800.00	Cash payment cleared at accounts counter	44
-45	REC-1045	2026-07-02	12000.00	Cash payment cleared at accounts counter	45
-46	REC-1046	2026-02-05	4200.00	Cash payment cleared at accounts counter	46
-47	REC-1047	2026-06-21	14400.00	Cash payment cleared at accounts counter	47
-48	REC-1048	2026-06-04	15000.00	Cash payment cleared at accounts counter	48
-52	REC-1052	2026-09-04	2300.00		57
-54	REC-1054	2026-09-04	2800.00		2
-26	REC-1026	2026-04-27	3800.00	Cash payment cleared at accounts counter	26
-27	REC-1027	2026-08-10	12000.00	Cash payment cleared at accounts counter	27
-28	REC-1028	2026-01-11	25200.00	Cash payment cleared at accounts counter	28
-29	REC-1029	2026-06-22	14400.00	Cash payment cleared at accounts counter	29
-30	REC-1030	2026-02-20	5000.00	Cash payment cleared at accounts counter	30
-31	REC-1031	2026-08-24	19500.00	Cash payment cleared at accounts counter	31
-32	REC-1032	2026-07-17	40800.00	Cash payment cleared at accounts counter	32
-33	REC-1033	2026-08-28	19500.00	Cash payment cleared at accounts counter	33
-34	REC-1034	2026-05-25	40800.00	Cash payment cleared at accounts counter	34
-35	REC-1035	2026-03-27	6000.00	Cash payment cleared at accounts counter	35
-36	REC-1036	2026-04-01	18600.00	Cash payment cleared at accounts counter	36
-37	REC-1037	2026-02-06	2500.00	Cash payment cleared at accounts counter	37
-38	REC-1038	2026-03-17	2800.00	Cash payment cleared at accounts counter	38
-39	REC-1039	2026-03-08	9000.00	Cash payment cleared at accounts counter	39
-40	REC-1040	2026-05-10	9000.00	Cash payment cleared at accounts counter	40
-49	REC-1049	2026-06-04	39000.00	Cash payment cleared at accounts counter	49
-50	REC-1050	2026-07-08	20400.00	Cash payment cleared at accounts counter	50
-41	REC-1041	2026-05-09	3200.00	Cash payment cleared at accounts counter	41
-60	REC-1058	2026-09-11	600.00	Family Payment: FAM-0001 (Moiz Ahmad).	1
+61	REC-1059	2026-09-19	8000.00		588
 \.
 
 
@@ -1785,109 +2165,7 @@ COPY public.finance_feepaymentreceipt (id, receipt_no, payment_date, amount_paid
 --
 
 COPY public.finance_feepaymentreceipt_month_entries (id, feepaymentreceipt_id, studentfeemonthentry_id) FROM stdin;
-1	1	8
-2	1	9
-3	2	16
-4	3	27
-5	3	28
-6	4	42
-7	5	49
-8	5	50
-9	5	51
-10	6	69
-11	7	82
-12	8	88
-13	8	89
-14	9	107
-15	10	116
-16	10	117
-17	10	118
-18	11	130
-19	11	131
-20	12	141
-21	13	146
-22	13	147
-23	13	148
-24	14	168
-25	15	176
-26	15	177
-27	16	183
-28	16	184
-29	16	185
-30	17	199
-31	17	200
-32	17	201
-33	18	216
-34	19	224
-35	19	225
-36	19	226
-37	20	239
-38	20	240
-39	21	243
-40	21	244
-41	22	264
-42	23	265
-43	23	266
-44	23	267
-45	24	283
-46	24	284
-47	24	285
-48	25	300
-49	26	312
-50	27	321
-51	27	322
-52	28	332
-53	28	333
-54	28	334
-55	29	346
-56	29	347
-57	30	354
-58	31	371
-59	31	372
-60	32	378
-61	32	379
-62	32	380
-63	33	388
-64	33	389
-65	34	397
-66	34	398
-67	34	399
-68	35	411
-69	36	430
-70	36	431
-71	37	444
-72	38	456
-73	39	465
-74	39	466
-75	40	475
-76	40	476
-77	41	490
-78	42	494
-79	42	495
-80	43	506
-81	43	507
-82	44	528
-83	45	539
-84	45	540
-85	46	550
-86	47	556
-87	47	557
-88	48	574
-89	48	575
-90	49	579
-91	49	580
-92	49	581
-93	50	596
-94	50	597
-95	51	820
-96	51	821
-97	52	684
-98	53	10
-99	53	11
-100	54	17
-101	55	12
-105	59	92
-106	60	11
+107	61	6948
 \.
 
 
@@ -1896,87 +2174,192 @@ COPY public.finance_feepaymentreceipt_month_entries (id, feepaymentreceipt_id, s
 --
 
 COPY public.finance_studentfeeledger (id, created_at, academic_session_id, student_id) FROM stdin;
-161	2026-09-10 18:53:34.738276-07	2	163
-1	2026-09-03 22:55:29.413-07	2	1
-2	2026-09-03 22:55:29.443-07	2	2
-3	2026-09-03 22:55:29.469-07	2	3
-4	2026-09-03 22:55:29.493-07	2	4
-5	2026-09-03 22:55:29.52-07	2	5
-6	2026-09-03 22:55:29.543-07	2	6
-7	2026-09-03 22:55:29.565-07	2	7
-8	2026-09-03 22:55:29.589-07	2	8
-9	2026-09-03 22:55:29.611-07	2	9
-10	2026-09-03 22:55:29.641-07	2	10
-11	2026-09-03 22:55:29.665-07	2	11
-12	2026-09-03 22:55:29.69-07	2	12
-13	2026-09-03 22:55:29.719-07	2	13
-152	2026-09-04 19:43:29.464626-07	3	3
-153	2026-09-04 19:43:29.538686-07	3	21
-154	2026-09-04 19:43:29.588326-07	3	39
-155	2026-09-04 19:43:29.612281-07	3	57
-160	2026-09-08 19:39:22.701642-07	2	152
-14	2026-09-03 22:55:29.744-07	2	14
-15	2026-09-03 22:55:29.77-07	2	15
-16	2026-09-03 22:55:29.793-07	2	16
-17	2026-09-03 22:55:29.816-07	2	17
-18	2026-09-03 22:55:29.84-07	2	18
-19	2026-09-03 22:55:29.864-07	2	19
-20	2026-09-03 22:55:29.891-07	2	20
-21	2026-09-03 22:55:29.914-07	2	21
-22	2026-09-03 22:55:29.938-07	2	22
-23	2026-09-03 22:55:29.96-07	2	23
-24	2026-09-03 22:55:29.987-07	2	24
-25	2026-09-03 22:55:30.01-07	2	25
-26	2026-09-03 22:55:30.032-07	2	26
-27	2026-09-03 22:55:30.057-07	2	27
-28	2026-09-03 22:55:30.079-07	2	28
-29	2026-09-03 22:55:30.103-07	2	29
-30	2026-09-03 22:55:30.126-07	2	30
-31	2026-09-03 22:55:30.148-07	2	31
-32	2026-09-03 22:55:30.171-07	2	32
-33	2026-09-03 22:55:30.194-07	2	33
-34	2026-09-03 22:55:30.216-07	2	34
-35	2026-09-03 22:55:30.24-07	2	35
-36	2026-09-03 22:55:30.262-07	2	36
-37	2026-09-03 22:55:30.286-07	2	37
-38	2026-09-03 22:55:30.308-07	2	38
-39	2026-09-03 22:55:30.331-07	2	39
-40	2026-09-03 22:55:30.356-07	2	40
-41	2026-09-03 22:55:30.379-07	2	41
-42	2026-09-03 22:55:30.405-07	2	42
-43	2026-09-03 22:55:30.427-07	2	43
-44	2026-09-03 22:55:30.448-07	2	44
-45	2026-09-03 22:55:30.473-07	2	45
-46	2026-09-03 22:55:30.495-07	2	46
-47	2026-09-03 22:55:30.52-07	2	47
-48	2026-09-03 22:55:30.543-07	2	48
-49	2026-09-03 22:55:30.568-07	2	49
-50	2026-09-03 22:55:30.592-07	2	50
-51	2026-09-03 22:55:30.615-07	2	51
-52	2026-09-03 22:55:30.641-07	2	52
-53	2026-09-03 22:55:30.665-07	2	53
-54	2026-09-03 22:55:30.696-07	2	54
-55	2026-09-03 22:55:30.721-07	2	55
-56	2026-09-03 22:55:30.744-07	2	56
-57	2026-09-03 22:55:30.769-07	2	57
-58	2026-09-03 22:55:30.797-07	2	58
-59	2026-09-03 22:55:30.823-07	2	59
-60	2026-09-03 22:55:30.85-07	2	60
-61	2026-09-03 22:55:30.874-07	2	61
-62	2026-09-03 22:55:30.899-07	2	62
-63	2026-09-03 22:55:30.924-07	2	63
-64	2026-09-03 22:55:30.948-07	2	64
-65	2026-09-03 22:55:30.972-07	2	65
-66	2026-09-03 22:55:30.996-07	2	66
-67	2026-09-03 22:55:31.02-07	2	67
-68	2026-09-03 22:55:31.043-07	2	68
-69	2026-09-03 22:55:31.068-07	2	69
-70	2026-09-03 22:55:31.092-07	2	70
-71	2026-09-03 22:55:31.116-07	2	71
-72	2026-09-03 22:55:31.14-07	2	72
-73	2026-09-03 22:55:31.163-07	2	73
-74	2026-09-03 22:55:31.187-07	2	74
-75	2026-09-03 22:55:31.21-07	2	75
+422	2026-09-17 18:29:28.18429-07	2	424
+423	2026-09-17 18:29:28.228885-07	2	425
+424	2026-09-17 18:29:28.249942-07	2	426
+425	2026-09-17 18:29:28.269941-07	2	427
+426	2026-09-17 18:29:28.289953-07	2	428
+427	2026-09-17 18:29:28.311578-07	2	429
+428	2026-09-17 18:29:28.331266-07	2	430
+429	2026-09-17 18:29:28.351554-07	2	431
+430	2026-09-17 18:29:28.373421-07	2	432
+431	2026-09-17 18:29:28.398402-07	2	433
+432	2026-09-17 18:29:28.420423-07	2	434
+433	2026-09-17 18:29:28.441955-07	2	435
+434	2026-09-17 18:29:28.462249-07	2	436
+435	2026-09-17 18:29:28.482478-07	2	437
+436	2026-09-17 18:29:28.507065-07	2	438
+437	2026-09-17 18:29:28.53005-07	2	439
+438	2026-09-17 18:29:28.553194-07	2	440
+439	2026-09-17 18:29:28.577559-07	2	441
+440	2026-09-17 18:29:28.600792-07	2	442
+441	2026-09-17 18:29:28.626052-07	2	443
+442	2026-09-17 18:29:28.650891-07	2	444
+443	2026-09-17 18:29:28.674507-07	2	445
+444	2026-09-17 18:29:28.70034-07	2	446
+445	2026-09-17 18:29:28.733082-07	2	447
+446	2026-09-17 18:29:28.75653-07	2	448
+447	2026-09-17 18:29:28.781609-07	2	449
+448	2026-09-17 18:29:28.804884-07	2	450
+449	2026-09-17 18:29:28.830914-07	2	451
+450	2026-09-17 18:29:28.853874-07	2	452
+451	2026-09-17 18:29:28.87826-07	2	453
+452	2026-09-17 18:29:28.903395-07	2	454
+453	2026-09-17 18:29:28.934916-07	2	455
+454	2026-09-17 18:29:28.958423-07	2	456
+455	2026-09-17 18:29:28.983469-07	2	457
+456	2026-09-17 18:29:29.006731-07	2	458
+457	2026-09-17 18:29:29.037427-07	2	459
+458	2026-09-17 18:29:29.061951-07	2	460
+459	2026-09-17 18:29:29.085591-07	2	461
+467	2026-09-17 18:37:43.822584-07	2	469
+468	2026-09-17 18:37:43.872474-07	2	470
+469	2026-09-17 18:37:43.897815-07	2	471
+470	2026-09-17 18:37:43.920287-07	2	472
+471	2026-09-17 18:37:43.94252-07	2	473
+472	2026-09-17 18:37:43.965538-07	2	474
+473	2026-09-17 18:37:43.989557-07	2	475
+474	2026-09-17 18:37:44.011901-07	2	476
+475	2026-09-17 18:37:44.036612-07	2	477
+476	2026-09-17 18:37:44.059224-07	2	478
+477	2026-09-17 18:37:44.083434-07	2	479
+478	2026-09-17 18:37:44.107855-07	2	480
+479	2026-09-17 18:37:44.129525-07	2	481
+480	2026-09-17 18:37:44.152682-07	2	482
+481	2026-09-17 18:37:44.176061-07	2	483
+482	2026-09-17 18:37:44.205495-07	2	484
+483	2026-09-17 18:37:44.228624-07	2	485
+484	2026-09-17 18:37:44.253307-07	2	486
+485	2026-09-17 18:37:44.274371-07	2	487
+486	2026-09-17 18:37:44.304466-07	2	488
+487	2026-09-17 18:37:44.326355-07	2	489
+488	2026-09-17 18:37:44.347298-07	2	490
+489	2026-09-17 18:37:44.370319-07	2	491
+490	2026-09-17 18:37:44.391529-07	2	492
+491	2026-09-17 18:37:44.411442-07	2	493
+492	2026-09-17 18:37:44.431104-07	2	494
+493	2026-09-17 18:37:44.454797-07	2	495
+494	2026-09-17 18:37:44.474898-07	2	496
+495	2026-09-17 18:37:44.496624-07	2	497
+496	2026-09-17 18:37:44.520742-07	2	498
+497	2026-09-17 18:37:44.542757-07	2	499
+498	2026-09-17 18:37:44.563303-07	2	500
+499	2026-09-17 18:37:44.584026-07	2	501
+500	2026-09-17 18:37:44.603237-07	2	502
+501	2026-09-17 18:37:44.623056-07	2	503
+502	2026-09-17 18:37:44.644879-07	2	504
+503	2026-09-17 18:37:44.665084-07	2	505
+504	2026-09-17 18:37:44.685657-07	2	506
+505	2026-09-17 18:41:00.251176-07	2	507
+506	2026-09-17 18:41:00.302674-07	2	508
+507	2026-09-17 18:41:00.327925-07	2	509
+508	2026-09-17 18:41:00.355314-07	2	510
+509	2026-09-17 18:41:00.379322-07	2	511
+510	2026-09-17 18:41:00.403949-07	2	512
+511	2026-09-17 18:41:00.431296-07	2	513
+512	2026-09-17 18:41:00.454046-07	2	514
+513	2026-09-17 18:41:00.47558-07	2	515
+514	2026-09-17 18:41:00.495294-07	2	516
+515	2026-09-17 18:41:00.517831-07	2	517
+516	2026-09-17 18:41:00.539567-07	2	518
+517	2026-09-17 18:41:00.560061-07	2	519
+518	2026-09-17 18:41:00.57968-07	2	520
+519	2026-09-17 18:41:00.601215-07	2	521
+520	2026-09-17 18:41:00.621865-07	2	522
+521	2026-09-17 18:41:00.641322-07	2	523
+522	2026-09-17 18:41:00.663376-07	2	524
+523	2026-09-17 18:41:00.696008-07	2	525
+524	2026-09-17 18:41:00.717586-07	2	526
+525	2026-09-17 18:41:00.742226-07	2	527
+526	2026-09-17 18:41:00.762104-07	2	528
+527	2026-09-17 18:41:00.781128-07	2	529
+528	2026-09-17 18:41:00.804089-07	2	530
+529	2026-09-17 18:41:00.823698-07	2	531
+530	2026-09-17 18:41:00.84269-07	2	532
+531	2026-09-17 18:41:00.865596-07	2	533
+532	2026-09-17 18:41:00.887901-07	2	534
+533	2026-09-17 18:41:00.907535-07	2	535
+534	2026-09-17 18:41:00.928367-07	2	536
+535	2026-09-17 18:41:00.948711-07	2	537
+536	2026-09-17 18:41:00.96895-07	2	538
+537	2026-09-17 18:41:01.037238-07	2	539
+538	2026-09-17 18:41:01.062602-07	2	540
+539	2026-09-17 18:41:01.092127-07	2	541
+540	2026-09-17 18:41:01.11877-07	2	542
+541	2026-09-17 18:41:01.141468-07	2	543
+542	2026-09-17 18:41:01.16478-07	2	544
+543	2026-09-17 18:41:01.187813-07	2	545
+544	2026-09-17 18:41:01.211117-07	2	546
+545	2026-09-17 18:41:01.234116-07	2	547
+546	2026-09-17 18:41:01.257351-07	2	548
+555	2026-09-17 19:03:05.908647-07	2	559
+556	2026-09-17 19:03:05.959175-07	2	560
+557	2026-09-17 19:03:05.979592-07	2	561
+558	2026-09-17 19:03:05.999791-07	2	562
+559	2026-09-17 19:03:06.02042-07	2	563
+560	2026-09-17 19:03:06.042577-07	2	564
+561	2026-09-17 19:03:06.061893-07	2	565
+562	2026-09-17 19:03:06.087549-07	2	566
+563	2026-09-17 19:03:06.106643-07	2	567
+564	2026-09-17 19:03:06.123026-07	2	568
+565	2026-09-17 19:03:06.14128-07	2	569
+566	2026-09-17 19:03:06.157627-07	2	570
+567	2026-09-17 19:03:06.174109-07	2	571
+568	2026-09-17 19:03:06.18977-07	2	572
+460	2026-09-17 18:32:24.874903-07	2	462
+461	2026-09-17 18:32:24.938025-07	2	463
+462	2026-09-17 18:32:24.963834-07	2	464
+463	2026-09-17 18:32:24.992674-07	2	465
+464	2026-09-17 18:32:25.019218-07	2	466
+465	2026-09-17 18:32:25.044362-07	2	467
+466	2026-09-17 18:32:25.070697-07	2	468
+547	2026-09-17 18:57:38.764492-07	2	549
+548	2026-09-17 18:57:38.815674-07	2	550
+549	2026-09-17 18:57:38.834465-07	2	551
+550	2026-09-17 18:57:38.852935-07	2	552
+551	2026-09-17 18:57:38.870938-07	2	553
+552	2026-09-17 18:57:38.8882-07	2	554
+553	2026-09-17 18:57:38.905415-07	2	555
+554	2026-09-17 18:57:38.923005-07	2	556
+569	2026-09-17 19:07:44.924561-07	2	573
+570	2026-09-17 19:07:44.967329-07	2	574
+571	2026-09-17 19:07:44.98434-07	2	575
+572	2026-09-17 19:07:45.000583-07	2	576
+573	2026-09-17 19:07:45.017277-07	2	577
+574	2026-09-17 19:07:45.033067-07	2	578
+575	2026-09-17 19:07:45.055872-07	2	579
+576	2026-09-17 19:07:45.072-07	2	580
+577	2026-09-17 19:07:45.088876-07	2	581
+578	2026-09-17 19:07:45.104275-07	2	582
+579	2026-09-17 19:07:45.119853-07	2	583
+580	2026-09-17 19:07:45.135919-07	2	584
+584	2026-09-19 00:55:01.937398-07	2	588
+585	2026-09-19 00:55:02.015612-07	2	589
+586	2026-09-19 00:55:02.042491-07	2	590
+587	2026-09-19 00:55:02.068217-07	2	591
+588	2026-09-19 00:55:02.094001-07	2	592
+589	2026-09-19 00:55:02.121124-07	2	593
+590	2026-09-19 00:55:02.147721-07	2	594
+591	2026-09-19 00:55:02.167844-07	2	595
+592	2026-09-19 00:55:02.189325-07	2	596
+593	2026-09-19 00:55:02.211996-07	2	597
+594	2026-09-19 00:55:02.233059-07	2	598
+595	2026-09-19 00:55:02.273987-07	2	599
+596	2026-09-19 00:55:02.296279-07	2	600
+597	2026-09-19 00:55:02.317351-07	2	601
+598	2026-09-19 00:55:02.339464-07	2	602
+599	2026-09-19 00:55:02.361072-07	2	603
+600	2026-09-19 00:55:02.38198-07	2	604
+601	2026-09-19 00:55:02.403925-07	2	605
+602	2026-09-19 00:55:02.426537-07	2	606
+603	2026-09-19 00:55:02.447529-07	2	607
+604	2026-09-19 00:55:02.480965-07	2	608
+605	2026-09-19 00:55:02.501855-07	2	609
+606	2026-09-19 00:55:02.522857-07	2	610
+607	2026-09-19 00:55:02.546472-07	2	611
+608	2026-09-19 00:55:02.567149-07	2	612
+609	2026-09-19 00:55:02.588226-07	2	613
+610	2026-09-19 00:55:02.611812-07	2	614
 \.
 
 
@@ -1985,978 +2368,2238 @@ COPY public.finance_studentfeeledger (id, created_at, academic_session_id, stude
 --
 
 COPY public.finance_studentfeemonthentry (id, month, arrears, monthly_fee, exam_fee, other_charges, paid_amount, is_paid, last_payment_date, last_receipt_no, ledger_id) FROM stdin;
-1921	1	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1922	2	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1923	3	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1924	4	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1925	5	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1926	6	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1927	7	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1928	8	0.00	0.00	0.00	0.00	0.00	t	\N		161
-1929	9	0.00	4800.00	0.00	0.00	0.00	f	\N		161
-1930	10	4800.00	4800.00	0.00	0.00	0.00	f	\N		161
-1931	11	9600.00	4800.00	0.00	0.00	0.00	f	\N		161
-1932	12	14400.00	4800.00	0.00	0.00	0.00	f	\N		161
-1	1	0.00	0.00	0.00	0.00	0.00	t	\N		1
-2	2	0.00	0.00	0.00	0.00	0.00	t	\N		1
-673	1	0.00	0.00	0.00	0.00	0.00	t	\N		57
-674	2	0.00	0.00	0.00	0.00	0.00	t	\N		57
-675	3	0.00	0.00	0.00	0.00	0.00	t	\N		57
-676	4	0.00	0.00	0.00	0.00	0.00	t	\N		57
-677	5	0.00	0.00	0.00	0.00	0.00	t	\N		57
-678	6	0.00	0.00	0.00	0.00	0.00	t	\N		57
-679	7	0.00	0.00	0.00	0.00	0.00	t	\N		57
-680	8	0.00	0.00	0.00	0.00	0.00	t	\N		57
-681	9	0.00	0.00	0.00	0.00	0.00	t	\N		57
-682	10	0.00	0.00	0.00	0.00	0.00	t	\N		57
-683	11	0.00	0.00	0.00	0.00	0.00	t	\N		57
-684	12	0.00	3000.00	0.00	0.00	0.00	f	\N		57
-22	10	14000.00	2800.00	0.00	0.00	0.00	f	\N		2
-23	11	16800.00	2800.00	0.00	0.00	0.00	f	\N		2
-24	12	19600.00	2800.00	0.00	0.00	0.00	f	\N		2
-25	1	0.00	0.00	0.00	0.00	0.00	t	\N		3
-26	2	0.00	0.00	0.00	0.00	0.00	t	\N		3
-51	3	0.00	3200.00	0.00	0.00	9600.00	t	2026-03-21	REC-1005	5
-52	4	0.00	3200.00	0.00	0.00	0.00	f	\N		5
-53	5	3200.00	3200.00	0.00	0.00	0.00	f	\N		5
-54	6	6400.00	3200.00	0.00	0.00	0.00	f	\N		5
-55	7	9600.00	3200.00	0.00	0.00	0.00	f	\N		5
-56	8	12800.00	3200.00	0.00	0.00	0.00	f	\N		5
-57	9	16000.00	3200.00	0.00	0.00	0.00	f	\N		5
-58	10	19200.00	3200.00	0.00	0.00	0.00	f	\N		5
-59	11	22400.00	3200.00	0.00	0.00	0.00	f	\N		5
-60	12	25600.00	3200.00	0.00	0.00	0.00	f	\N		5
-61	1	0.00	0.00	0.00	0.00	0.00	t	\N		6
-62	2	0.00	0.00	0.00	0.00	0.00	t	\N		6
-63	3	0.00	0.00	0.00	0.00	0.00	t	\N		6
-64	4	0.00	0.00	0.00	0.00	0.00	t	\N		6
-65	5	0.00	0.00	0.00	0.00	0.00	t	\N		6
-66	6	0.00	0.00	0.00	0.00	0.00	t	\N		6
-67	7	0.00	0.00	0.00	0.00	0.00	t	\N		6
-68	8	0.00	0.00	0.00	0.00	0.00	t	\N		6
-113	5	0.00	0.00	0.00	0.00	0.00	t	\N		10
-114	6	0.00	0.00	0.00	0.00	0.00	t	\N		10
-115	7	0.00	0.00	0.00	0.00	0.00	t	\N		10
-27	3	0.00	3000.00	0.00	0.00	3000.00	t	2026-04-23	REC-1003	3
-28	4	0.00	3000.00	0.00	0.00	6000.00	t	2026-04-23	REC-1003	3
-29	5	0.00	3000.00	0.00	0.00	0.00	f	\N		3
-30	6	3000.00	3000.00	0.00	0.00	0.00	f	\N		3
-31	7	6000.00	3000.00	0.00	0.00	0.00	f	\N		3
-32	8	9000.00	3000.00	0.00	0.00	0.00	f	\N		3
-33	9	12000.00	3000.00	0.00	0.00	0.00	f	\N		3
-34	10	15000.00	3000.00	0.00	0.00	0.00	f	\N		3
-35	11	18000.00	3000.00	0.00	0.00	0.00	f	\N		3
-36	12	21000.00	3000.00	0.00	0.00	0.00	f	\N		3
-37	1	0.00	0.00	0.00	0.00	0.00	t	\N		4
-38	2	0.00	0.00	0.00	0.00	0.00	t	\N		4
-39	3	0.00	0.00	0.00	0.00	0.00	t	\N		4
-40	4	0.00	0.00	0.00	0.00	0.00	t	\N		4
-41	5	0.00	0.00	0.00	0.00	0.00	t	\N		4
-42	6	0.00	3000.00	0.00	0.00	3000.00	t	2026-03-09	REC-1004	4
-43	7	0.00	3000.00	0.00	0.00	0.00	f	\N		4
-44	8	3000.00	3000.00	0.00	0.00	0.00	f	\N		4
-45	9	6000.00	3000.00	0.00	0.00	0.00	f	\N		4
-46	10	9000.00	3000.00	0.00	0.00	0.00	f	\N		4
-47	11	12000.00	3000.00	0.00	0.00	0.00	f	\N		4
-48	12	15000.00	3000.00	0.00	0.00	0.00	f	\N		4
-49	1	0.00	3200.00	0.00	0.00	3200.00	t	2026-03-21	REC-1005	5
-50	2	0.00	3200.00	0.00	0.00	6400.00	t	2026-03-21	REC-1005	5
-69	9	0.00	3200.00	0.00	0.00	3200.00	t	2026-08-28	REC-1006	6
-70	10	0.00	3200.00	0.00	0.00	0.00	f	\N		6
-71	11	3200.00	3200.00	0.00	0.00	0.00	f	\N		6
-72	12	6400.00	3200.00	0.00	0.00	0.00	f	\N		6
-73	1	0.00	0.00	0.00	0.00	0.00	t	\N		7
-74	2	0.00	0.00	0.00	0.00	0.00	t	\N		7
-116	8	0.00	4200.00	0.00	0.00	4200.00	t	2026-07-18	REC-1010	10
-117	9	0.00	4200.00	0.00	0.00	8400.00	t	2026-07-18	REC-1010	10
-118	10	0.00	4200.00	0.00	0.00	12600.00	t	2026-07-18	REC-1010	10
-119	11	0.00	4200.00	0.00	0.00	0.00	f	\N		10
-120	12	4200.00	4200.00	0.00	0.00	0.00	f	\N		10
-121	1	0.00	0.00	0.00	0.00	0.00	t	\N		11
-122	2	0.00	0.00	0.00	0.00	0.00	t	\N		11
-123	3	0.00	0.00	0.00	0.00	0.00	t	\N		11
-124	4	0.00	0.00	0.00	0.00	0.00	t	\N		11
-125	5	0.00	0.00	0.00	0.00	0.00	t	\N		11
-126	6	0.00	0.00	0.00	0.00	0.00	t	\N		11
-127	7	0.00	0.00	0.00	0.00	0.00	t	\N		11
-128	8	0.00	0.00	0.00	0.00	0.00	t	\N		11
-129	9	0.00	0.00	0.00	0.00	0.00	t	\N		11
-130	10	0.00	4800.00	0.00	0.00	4800.00	t	2026-03-10	REC-1011	11
-131	11	0.00	4800.00	0.00	0.00	9600.00	t	2026-03-10	REC-1011	11
-132	12	0.00	4800.00	0.00	0.00	0.00	f	\N		11
-133	1	0.00	0.00	0.00	0.00	0.00	t	\N		12
-134	2	0.00	0.00	0.00	0.00	0.00	t	\N		12
-135	3	0.00	0.00	0.00	0.00	0.00	t	\N		12
-136	4	0.00	0.00	0.00	0.00	0.00	t	\N		12
-137	5	0.00	0.00	0.00	0.00	0.00	t	\N		12
-138	6	0.00	0.00	0.00	0.00	0.00	t	\N		12
-139	7	0.00	0.00	0.00	0.00	0.00	t	\N		12
-140	8	0.00	0.00	0.00	0.00	0.00	t	\N		12
-141	9	0.00	5000.00	0.00	0.00	5000.00	t	2026-07-20	REC-1012	12
-142	10	0.00	5000.00	0.00	0.00	0.00	f	\N		12
-143	11	5000.00	5000.00	0.00	0.00	0.00	f	\N		12
-144	12	10000.00	5000.00	0.00	0.00	0.00	f	\N		12
-145	1	0.00	0.00	0.00	0.00	0.00	t	\N		13
-146	2	0.00	6500.00	0.00	0.00	6500.00	t	2026-02-11	REC-1013	13
-147	3	0.00	6500.00	0.00	0.00	13000.00	t	2026-02-11	REC-1013	13
-148	4	0.00	6500.00	0.00	0.00	19500.00	t	2026-02-11	REC-1013	13
-149	5	0.00	6500.00	0.00	0.00	0.00	f	\N		13
-150	6	6500.00	6500.00	0.00	0.00	0.00	f	\N		13
-151	7	13000.00	6500.00	0.00	0.00	0.00	f	\N		13
-152	8	19500.00	6500.00	0.00	0.00	0.00	f	\N		13
-153	9	26000.00	6500.00	0.00	0.00	0.00	f	\N		13
-75	3	0.00	0.00	0.00	0.00	0.00	t	\N		7
-76	4	0.00	0.00	0.00	0.00	0.00	t	\N		7
-77	5	0.00	0.00	0.00	0.00	0.00	t	\N		7
-78	6	0.00	0.00	0.00	0.00	0.00	t	\N		7
-1813	1	0.00	3200.00	0.00	0.00	0.00	f	\N		152
-1814	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		152
-79	7	0.00	0.00	0.00	0.00	0.00	t	\N		7
-80	8	0.00	0.00	0.00	0.00	0.00	t	\N		7
-81	9	0.00	0.00	0.00	0.00	0.00	t	\N		7
-82	10	0.00	3500.00	0.00	0.00	3500.00	t	2026-03-02	REC-1007	7
-83	11	0.00	3500.00	0.00	0.00	0.00	f	\N		7
-154	10	32500.00	6500.00	0.00	0.00	0.00	f	\N		13
-155	11	39000.00	6500.00	0.00	0.00	0.00	f	\N		13
-156	12	45500.00	6500.00	0.00	0.00	0.00	f	\N		13
-157	1	0.00	0.00	0.00	0.00	0.00	t	\N		14
-158	2	0.00	0.00	0.00	0.00	0.00	t	\N		14
-159	3	0.00	0.00	0.00	0.00	0.00	t	\N		14
-160	4	0.00	0.00	0.00	0.00	0.00	t	\N		14
-161	5	0.00	0.00	0.00	0.00	0.00	t	\N		14
-162	6	0.00	0.00	0.00	0.00	0.00	t	\N		14
-163	7	0.00	0.00	0.00	0.00	0.00	t	\N		14
-164	8	0.00	0.00	0.00	0.00	0.00	t	\N		14
-165	9	0.00	0.00	0.00	0.00	0.00	t	\N		14
-166	10	0.00	0.00	0.00	0.00	0.00	t	\N		14
-167	11	0.00	0.00	0.00	0.00	0.00	t	\N		14
-168	12	0.00	6800.00	0.00	0.00	6800.00	t	2026-01-22	REC-1014	14
-169	1	0.00	0.00	0.00	0.00	0.00	t	\N		15
-170	2	0.00	0.00	0.00	0.00	0.00	t	\N		15
-171	3	0.00	0.00	0.00	0.00	0.00	t	\N		15
-172	4	0.00	0.00	0.00	0.00	0.00	t	\N		15
-173	5	0.00	0.00	0.00	0.00	0.00	t	\N		15
-174	6	0.00	0.00	0.00	0.00	0.00	t	\N		15
-175	7	0.00	0.00	0.00	0.00	0.00	t	\N		15
-176	8	0.00	6500.00	0.00	0.00	6500.00	t	2026-02-21	REC-1015	15
-177	9	0.00	6500.00	0.00	0.00	13000.00	t	2026-02-21	REC-1015	15
-178	10	0.00	6500.00	0.00	0.00	0.00	f	\N		15
-179	11	6500.00	6500.00	0.00	0.00	0.00	f	\N		15
-180	12	13000.00	6500.00	0.00	0.00	0.00	f	\N		15
-181	1	0.00	0.00	0.00	0.00	0.00	t	\N		16
-182	2	0.00	0.00	0.00	0.00	0.00	t	\N		16
-183	3	0.00	6800.00	0.00	0.00	6800.00	t	2026-01-03	REC-1016	16
-184	4	0.00	6800.00	0.00	0.00	13600.00	t	2026-01-03	REC-1016	16
-185	5	0.00	6800.00	0.00	0.00	20400.00	t	2026-01-03	REC-1016	16
-186	6	0.00	6800.00	0.00	0.00	0.00	f	\N		16
-187	7	6800.00	6800.00	0.00	0.00	0.00	f	\N		16
-1815	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		152
-84	12	3500.00	3500.00	0.00	0.00	0.00	f	\N		7
-1816	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		152
-1817	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		152
-1818	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		152
-188	8	13600.00	6800.00	0.00	0.00	0.00	f	\N		16
-189	9	20400.00	6800.00	0.00	0.00	0.00	f	\N		16
-190	10	27200.00	6800.00	0.00	0.00	0.00	f	\N		16
-191	11	34000.00	6800.00	0.00	0.00	0.00	f	\N		16
-192	12	40800.00	6800.00	0.00	0.00	0.00	f	\N		16
-193	1	0.00	0.00	0.00	0.00	0.00	t	\N		17
-194	2	0.00	0.00	0.00	0.00	0.00	t	\N		17
-195	3	0.00	0.00	0.00	0.00	0.00	t	\N		17
-196	4	0.00	0.00	0.00	0.00	0.00	t	\N		17
-197	5	0.00	0.00	0.00	0.00	0.00	t	\N		17
-198	6	0.00	0.00	0.00	0.00	0.00	t	\N		17
-199	7	0.00	6000.00	0.00	0.00	6000.00	t	2026-07-16	REC-1017	17
-200	8	0.00	6000.00	0.00	0.00	12000.00	t	2026-07-16	REC-1017	17
-201	9	0.00	6000.00	0.00	0.00	18000.00	t	2026-07-16	REC-1017	17
-202	10	0.00	6000.00	0.00	0.00	0.00	f	\N		17
-203	11	6000.00	6000.00	0.00	0.00	0.00	f	\N		17
-204	12	12000.00	6000.00	0.00	0.00	0.00	f	\N		17
-205	1	0.00	0.00	0.00	0.00	0.00	t	\N		18
-206	2	0.00	0.00	0.00	0.00	0.00	t	\N		18
-207	3	0.00	0.00	0.00	0.00	0.00	t	\N		18
-208	4	0.00	0.00	0.00	0.00	0.00	t	\N		18
-209	5	0.00	0.00	0.00	0.00	0.00	t	\N		18
-210	6	0.00	0.00	0.00	0.00	0.00	t	\N		18
-211	7	0.00	0.00	0.00	0.00	0.00	t	\N		18
-212	8	0.00	0.00	0.00	0.00	0.00	t	\N		18
-213	9	0.00	0.00	0.00	0.00	0.00	t	\N		18
-214	10	0.00	0.00	0.00	0.00	0.00	t	\N		18
-215	11	0.00	0.00	0.00	0.00	0.00	t	\N		18
-216	12	0.00	6200.00	0.00	0.00	6200.00	t	2026-07-15	REC-1018	18
-217	1	0.00	0.00	0.00	0.00	0.00	t	\N		19
-218	2	0.00	0.00	0.00	0.00	0.00	t	\N		19
-219	3	0.00	0.00	0.00	0.00	0.00	t	\N		19
-220	4	0.00	0.00	0.00	0.00	0.00	t	\N		19
-221	5	0.00	0.00	0.00	0.00	0.00	t	\N		19
-222	6	0.00	0.00	0.00	0.00	0.00	t	\N		19
-223	7	0.00	0.00	0.00	0.00	0.00	t	\N		19
-224	8	0.00	2500.00	0.00	0.00	2500.00	t	2026-06-09	REC-1019	19
-225	9	0.00	2500.00	0.00	0.00	5000.00	t	2026-06-09	REC-1019	19
-1819	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		152
-1820	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		152
-90	6	0.00	3800.00	0.00	0.00	0.00	f	\N		8
-1821	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		152
-1822	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		152
-1823	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		152
-1824	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		152
-226	10	0.00	2500.00	0.00	0.00	7500.00	t	2026-06-09	REC-1019	19
-227	11	0.00	2500.00	0.00	0.00	0.00	f	\N		19
-228	12	2500.00	2500.00	0.00	0.00	0.00	f	\N		19
-229	1	0.00	0.00	0.00	0.00	0.00	t	\N		20
-230	2	0.00	0.00	0.00	0.00	0.00	t	\N		20
-231	3	0.00	0.00	0.00	0.00	0.00	t	\N		20
-232	4	0.00	0.00	0.00	0.00	0.00	t	\N		20
-233	5	0.00	0.00	0.00	0.00	0.00	t	\N		20
-234	6	0.00	0.00	0.00	0.00	0.00	t	\N		20
-235	7	0.00	0.00	0.00	0.00	0.00	t	\N		20
-236	8	0.00	0.00	0.00	0.00	0.00	t	\N		20
-237	9	0.00	0.00	0.00	0.00	0.00	t	\N		20
-238	10	0.00	0.00	0.00	0.00	0.00	t	\N		20
-239	11	0.00	2800.00	0.00	0.00	2800.00	t	2026-08-14	REC-1020	20
-240	12	0.00	2800.00	0.00	0.00	5600.00	t	2026-08-14	REC-1020	20
-241	1	0.00	0.00	0.00	0.00	0.00	t	\N		21
-242	2	0.00	0.00	0.00	0.00	0.00	t	\N		21
-243	3	0.00	3000.00	0.00	0.00	3000.00	t	2026-08-16	REC-1021	21
-244	4	0.00	3000.00	0.00	0.00	6000.00	t	2026-08-16	REC-1021	21
-245	5	0.00	3000.00	0.00	0.00	0.00	f	\N		21
-246	6	3000.00	3000.00	0.00	0.00	0.00	f	\N		21
-247	7	6000.00	3000.00	0.00	0.00	0.00	f	\N		21
-248	8	9000.00	3000.00	0.00	0.00	0.00	f	\N		21
-249	9	12000.00	3000.00	0.00	0.00	0.00	f	\N		21
-250	10	15000.00	3000.00	0.00	0.00	0.00	f	\N		21
-251	11	18000.00	3000.00	0.00	0.00	0.00	f	\N		21
-252	12	21000.00	3000.00	0.00	0.00	0.00	f	\N		21
-253	1	0.00	0.00	0.00	0.00	0.00	t	\N		22
-254	2	0.00	0.00	0.00	0.00	0.00	t	\N		22
-255	3	0.00	0.00	0.00	0.00	0.00	t	\N		22
-256	4	0.00	0.00	0.00	0.00	0.00	t	\N		22
-257	5	0.00	0.00	0.00	0.00	0.00	t	\N		22
-258	6	0.00	0.00	0.00	0.00	0.00	t	\N		22
-259	7	0.00	0.00	0.00	0.00	0.00	t	\N		22
-260	8	0.00	0.00	0.00	0.00	0.00	t	\N		22
-261	9	0.00	0.00	0.00	0.00	0.00	t	\N		22
-262	10	0.00	0.00	0.00	0.00	0.00	t	\N		22
-1825	1	0.00	3200.00	0.00	0.00	0.00	f	\N		153
-1826	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		153
-1827	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		153
-96	12	16400.00	2500.00	0.00	0.00	0.00	f	\N		8
-97	1	0.00	0.00	0.00	0.00	0.00	t	\N		9
-263	11	0.00	0.00	0.00	0.00	0.00	t	\N		22
-264	12	0.00	3000.00	0.00	0.00	3000.00	t	2026-04-22	REC-1022	22
-265	1	0.00	3200.00	0.00	0.00	3200.00	t	2026-05-11	REC-1023	23
-266	2	0.00	3200.00	0.00	0.00	6400.00	t	2026-05-11	REC-1023	23
-267	3	0.00	3200.00	0.00	0.00	9600.00	t	2026-05-11	REC-1023	23
-268	4	0.00	3200.00	0.00	0.00	0.00	f	\N		23
-269	5	3200.00	3200.00	0.00	0.00	0.00	f	\N		23
-270	6	6400.00	3200.00	0.00	0.00	0.00	f	\N		23
-271	7	9600.00	3200.00	0.00	0.00	0.00	f	\N		23
-272	8	12800.00	3200.00	0.00	0.00	0.00	f	\N		23
-273	9	16000.00	3200.00	0.00	0.00	0.00	f	\N		23
-274	10	19200.00	3200.00	0.00	0.00	0.00	f	\N		23
-275	11	22400.00	3200.00	0.00	0.00	0.00	f	\N		23
-276	12	25600.00	3200.00	0.00	0.00	0.00	f	\N		23
-277	1	0.00	0.00	0.00	0.00	0.00	t	\N		24
-278	2	0.00	0.00	0.00	0.00	0.00	t	\N		24
-279	3	0.00	0.00	0.00	0.00	0.00	t	\N		24
-280	4	0.00	0.00	0.00	0.00	0.00	t	\N		24
-281	5	0.00	0.00	0.00	0.00	0.00	t	\N		24
-282	6	0.00	0.00	0.00	0.00	0.00	t	\N		24
-283	7	0.00	3200.00	0.00	0.00	3200.00	t	2026-06-22	REC-1024	24
-284	8	0.00	3200.00	0.00	0.00	6400.00	t	2026-06-22	REC-1024	24
-285	9	0.00	3200.00	0.00	0.00	9600.00	t	2026-06-22	REC-1024	24
-286	10	0.00	3200.00	0.00	0.00	0.00	f	\N		24
-287	11	3200.00	3200.00	0.00	0.00	0.00	f	\N		24
-288	12	6400.00	3200.00	0.00	0.00	0.00	f	\N		24
-289	1	0.00	0.00	0.00	0.00	0.00	t	\N		25
-290	2	0.00	0.00	0.00	0.00	0.00	t	\N		25
-291	3	0.00	0.00	0.00	0.00	0.00	t	\N		25
-292	4	0.00	0.00	0.00	0.00	0.00	t	\N		25
-293	5	0.00	0.00	0.00	0.00	0.00	t	\N		25
-294	6	0.00	0.00	0.00	0.00	0.00	t	\N		25
-295	7	0.00	0.00	0.00	0.00	0.00	t	\N		25
-296	8	0.00	0.00	0.00	0.00	0.00	t	\N		25
-297	9	0.00	0.00	0.00	0.00	0.00	t	\N		25
-298	10	0.00	0.00	0.00	0.00	0.00	t	\N		25
-299	11	0.00	0.00	0.00	0.00	0.00	t	\N		25
-300	12	0.00	3500.00	0.00	0.00	3500.00	t	2026-06-21	REC-1025	25
-301	1	0.00	0.00	0.00	0.00	0.00	t	\N		26
-302	2	0.00	0.00	0.00	0.00	0.00	t	\N		26
-303	3	0.00	0.00	0.00	0.00	0.00	t	\N		26
-304	4	0.00	0.00	0.00	0.00	0.00	t	\N		26
-305	5	0.00	0.00	0.00	0.00	0.00	t	\N		26
-306	6	0.00	0.00	0.00	0.00	0.00	t	\N		26
-307	7	0.00	0.00	0.00	0.00	0.00	t	\N		26
-308	8	0.00	0.00	0.00	0.00	0.00	t	\N		26
-1828	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		153
-1829	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		153
-98	2	0.00	0.00	0.00	0.00	0.00	t	\N		9
-99	3	0.00	0.00	0.00	0.00	0.00	t	\N		9
-100	4	0.00	0.00	0.00	0.00	0.00	t	\N		9
-101	5	0.00	0.00	0.00	0.00	0.00	t	\N		9
-102	6	0.00	0.00	0.00	0.00	0.00	t	\N		9
-103	7	0.00	0.00	0.00	0.00	0.00	t	\N		9
-104	8	0.00	0.00	0.00	0.00	0.00	t	\N		9
-105	9	0.00	0.00	0.00	0.00	0.00	t	\N		9
-1830	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		153
-1831	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		153
-1832	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		153
-1833	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		153
-1834	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		153
-309	9	0.00	0.00	0.00	0.00	0.00	t	\N		26
-310	10	0.00	0.00	0.00	0.00	0.00	t	\N		26
-311	11	0.00	0.00	0.00	0.00	0.00	t	\N		26
-312	12	0.00	3800.00	0.00	0.00	3800.00	t	2026-04-27	REC-1026	26
-313	1	0.00	0.00	0.00	0.00	0.00	t	\N		27
-314	2	0.00	0.00	0.00	0.00	0.00	t	\N		27
-315	3	0.00	0.00	0.00	0.00	0.00	t	\N		27
-316	4	0.00	0.00	0.00	0.00	0.00	t	\N		27
-317	5	0.00	0.00	0.00	0.00	0.00	t	\N		27
-318	6	0.00	0.00	0.00	0.00	0.00	t	\N		27
-319	7	0.00	0.00	0.00	0.00	0.00	t	\N		27
-320	8	0.00	0.00	0.00	0.00	0.00	t	\N		27
-321	9	0.00	4000.00	0.00	0.00	4000.00	t	2026-08-10	REC-1027	27
-322	10	0.00	4000.00	0.00	0.00	8000.00	t	2026-08-10	REC-1027	27
-323	11	0.00	4000.00	0.00	0.00	0.00	f	\N		27
-324	12	4000.00	4000.00	0.00	0.00	0.00	f	\N		27
-325	1	0.00	0.00	0.00	0.00	0.00	t	\N		28
-326	2	0.00	0.00	0.00	0.00	0.00	t	\N		28
-327	3	0.00	0.00	0.00	0.00	0.00	t	\N		28
-328	4	0.00	0.00	0.00	0.00	0.00	t	\N		28
-329	5	0.00	0.00	0.00	0.00	0.00	t	\N		28
-330	6	0.00	0.00	0.00	0.00	0.00	t	\N		28
-331	7	0.00	0.00	0.00	0.00	0.00	t	\N		28
-332	8	0.00	4200.00	0.00	0.00	4200.00	t	2026-01-11	REC-1028	28
-333	9	0.00	4200.00	0.00	0.00	8400.00	t	2026-01-11	REC-1028	28
-334	10	0.00	4200.00	0.00	0.00	12600.00	t	2026-01-11	REC-1028	28
-335	11	0.00	4200.00	0.00	0.00	0.00	f	\N		28
-336	12	4200.00	4200.00	0.00	0.00	0.00	f	\N		28
-337	1	0.00	0.00	0.00	0.00	0.00	t	\N		29
-338	2	0.00	0.00	0.00	0.00	0.00	t	\N		29
-339	3	0.00	0.00	0.00	0.00	0.00	t	\N		29
-340	4	0.00	0.00	0.00	0.00	0.00	t	\N		29
-341	5	0.00	0.00	0.00	0.00	0.00	t	\N		29
-342	6	0.00	0.00	0.00	0.00	0.00	t	\N		29
-343	7	0.00	0.00	0.00	0.00	0.00	t	\N		29
-344	8	0.00	0.00	0.00	0.00	0.00	t	\N		29
-1835	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		153
-1836	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		153
-106	10	0.00	0.00	0.00	0.00	0.00	t	\N		9
-107	11	0.00	4000.00	0.00	0.00	4000.00	t	2026-01-26	REC-1009	9
-108	12	0.00	4000.00	0.00	0.00	0.00	f	\N		9
-109	1	0.00	0.00	0.00	0.00	0.00	t	\N		10
-110	2	0.00	0.00	0.00	0.00	0.00	t	\N		10
-111	3	0.00	0.00	0.00	0.00	0.00	t	\N		10
-345	9	0.00	0.00	0.00	0.00	0.00	t	\N		29
-346	10	0.00	4800.00	0.00	0.00	4800.00	t	2026-06-22	REC-1029	29
-347	11	0.00	4800.00	0.00	0.00	9600.00	t	2026-06-22	REC-1029	29
-348	12	0.00	4800.00	0.00	0.00	0.00	f	\N		29
-349	1	0.00	0.00	0.00	0.00	0.00	t	\N		30
-350	2	0.00	0.00	0.00	0.00	0.00	t	\N		30
-351	3	0.00	0.00	0.00	0.00	0.00	t	\N		30
-352	4	0.00	0.00	0.00	0.00	0.00	t	\N		30
-353	5	0.00	0.00	0.00	0.00	0.00	t	\N		30
-354	6	0.00	5000.00	0.00	0.00	5000.00	t	2026-02-20	REC-1030	30
-355	7	0.00	5000.00	0.00	0.00	0.00	f	\N		30
-356	8	5000.00	5000.00	0.00	0.00	0.00	f	\N		30
-357	9	10000.00	5000.00	0.00	0.00	0.00	f	\N		30
-358	10	15000.00	5000.00	0.00	0.00	0.00	f	\N		30
-359	11	20000.00	5000.00	0.00	0.00	0.00	f	\N		30
-360	12	25000.00	5000.00	0.00	0.00	0.00	f	\N		30
-361	1	0.00	0.00	0.00	0.00	0.00	t	\N		31
-362	2	0.00	0.00	0.00	0.00	0.00	t	\N		31
-363	3	0.00	0.00	0.00	0.00	0.00	t	\N		31
-364	4	0.00	0.00	0.00	0.00	0.00	t	\N		31
-365	5	0.00	0.00	0.00	0.00	0.00	t	\N		31
-366	6	0.00	0.00	0.00	0.00	0.00	t	\N		31
-367	7	0.00	0.00	0.00	0.00	0.00	t	\N		31
-368	8	0.00	0.00	0.00	0.00	0.00	t	\N		31
-369	9	0.00	0.00	0.00	0.00	0.00	t	\N		31
-370	10	0.00	0.00	0.00	0.00	0.00	t	\N		31
-371	11	0.00	6500.00	0.00	0.00	6500.00	t	2026-08-24	REC-1031	31
-372	12	0.00	6500.00	0.00	0.00	13000.00	t	2026-08-24	REC-1031	31
-373	1	0.00	0.00	0.00	0.00	0.00	t	\N		32
-374	2	0.00	0.00	0.00	0.00	0.00	t	\N		32
-375	3	0.00	0.00	0.00	0.00	0.00	t	\N		32
-376	4	0.00	0.00	0.00	0.00	0.00	t	\N		32
-377	5	0.00	0.00	0.00	0.00	0.00	t	\N		32
-378	6	0.00	6800.00	0.00	0.00	6800.00	t	2026-07-17	REC-1032	32
-379	7	0.00	6800.00	0.00	0.00	13600.00	t	2026-07-17	REC-1032	32
-380	8	0.00	6800.00	0.00	0.00	20400.00	t	2026-07-17	REC-1032	32
-381	9	0.00	6800.00	0.00	0.00	0.00	f	\N		32
-382	10	6800.00	6800.00	0.00	0.00	0.00	f	\N		32
-3	3	0.00	0.00	0.00	0.00	0.00	t	\N		1
-4	4	0.00	0.00	0.00	0.00	0.00	t	\N		1
-5	5	0.00	0.00	0.00	0.00	0.00	t	\N		1
-6	6	0.00	0.00	0.00	0.00	0.00	t	\N		1
-7	7	0.00	0.00	0.00	0.00	0.00	t	\N		1
-8	8	0.00	2500.00	0.00	0.00	2500.00	t	2026-05-22	REC-1001	1
-9	9	0.00	2500.00	0.00	0.00	5000.00	t	2026-05-22	REC-1001	1
-10	10	0.00	2500.00	0.00	0.00	0.00	f	\N		1
-11	11	2500.00	2500.00	0.00	0.00	600.00	f	2026-09-11	REC-1058	1
-12	12	4400.00	2500.00	0.00	0.00	0.00	f	\N		1
-1837	1	0.00	3200.00	0.00	0.00	0.00	f	\N		154
-1838	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		154
-1839	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		154
-1840	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		154
-1841	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		154
-1842	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		154
-1843	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		154
-1844	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		154
-1845	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		154
-1846	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		154
-1847	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		154
-1848	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		154
-13	1	0.00	0.00	0.00	0.00	0.00	t	\N		2
-1849	1	0.00	3200.00	0.00	0.00	0.00	f	\N		155
-1850	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		155
-1851	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		155
-1852	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		155
-1853	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		155
-1854	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		155
-1855	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		155
-1856	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		155
-1857	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		155
-1858	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		155
-1859	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		155
-1860	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		155
-14	2	0.00	0.00	0.00	0.00	0.00	t	\N		2
-15	3	0.00	0.00	0.00	0.00	0.00	t	\N		2
-16	4	0.00	2800.00	0.00	0.00	2800.00	t	2026-08-17	REC-1002	2
-17	5	0.00	2800.00	0.00	0.00	0.00	f	\N		2
-18	6	2800.00	2800.00	0.00	0.00	0.00	f	\N		2
-19	7	5600.00	2800.00	0.00	0.00	0.00	f	\N		2
-20	8	8400.00	2800.00	0.00	0.00	0.00	f	\N		2
-21	9	11200.00	2800.00	0.00	0.00	0.00	f	\N		2
-112	4	0.00	0.00	0.00	0.00	0.00	t	\N		10
-1909	1	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1910	2	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1911	3	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1912	4	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1913	5	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1914	6	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1915	7	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1916	8	0.00	0.00	0.00	0.00	0.00	t	\N		160
-1917	9	0.00	2500.00	0.00	0.00	0.00	f	\N		160
-1918	10	2500.00	2500.00	0.00	0.00	0.00	f	\N		160
-1919	11	5000.00	2500.00	0.00	0.00	0.00	f	\N		160
-1920	12	7500.00	2500.00	0.00	0.00	0.00	f	\N		160
-85	1	0.00	0.00	0.00	0.00	0.00	t	\N		8
-86	2	0.00	0.00	0.00	0.00	0.00	t	\N		8
-87	3	0.00	0.00	0.00	0.00	0.00	t	\N		8
-88	4	0.00	3800.00	0.00	0.00	3800.00	t	2026-05-03	REC-1008	8
-89	5	0.00	3800.00	0.00	0.00	7600.00	t	2026-05-03	REC-1008	8
-91	7	3800.00	3800.00	0.00	0.00	0.00	f	\N		8
-92	8	7600.00	2500.00	0.00	0.00	1200.00	f	2026-09-09	REC-1057	8
-93	9	8900.00	2500.00	0.00	0.00	0.00	f	\N		8
-94	10	11400.00	2500.00	0.00	0.00	0.00	f	\N		8
-95	11	13900.00	2500.00	0.00	0.00	0.00	f	\N		8
-383	11	13600.00	6800.00	0.00	0.00	0.00	f	\N		32
-384	12	20400.00	6800.00	0.00	0.00	0.00	f	\N		32
-385	1	0.00	0.00	0.00	0.00	0.00	t	\N		33
-386	2	0.00	0.00	0.00	0.00	0.00	t	\N		33
-387	3	0.00	0.00	0.00	0.00	0.00	t	\N		33
-388	4	0.00	6500.00	0.00	0.00	6500.00	t	2026-08-28	REC-1033	33
-389	5	0.00	6500.00	0.00	0.00	13000.00	t	2026-08-28	REC-1033	33
-390	6	0.00	6500.00	0.00	0.00	0.00	f	\N		33
-391	7	6500.00	6500.00	0.00	0.00	0.00	f	\N		33
-392	8	13000.00	6500.00	0.00	0.00	0.00	f	\N		33
-393	9	19500.00	6500.00	0.00	0.00	0.00	f	\N		33
-394	10	26000.00	6500.00	0.00	0.00	0.00	f	\N		33
-395	11	32500.00	6500.00	0.00	0.00	0.00	f	\N		33
-396	12	39000.00	6500.00	0.00	0.00	0.00	f	\N		33
-397	1	0.00	6800.00	0.00	0.00	6800.00	t	2026-05-25	REC-1034	34
-398	2	0.00	6800.00	0.00	0.00	13600.00	t	2026-05-25	REC-1034	34
-399	3	0.00	6800.00	0.00	0.00	20400.00	t	2026-05-25	REC-1034	34
-400	4	0.00	6800.00	0.00	0.00	0.00	f	\N		34
-401	5	6800.00	6800.00	0.00	0.00	0.00	f	\N		34
-402	6	13600.00	6800.00	0.00	0.00	0.00	f	\N		34
-403	7	20400.00	6800.00	0.00	0.00	0.00	f	\N		34
-404	8	27200.00	6800.00	0.00	0.00	0.00	f	\N		34
-405	9	34000.00	6800.00	0.00	0.00	0.00	f	\N		34
-406	10	40800.00	6800.00	0.00	0.00	0.00	f	\N		34
-407	11	47600.00	6800.00	0.00	0.00	0.00	f	\N		34
-408	12	54400.00	6800.00	0.00	0.00	0.00	f	\N		34
-409	1	0.00	0.00	0.00	0.00	0.00	t	\N		35
-410	2	0.00	0.00	0.00	0.00	0.00	t	\N		35
-411	3	0.00	6000.00	0.00	0.00	6000.00	t	2026-03-27	REC-1035	35
-412	4	0.00	6000.00	0.00	0.00	0.00	f	\N		35
-413	5	6000.00	6000.00	0.00	0.00	0.00	f	\N		35
-414	6	12000.00	6000.00	0.00	0.00	0.00	f	\N		35
-415	7	18000.00	6000.00	0.00	0.00	0.00	f	\N		35
-416	8	24000.00	6000.00	0.00	0.00	0.00	f	\N		35
-417	9	30000.00	6000.00	0.00	0.00	0.00	f	\N		35
-418	10	36000.00	6000.00	0.00	0.00	0.00	f	\N		35
-419	11	42000.00	6000.00	0.00	0.00	0.00	f	\N		35
-420	12	48000.00	6000.00	0.00	0.00	0.00	f	\N		35
-421	1	0.00	0.00	0.00	0.00	0.00	t	\N		36
-422	2	0.00	0.00	0.00	0.00	0.00	t	\N		36
-423	3	0.00	0.00	0.00	0.00	0.00	t	\N		36
-424	4	0.00	0.00	0.00	0.00	0.00	t	\N		36
-425	5	0.00	0.00	0.00	0.00	0.00	t	\N		36
-426	6	0.00	0.00	0.00	0.00	0.00	t	\N		36
-427	7	0.00	0.00	0.00	0.00	0.00	t	\N		36
-428	8	0.00	0.00	0.00	0.00	0.00	t	\N		36
-429	9	0.00	0.00	0.00	0.00	0.00	t	\N		36
-430	10	0.00	6200.00	0.00	0.00	6200.00	t	2026-04-01	REC-1036	36
-431	11	0.00	6200.00	0.00	0.00	12400.00	t	2026-04-01	REC-1036	36
-432	12	0.00	6200.00	0.00	0.00	0.00	f	\N		36
-433	1	0.00	0.00	0.00	0.00	0.00	t	\N		37
-434	2	0.00	0.00	0.00	0.00	0.00	t	\N		37
-435	3	0.00	0.00	0.00	0.00	0.00	t	\N		37
-436	4	0.00	0.00	0.00	0.00	0.00	t	\N		37
-437	5	0.00	0.00	0.00	0.00	0.00	t	\N		37
-438	6	0.00	0.00	0.00	0.00	0.00	t	\N		37
-439	7	0.00	0.00	0.00	0.00	0.00	t	\N		37
-440	8	0.00	0.00	0.00	0.00	0.00	t	\N		37
-441	9	0.00	0.00	0.00	0.00	0.00	t	\N		37
-442	10	0.00	0.00	0.00	0.00	0.00	t	\N		37
-443	11	0.00	0.00	0.00	0.00	0.00	t	\N		37
-444	12	0.00	2500.00	0.00	0.00	2500.00	t	2026-02-06	REC-1037	37
-445	1	0.00	0.00	0.00	0.00	0.00	t	\N		38
-446	2	0.00	0.00	0.00	0.00	0.00	t	\N		38
-447	3	0.00	0.00	0.00	0.00	0.00	t	\N		38
-448	4	0.00	0.00	0.00	0.00	0.00	t	\N		38
-449	5	0.00	0.00	0.00	0.00	0.00	t	\N		38
-450	6	0.00	0.00	0.00	0.00	0.00	t	\N		38
-451	7	0.00	0.00	0.00	0.00	0.00	t	\N		38
-452	8	0.00	0.00	0.00	0.00	0.00	t	\N		38
-453	9	0.00	0.00	0.00	0.00	0.00	t	\N		38
-454	10	0.00	0.00	0.00	0.00	0.00	t	\N		38
-455	11	0.00	0.00	0.00	0.00	0.00	t	\N		38
-456	12	0.00	2800.00	0.00	0.00	2800.00	t	2026-03-17	REC-1038	38
-457	1	0.00	0.00	0.00	0.00	0.00	t	\N		39
-458	2	0.00	0.00	0.00	0.00	0.00	t	\N		39
-459	3	0.00	0.00	0.00	0.00	0.00	t	\N		39
-460	4	0.00	0.00	0.00	0.00	0.00	t	\N		39
-461	5	0.00	0.00	0.00	0.00	0.00	t	\N		39
-462	6	0.00	0.00	0.00	0.00	0.00	t	\N		39
-463	7	0.00	0.00	0.00	0.00	0.00	t	\N		39
-464	8	0.00	0.00	0.00	0.00	0.00	t	\N		39
-465	9	0.00	3000.00	0.00	0.00	3000.00	t	2026-03-08	REC-1039	39
-466	10	0.00	3000.00	0.00	0.00	6000.00	t	2026-03-08	REC-1039	39
-467	11	0.00	3000.00	0.00	0.00	0.00	f	\N		39
-468	12	3000.00	3000.00	0.00	0.00	0.00	f	\N		39
-469	1	0.00	0.00	0.00	0.00	0.00	t	\N		40
-470	2	0.00	0.00	0.00	0.00	0.00	t	\N		40
-471	3	0.00	0.00	0.00	0.00	0.00	t	\N		40
-472	4	0.00	0.00	0.00	0.00	0.00	t	\N		40
-473	5	0.00	0.00	0.00	0.00	0.00	t	\N		40
-474	6	0.00	0.00	0.00	0.00	0.00	t	\N		40
-475	7	0.00	3000.00	0.00	0.00	3000.00	t	2026-05-10	REC-1040	40
-476	8	0.00	3000.00	0.00	0.00	6000.00	t	2026-05-10	REC-1040	40
-477	9	0.00	3000.00	0.00	0.00	0.00	f	\N		40
-478	10	3000.00	3000.00	0.00	0.00	0.00	f	\N		40
-479	11	6000.00	3000.00	0.00	0.00	0.00	f	\N		40
-480	12	9000.00	3000.00	0.00	0.00	0.00	f	\N		40
-481	1	0.00	0.00	0.00	0.00	0.00	t	\N		41
-482	2	0.00	0.00	0.00	0.00	0.00	t	\N		41
-483	3	0.00	0.00	0.00	0.00	0.00	t	\N		41
-484	4	0.00	0.00	0.00	0.00	0.00	t	\N		41
-485	5	0.00	0.00	0.00	0.00	0.00	t	\N		41
-486	6	0.00	0.00	0.00	0.00	0.00	t	\N		41
-487	7	0.00	0.00	0.00	0.00	0.00	t	\N		41
-488	8	0.00	0.00	0.00	0.00	0.00	t	\N		41
-489	9	0.00	0.00	0.00	0.00	0.00	t	\N		41
-490	10	0.00	3200.00	0.00	0.00	3200.00	t	2026-05-09	REC-1041	41
-491	11	0.00	3200.00	0.00	0.00	0.00	f	\N		41
-492	12	3200.00	3200.00	0.00	0.00	0.00	f	\N		41
-493	1	0.00	0.00	0.00	0.00	0.00	t	\N		42
-494	2	0.00	3200.00	0.00	0.00	3200.00	t	2026-01-02	REC-1042	42
-495	3	0.00	3200.00	0.00	0.00	6400.00	t	2026-01-02	REC-1042	42
-496	4	0.00	3200.00	0.00	0.00	0.00	f	\N		42
-497	5	3200.00	3200.00	0.00	0.00	0.00	f	\N		42
-498	6	6400.00	3200.00	0.00	0.00	0.00	f	\N		42
-499	7	9600.00	3200.00	0.00	0.00	0.00	f	\N		42
-500	8	12800.00	3200.00	0.00	0.00	0.00	f	\N		42
-501	9	16000.00	3200.00	0.00	0.00	0.00	f	\N		42
-502	10	19200.00	3200.00	0.00	0.00	0.00	f	\N		42
-503	11	22400.00	3200.00	0.00	0.00	0.00	f	\N		42
-504	12	25600.00	3200.00	0.00	0.00	0.00	f	\N		42
-505	1	0.00	0.00	0.00	0.00	0.00	t	\N		43
-506	2	0.00	3500.00	0.00	0.00	3500.00	t	2026-02-15	REC-1043	43
-507	3	0.00	3500.00	0.00	0.00	7000.00	t	2026-02-15	REC-1043	43
-508	4	0.00	3500.00	0.00	0.00	0.00	f	\N		43
-509	5	3500.00	3500.00	0.00	0.00	0.00	f	\N		43
-510	6	7000.00	3500.00	0.00	0.00	0.00	f	\N		43
-511	7	10500.00	3500.00	0.00	0.00	0.00	f	\N		43
-512	8	14000.00	3500.00	0.00	0.00	0.00	f	\N		43
-513	9	17500.00	3500.00	0.00	0.00	0.00	f	\N		43
-514	10	21000.00	3500.00	0.00	0.00	0.00	f	\N		43
-515	11	24500.00	3500.00	0.00	0.00	0.00	f	\N		43
-516	12	28000.00	3500.00	0.00	0.00	0.00	f	\N		43
-517	1	0.00	0.00	0.00	0.00	0.00	t	\N		44
-518	2	0.00	0.00	0.00	0.00	0.00	t	\N		44
-519	3	0.00	0.00	0.00	0.00	0.00	t	\N		44
-520	4	0.00	0.00	0.00	0.00	0.00	t	\N		44
-521	5	0.00	0.00	0.00	0.00	0.00	t	\N		44
-522	6	0.00	0.00	0.00	0.00	0.00	t	\N		44
-523	7	0.00	0.00	0.00	0.00	0.00	t	\N		44
-524	8	0.00	0.00	0.00	0.00	0.00	t	\N		44
-525	9	0.00	0.00	0.00	0.00	0.00	t	\N		44
-526	10	0.00	0.00	0.00	0.00	0.00	t	\N		44
-527	11	0.00	0.00	0.00	0.00	0.00	t	\N		44
-528	12	0.00	3800.00	0.00	0.00	3800.00	t	2026-07-12	REC-1044	44
-529	1	0.00	0.00	0.00	0.00	0.00	t	\N		45
-530	2	0.00	0.00	0.00	0.00	0.00	t	\N		45
-531	3	0.00	0.00	0.00	0.00	0.00	t	\N		45
-532	4	0.00	0.00	0.00	0.00	0.00	t	\N		45
-533	5	0.00	0.00	0.00	0.00	0.00	t	\N		45
-534	6	0.00	0.00	0.00	0.00	0.00	t	\N		45
-535	7	0.00	0.00	0.00	0.00	0.00	t	\N		45
-536	8	0.00	0.00	0.00	0.00	0.00	t	\N		45
-537	9	0.00	0.00	0.00	0.00	0.00	t	\N		45
-538	10	0.00	0.00	0.00	0.00	0.00	t	\N		45
-539	11	0.00	4000.00	0.00	0.00	4000.00	t	2026-07-02	REC-1045	45
-540	12	0.00	4000.00	0.00	0.00	8000.00	t	2026-07-02	REC-1045	45
-541	1	0.00	0.00	0.00	0.00	0.00	t	\N		46
-542	2	0.00	0.00	0.00	0.00	0.00	t	\N		46
-543	3	0.00	0.00	0.00	0.00	0.00	t	\N		46
-544	4	0.00	0.00	0.00	0.00	0.00	t	\N		46
-545	5	0.00	0.00	0.00	0.00	0.00	t	\N		46
-546	6	0.00	0.00	0.00	0.00	0.00	t	\N		46
-547	7	0.00	0.00	0.00	0.00	0.00	t	\N		46
-548	8	0.00	0.00	0.00	0.00	0.00	t	\N		46
-549	9	0.00	0.00	0.00	0.00	0.00	t	\N		46
-550	10	0.00	4200.00	0.00	0.00	4200.00	t	2026-02-05	REC-1046	46
-551	11	0.00	4200.00	0.00	0.00	0.00	f	\N		46
-552	12	4200.00	4200.00	0.00	0.00	0.00	f	\N		46
-553	1	0.00	0.00	0.00	0.00	0.00	t	\N		47
-554	2	0.00	0.00	0.00	0.00	0.00	t	\N		47
-555	3	0.00	0.00	0.00	0.00	0.00	t	\N		47
-556	4	0.00	4800.00	0.00	0.00	4800.00	t	2026-06-21	REC-1047	47
-557	5	0.00	4800.00	0.00	0.00	9600.00	t	2026-06-21	REC-1047	47
-558	6	0.00	4800.00	0.00	0.00	0.00	f	\N		47
-559	7	4800.00	4800.00	0.00	0.00	0.00	f	\N		47
-560	8	9600.00	4800.00	0.00	0.00	0.00	f	\N		47
-561	9	14400.00	4800.00	0.00	0.00	0.00	f	\N		47
-562	10	19200.00	4800.00	0.00	0.00	0.00	f	\N		47
-563	11	24000.00	4800.00	0.00	0.00	0.00	f	\N		47
-564	12	28800.00	4800.00	0.00	0.00	0.00	f	\N		47
-565	1	0.00	0.00	0.00	0.00	0.00	t	\N		48
-566	2	0.00	0.00	0.00	0.00	0.00	t	\N		48
-567	3	0.00	0.00	0.00	0.00	0.00	t	\N		48
-568	4	0.00	0.00	0.00	0.00	0.00	t	\N		48
-569	5	0.00	0.00	0.00	0.00	0.00	t	\N		48
-570	6	0.00	0.00	0.00	0.00	0.00	t	\N		48
-571	7	0.00	0.00	0.00	0.00	0.00	t	\N		48
-572	8	0.00	0.00	0.00	0.00	0.00	t	\N		48
-573	9	0.00	0.00	0.00	0.00	0.00	t	\N		48
-574	10	0.00	5000.00	0.00	0.00	5000.00	t	2026-06-04	REC-1048	48
-575	11	0.00	5000.00	0.00	0.00	10000.00	t	2026-06-04	REC-1048	48
-576	12	0.00	5000.00	0.00	0.00	0.00	f	\N		48
-577	1	0.00	0.00	0.00	0.00	0.00	t	\N		49
-578	2	0.00	0.00	0.00	0.00	0.00	t	\N		49
-579	3	0.00	6500.00	0.00	0.00	6500.00	t	2026-06-04	REC-1049	49
-580	4	0.00	6500.00	0.00	0.00	13000.00	t	2026-06-04	REC-1049	49
-581	5	0.00	6500.00	0.00	0.00	19500.00	t	2026-06-04	REC-1049	49
-582	6	0.00	6500.00	0.00	0.00	0.00	f	\N		49
-583	7	6500.00	6500.00	0.00	0.00	0.00	f	\N		49
-584	8	13000.00	6500.00	0.00	0.00	0.00	f	\N		49
-585	9	19500.00	6500.00	0.00	0.00	0.00	f	\N		49
-586	10	26000.00	6500.00	0.00	0.00	0.00	f	\N		49
-587	11	32500.00	6500.00	0.00	0.00	0.00	f	\N		49
-588	12	39000.00	6500.00	0.00	0.00	0.00	f	\N		49
-589	1	0.00	0.00	0.00	0.00	0.00	t	\N		50
-590	2	0.00	0.00	0.00	0.00	0.00	t	\N		50
-591	3	0.00	0.00	0.00	0.00	0.00	t	\N		50
-592	4	0.00	0.00	0.00	0.00	0.00	t	\N		50
-593	5	0.00	0.00	0.00	0.00	0.00	t	\N		50
-594	6	0.00	0.00	0.00	0.00	0.00	t	\N		50
-595	7	0.00	0.00	0.00	0.00	0.00	t	\N		50
-596	8	0.00	6800.00	0.00	0.00	6800.00	t	2026-07-08	REC-1050	50
-597	9	0.00	6800.00	0.00	0.00	13600.00	t	2026-07-08	REC-1050	50
-598	10	0.00	6800.00	0.00	0.00	0.00	f	\N		50
-599	11	6800.00	6800.00	0.00	0.00	0.00	f	\N		50
-600	12	13600.00	6800.00	0.00	0.00	0.00	f	\N		50
-601	1	0.00	0.00	0.00	0.00	0.00	t	\N		51
-602	2	0.00	0.00	0.00	0.00	0.00	t	\N		51
-603	3	0.00	0.00	0.00	0.00	0.00	t	\N		51
-604	4	0.00	0.00	0.00	0.00	0.00	t	\N		51
-605	5	0.00	0.00	0.00	0.00	0.00	t	\N		51
-606	6	0.00	0.00	0.00	0.00	0.00	t	\N		51
-607	7	0.00	6500.00	0.00	0.00	0.00	f	\N		51
-608	8	6500.00	6500.00	0.00	0.00	0.00	f	\N		51
-609	9	13000.00	6500.00	0.00	0.00	0.00	f	\N		51
-610	10	19500.00	6500.00	0.00	0.00	0.00	f	\N		51
-611	11	26000.00	6500.00	0.00	0.00	0.00	f	\N		51
-612	12	32500.00	6500.00	0.00	0.00	0.00	f	\N		51
-613	1	0.00	0.00	0.00	0.00	0.00	t	\N		52
-614	2	0.00	0.00	0.00	0.00	0.00	t	\N		52
-615	3	0.00	0.00	0.00	0.00	0.00	t	\N		52
-616	4	0.00	0.00	0.00	0.00	0.00	t	\N		52
-617	5	0.00	0.00	0.00	0.00	0.00	t	\N		52
-618	6	0.00	0.00	0.00	0.00	0.00	t	\N		52
-619	7	0.00	0.00	0.00	0.00	0.00	t	\N		52
-620	8	0.00	0.00	0.00	0.00	0.00	t	\N		52
-621	9	0.00	0.00	0.00	0.00	0.00	t	\N		52
-622	10	0.00	6800.00	0.00	0.00	0.00	f	\N		52
-623	11	6800.00	6800.00	0.00	0.00	0.00	f	\N		52
-624	12	13600.00	6800.00	0.00	0.00	0.00	f	\N		52
-625	1	0.00	0.00	0.00	0.00	0.00	t	\N		53
-626	2	0.00	0.00	0.00	0.00	0.00	t	\N		53
-627	3	0.00	0.00	0.00	0.00	0.00	t	\N		53
-628	4	0.00	0.00	0.00	0.00	0.00	t	\N		53
-629	5	0.00	0.00	0.00	0.00	0.00	t	\N		53
-630	6	0.00	0.00	0.00	0.00	0.00	t	\N		53
-631	7	0.00	0.00	0.00	0.00	0.00	t	\N		53
-632	8	0.00	0.00	0.00	0.00	0.00	t	\N		53
-633	9	0.00	0.00	0.00	0.00	0.00	t	\N		53
-634	10	0.00	0.00	0.00	0.00	0.00	t	\N		53
-635	11	0.00	6000.00	0.00	0.00	0.00	f	\N		53
-636	12	6000.00	6000.00	0.00	0.00	0.00	f	\N		53
-637	1	0.00	0.00	0.00	0.00	0.00	t	\N		54
-638	2	0.00	0.00	0.00	0.00	0.00	t	\N		54
-639	3	0.00	6200.00	0.00	0.00	0.00	f	\N		54
-640	4	6200.00	6200.00	0.00	0.00	0.00	f	\N		54
-641	5	12400.00	6200.00	0.00	0.00	0.00	f	\N		54
-642	6	18600.00	6200.00	0.00	0.00	0.00	f	\N		54
-643	7	24800.00	6200.00	0.00	0.00	0.00	f	\N		54
-644	8	31000.00	6200.00	0.00	0.00	0.00	f	\N		54
-645	9	37200.00	6200.00	0.00	0.00	0.00	f	\N		54
-646	10	43400.00	6200.00	0.00	0.00	0.00	f	\N		54
-647	11	49600.00	6200.00	0.00	0.00	0.00	f	\N		54
-648	12	55800.00	6200.00	0.00	0.00	0.00	f	\N		54
-649	1	0.00	0.00	0.00	0.00	0.00	t	\N		55
-650	2	0.00	0.00	0.00	0.00	0.00	t	\N		55
-651	3	0.00	0.00	0.00	0.00	0.00	t	\N		55
-652	4	0.00	0.00	0.00	0.00	0.00	t	\N		55
-653	5	0.00	0.00	0.00	0.00	0.00	t	\N		55
-654	6	0.00	2500.00	0.00	0.00	0.00	f	\N		55
-655	7	2500.00	2500.00	0.00	0.00	0.00	f	\N		55
-656	8	5000.00	2500.00	0.00	0.00	0.00	f	\N		55
-657	9	7500.00	2500.00	0.00	0.00	0.00	f	\N		55
-658	10	10000.00	2500.00	0.00	0.00	0.00	f	\N		55
-659	11	12500.00	2500.00	0.00	0.00	0.00	f	\N		55
-660	12	15000.00	2500.00	0.00	0.00	0.00	f	\N		55
-661	1	0.00	0.00	0.00	0.00	0.00	t	\N		56
-662	2	0.00	0.00	0.00	0.00	0.00	t	\N		56
-663	3	0.00	2800.00	0.00	0.00	0.00	f	\N		56
-664	4	2800.00	2800.00	0.00	0.00	0.00	f	\N		56
-665	5	5600.00	2800.00	0.00	0.00	0.00	f	\N		56
-666	6	8400.00	2800.00	0.00	0.00	0.00	f	\N		56
-667	7	11200.00	2800.00	0.00	0.00	0.00	f	\N		56
-668	8	14000.00	2800.00	0.00	0.00	0.00	f	\N		56
-669	9	16800.00	2800.00	0.00	0.00	0.00	f	\N		56
-670	10	19600.00	2800.00	0.00	0.00	0.00	f	\N		56
-671	11	22400.00	2800.00	0.00	0.00	0.00	f	\N		56
-672	12	25200.00	2800.00	0.00	0.00	0.00	f	\N		56
-685	1	0.00	3000.00	0.00	0.00	0.00	f	\N		58
-686	2	3000.00	3000.00	0.00	0.00	0.00	f	\N		58
-687	3	6000.00	3000.00	0.00	0.00	0.00	f	\N		58
-688	4	9000.00	3000.00	0.00	0.00	0.00	f	\N		58
-689	5	12000.00	3000.00	0.00	0.00	0.00	f	\N		58
-690	6	15000.00	3000.00	0.00	0.00	0.00	f	\N		58
-691	7	18000.00	3000.00	0.00	0.00	0.00	f	\N		58
-692	8	21000.00	3000.00	0.00	0.00	0.00	f	\N		58
-693	9	24000.00	3000.00	0.00	0.00	0.00	f	\N		58
-694	10	27000.00	3000.00	0.00	0.00	0.00	f	\N		58
-695	11	30000.00	3000.00	0.00	0.00	0.00	f	\N		58
-696	12	33000.00	3000.00	0.00	0.00	0.00	f	\N		58
-697	1	0.00	0.00	0.00	0.00	0.00	t	\N		59
-698	2	0.00	0.00	0.00	0.00	0.00	t	\N		59
-699	3	0.00	0.00	0.00	0.00	0.00	t	\N		59
-700	4	0.00	0.00	0.00	0.00	0.00	t	\N		59
-701	5	0.00	0.00	0.00	0.00	0.00	t	\N		59
-702	6	0.00	0.00	0.00	0.00	0.00	t	\N		59
-703	7	0.00	0.00	0.00	0.00	0.00	t	\N		59
-704	8	0.00	3200.00	0.00	0.00	0.00	f	\N		59
-705	9	3200.00	3200.00	0.00	0.00	0.00	f	\N		59
-706	10	6400.00	3200.00	0.00	0.00	0.00	f	\N		59
-707	11	9600.00	3200.00	0.00	0.00	0.00	f	\N		59
-708	12	12800.00	3200.00	0.00	0.00	0.00	f	\N		59
-709	1	0.00	0.00	0.00	0.00	0.00	t	\N		60
-710	2	0.00	0.00	0.00	0.00	0.00	t	\N		60
-711	3	0.00	0.00	0.00	0.00	0.00	t	\N		60
-712	4	0.00	0.00	0.00	0.00	0.00	t	\N		60
-713	5	0.00	0.00	0.00	0.00	0.00	t	\N		60
-714	6	0.00	0.00	0.00	0.00	0.00	t	\N		60
-715	7	0.00	0.00	0.00	0.00	0.00	t	\N		60
-716	8	0.00	0.00	0.00	0.00	0.00	t	\N		60
-717	9	0.00	0.00	0.00	0.00	0.00	t	\N		60
-718	10	0.00	0.00	0.00	0.00	0.00	t	\N		60
-719	11	0.00	0.00	0.00	0.00	0.00	t	\N		60
-720	12	0.00	3200.00	0.00	0.00	0.00	f	\N		60
-721	1	0.00	0.00	0.00	0.00	0.00	t	\N		61
-722	2	0.00	0.00	0.00	0.00	0.00	t	\N		61
-723	3	0.00	0.00	0.00	0.00	0.00	t	\N		61
-724	4	0.00	0.00	0.00	0.00	0.00	t	\N		61
-725	5	0.00	0.00	0.00	0.00	0.00	t	\N		61
-726	6	0.00	0.00	0.00	0.00	0.00	t	\N		61
-727	7	0.00	3500.00	0.00	0.00	0.00	f	\N		61
-728	8	3500.00	3500.00	0.00	0.00	0.00	f	\N		61
-729	9	7000.00	3500.00	0.00	0.00	0.00	f	\N		61
-730	10	10500.00	3500.00	0.00	0.00	0.00	f	\N		61
-731	11	14000.00	3500.00	0.00	0.00	0.00	f	\N		61
-732	12	17500.00	3500.00	0.00	0.00	0.00	f	\N		61
-733	1	0.00	0.00	0.00	0.00	0.00	t	\N		62
-734	2	0.00	0.00	0.00	0.00	0.00	t	\N		62
-735	3	0.00	0.00	0.00	0.00	0.00	t	\N		62
-736	4	0.00	0.00	0.00	0.00	0.00	t	\N		62
-737	5	0.00	0.00	0.00	0.00	0.00	t	\N		62
-738	6	0.00	0.00	0.00	0.00	0.00	t	\N		62
-739	7	0.00	0.00	0.00	0.00	0.00	t	\N		62
-740	8	0.00	3800.00	0.00	0.00	0.00	f	\N		62
-741	9	3800.00	3800.00	0.00	0.00	0.00	f	\N		62
-742	10	7600.00	3800.00	0.00	0.00	0.00	f	\N		62
-743	11	11400.00	3800.00	0.00	0.00	0.00	f	\N		62
-744	12	15200.00	3800.00	0.00	0.00	0.00	f	\N		62
-745	1	0.00	0.00	0.00	0.00	0.00	t	\N		63
-746	2	0.00	0.00	0.00	0.00	0.00	t	\N		63
-747	3	0.00	0.00	0.00	0.00	0.00	t	\N		63
-748	4	0.00	0.00	0.00	0.00	0.00	t	\N		63
-749	5	0.00	0.00	0.00	0.00	0.00	t	\N		63
-750	6	0.00	0.00	0.00	0.00	0.00	t	\N		63
-751	7	0.00	0.00	0.00	0.00	0.00	t	\N		63
-752	8	0.00	0.00	0.00	0.00	0.00	t	\N		63
-753	9	0.00	0.00	0.00	0.00	0.00	t	\N		63
-754	10	0.00	0.00	0.00	0.00	0.00	t	\N		63
-755	11	0.00	4000.00	0.00	0.00	0.00	f	\N		63
-756	12	4000.00	4000.00	0.00	0.00	0.00	f	\N		63
-757	1	0.00	0.00	0.00	0.00	0.00	t	\N		64
-758	2	0.00	0.00	0.00	0.00	0.00	t	\N		64
-759	3	0.00	0.00	0.00	0.00	0.00	t	\N		64
-760	4	0.00	0.00	0.00	0.00	0.00	t	\N		64
-761	5	0.00	0.00	0.00	0.00	0.00	t	\N		64
-762	6	0.00	0.00	0.00	0.00	0.00	t	\N		64
-763	7	0.00	4200.00	0.00	0.00	0.00	f	\N		64
-764	8	4200.00	4200.00	0.00	0.00	0.00	f	\N		64
-765	9	8400.00	4200.00	0.00	0.00	0.00	f	\N		64
-766	10	12600.00	4200.00	0.00	0.00	0.00	f	\N		64
-767	11	16800.00	4200.00	0.00	0.00	0.00	f	\N		64
-768	12	21000.00	4200.00	0.00	0.00	0.00	f	\N		64
-769	1	0.00	0.00	0.00	0.00	0.00	t	\N		65
-770	2	0.00	0.00	0.00	0.00	0.00	t	\N		65
-771	3	0.00	0.00	0.00	0.00	0.00	t	\N		65
-772	4	0.00	0.00	0.00	0.00	0.00	t	\N		65
-773	5	0.00	0.00	0.00	0.00	0.00	t	\N		65
-774	6	0.00	4800.00	0.00	0.00	0.00	f	\N		65
-775	7	4800.00	4800.00	0.00	0.00	0.00	f	\N		65
-776	8	9600.00	4800.00	0.00	0.00	0.00	f	\N		65
-777	9	14400.00	4800.00	0.00	0.00	0.00	f	\N		65
-778	10	19200.00	4800.00	0.00	0.00	0.00	f	\N		65
-779	11	24000.00	4800.00	0.00	0.00	0.00	f	\N		65
-780	12	28800.00	4800.00	0.00	0.00	0.00	f	\N		65
-781	1	0.00	0.00	0.00	0.00	0.00	t	\N		66
-782	2	0.00	0.00	0.00	0.00	0.00	t	\N		66
-783	3	0.00	0.00	0.00	0.00	0.00	t	\N		66
-784	4	0.00	0.00	0.00	0.00	0.00	t	\N		66
-785	5	0.00	0.00	0.00	0.00	0.00	t	\N		66
-786	6	0.00	0.00	0.00	0.00	0.00	t	\N		66
-787	7	0.00	0.00	0.00	0.00	0.00	t	\N		66
-788	8	0.00	5000.00	0.00	0.00	0.00	f	\N		66
-789	9	5000.00	5000.00	0.00	0.00	0.00	f	\N		66
-790	10	10000.00	5000.00	0.00	0.00	0.00	f	\N		66
-791	11	15000.00	5000.00	0.00	0.00	0.00	f	\N		66
-792	12	20000.00	5000.00	0.00	0.00	0.00	f	\N		66
-793	1	0.00	0.00	0.00	0.00	0.00	t	\N		67
-794	2	0.00	0.00	0.00	0.00	0.00	t	\N		67
-795	3	0.00	0.00	0.00	0.00	0.00	t	\N		67
-796	4	0.00	6500.00	0.00	0.00	0.00	f	\N		67
-797	5	6500.00	6500.00	0.00	0.00	0.00	f	\N		67
-798	6	13000.00	6500.00	0.00	0.00	0.00	f	\N		67
-799	7	19500.00	6500.00	0.00	0.00	0.00	f	\N		67
-800	8	26000.00	6500.00	0.00	0.00	0.00	f	\N		67
-801	9	32500.00	6500.00	0.00	0.00	0.00	f	\N		67
-802	10	39000.00	6500.00	0.00	0.00	0.00	f	\N		67
-803	11	45500.00	6500.00	0.00	0.00	0.00	f	\N		67
-804	12	52000.00	6500.00	0.00	0.00	0.00	f	\N		67
-805	1	0.00	0.00	0.00	0.00	0.00	t	\N		68
-806	2	0.00	0.00	0.00	0.00	0.00	t	\N		68
-807	3	0.00	0.00	0.00	0.00	0.00	t	\N		68
-808	4	0.00	0.00	0.00	0.00	0.00	t	\N		68
-809	5	0.00	0.00	0.00	0.00	0.00	t	\N		68
-810	6	0.00	0.00	0.00	0.00	0.00	t	\N		68
-811	7	0.00	6800.00	0.00	0.00	0.00	f	\N		68
-812	8	6800.00	6800.00	0.00	0.00	0.00	f	\N		68
-813	9	13600.00	6800.00	0.00	0.00	0.00	f	\N		68
-814	10	20400.00	6800.00	0.00	0.00	0.00	f	\N		68
-815	11	27200.00	6800.00	0.00	0.00	0.00	f	\N		68
-816	12	34000.00	6800.00	0.00	0.00	0.00	f	\N		68
-817	1	0.00	0.00	0.00	0.00	0.00	t	\N		69
-818	2	0.00	0.00	0.00	0.00	0.00	t	\N		69
-819	3	0.00	0.00	0.00	0.00	0.00	t	\N		69
-820	4	0.00	6500.00	0.00	0.00	0.00	f	\N		69
-821	5	6500.00	6500.00	0.00	0.00	0.00	f	\N		69
-822	6	13000.00	6500.00	0.00	0.00	0.00	f	\N		69
-823	7	19500.00	6500.00	0.00	0.00	0.00	f	\N		69
-824	8	26000.00	6500.00	0.00	0.00	0.00	f	\N		69
-825	9	32500.00	6500.00	0.00	0.00	0.00	f	\N		69
-826	10	39000.00	6500.00	0.00	0.00	0.00	f	\N		69
-827	11	45500.00	6500.00	0.00	0.00	0.00	f	\N		69
-828	12	52000.00	6500.00	0.00	0.00	0.00	f	\N		69
-829	1	0.00	6800.00	0.00	0.00	0.00	f	\N		70
-830	2	6800.00	6800.00	0.00	0.00	0.00	f	\N		70
-831	3	13600.00	6800.00	0.00	0.00	0.00	f	\N		70
-832	4	20400.00	6800.00	0.00	0.00	0.00	f	\N		70
-833	5	27200.00	6800.00	0.00	0.00	0.00	f	\N		70
-834	6	34000.00	6800.00	0.00	0.00	0.00	f	\N		70
-835	7	40800.00	6800.00	0.00	0.00	0.00	f	\N		70
-836	8	47600.00	6800.00	0.00	0.00	0.00	f	\N		70
-837	9	54400.00	6800.00	0.00	0.00	0.00	f	\N		70
-838	10	61200.00	6800.00	0.00	0.00	0.00	f	\N		70
-839	11	68000.00	6800.00	0.00	0.00	0.00	f	\N		70
-840	12	74800.00	6800.00	0.00	0.00	0.00	f	\N		70
-841	1	0.00	0.00	0.00	0.00	0.00	t	\N		71
-842	2	0.00	0.00	0.00	0.00	0.00	t	\N		71
-843	3	0.00	0.00	0.00	0.00	0.00	t	\N		71
-844	4	0.00	0.00	0.00	0.00	0.00	t	\N		71
-845	5	0.00	0.00	0.00	0.00	0.00	t	\N		71
-846	6	0.00	0.00	0.00	0.00	0.00	t	\N		71
-847	7	0.00	0.00	0.00	0.00	0.00	t	\N		71
-848	8	0.00	0.00	0.00	0.00	0.00	t	\N		71
-849	9	0.00	0.00	0.00	0.00	0.00	t	\N		71
-850	10	0.00	0.00	0.00	0.00	0.00	t	\N		71
-851	11	0.00	6000.00	0.00	0.00	0.00	f	\N		71
-852	12	6000.00	6000.00	0.00	0.00	0.00	f	\N		71
-853	1	0.00	0.00	0.00	0.00	0.00	t	\N		72
-854	2	0.00	0.00	0.00	0.00	0.00	t	\N		72
-855	3	0.00	6200.00	0.00	0.00	0.00	f	\N		72
-856	4	6200.00	6200.00	0.00	0.00	0.00	f	\N		72
-857	5	12400.00	6200.00	0.00	0.00	0.00	f	\N		72
-858	6	18600.00	6200.00	0.00	0.00	0.00	f	\N		72
-859	7	24800.00	6200.00	0.00	0.00	0.00	f	\N		72
-860	8	31000.00	6200.00	0.00	0.00	0.00	f	\N		72
-861	9	37200.00	6200.00	0.00	0.00	0.00	f	\N		72
-862	10	43400.00	6200.00	0.00	0.00	0.00	f	\N		72
-863	11	49600.00	6200.00	0.00	0.00	0.00	f	\N		72
-864	12	55800.00	6200.00	0.00	0.00	0.00	f	\N		72
-865	1	0.00	0.00	0.00	0.00	0.00	t	\N		73
-866	2	0.00	0.00	0.00	0.00	0.00	t	\N		73
-867	3	0.00	0.00	0.00	0.00	0.00	t	\N		73
-868	4	0.00	0.00	0.00	0.00	0.00	t	\N		73
-869	5	0.00	0.00	0.00	0.00	0.00	t	\N		73
-870	6	0.00	0.00	0.00	0.00	0.00	t	\N		73
-871	7	0.00	0.00	0.00	0.00	0.00	t	\N		73
-872	8	0.00	2500.00	0.00	0.00	0.00	f	\N		73
-873	9	2500.00	2500.00	0.00	0.00	0.00	f	\N		73
-874	10	5000.00	2500.00	0.00	0.00	0.00	f	\N		73
-875	11	7500.00	2500.00	0.00	0.00	0.00	f	\N		73
-876	12	10000.00	2500.00	0.00	0.00	0.00	f	\N		73
-877	1	0.00	0.00	0.00	0.00	0.00	t	\N		74
-878	2	0.00	0.00	0.00	0.00	0.00	t	\N		74
-879	3	0.00	0.00	0.00	0.00	0.00	t	\N		74
-880	4	0.00	0.00	0.00	0.00	0.00	t	\N		74
-881	5	0.00	0.00	0.00	0.00	0.00	t	\N		74
-882	6	0.00	0.00	0.00	0.00	0.00	t	\N		74
-883	7	0.00	0.00	0.00	0.00	0.00	t	\N		74
-884	8	0.00	0.00	0.00	0.00	0.00	t	\N		74
-885	9	0.00	0.00	0.00	0.00	0.00	t	\N		74
-886	10	0.00	2800.00	0.00	0.00	0.00	f	\N		74
-887	11	2800.00	2800.00	0.00	0.00	0.00	f	\N		74
-888	12	5600.00	2800.00	0.00	0.00	0.00	f	\N		74
-889	1	0.00	0.00	0.00	0.00	0.00	t	\N		75
-890	2	0.00	0.00	0.00	0.00	0.00	t	\N		75
-891	3	0.00	0.00	0.00	0.00	0.00	t	\N		75
-892	4	0.00	0.00	0.00	0.00	0.00	t	\N		75
-893	5	0.00	0.00	0.00	0.00	0.00	t	\N		75
-894	6	0.00	0.00	0.00	0.00	0.00	t	\N		75
-895	7	0.00	0.00	0.00	0.00	0.00	t	\N		75
-896	8	0.00	0.00	0.00	0.00	0.00	t	\N		75
-897	9	0.00	0.00	0.00	0.00	0.00	t	\N		75
-898	10	0.00	0.00	0.00	0.00	0.00	t	\N		75
-899	11	0.00	3000.00	0.00	0.00	0.00	f	\N		75
-900	12	3000.00	3000.00	0.00	0.00	0.00	f	\N		75
+4993	1	0.00	4800.00	0.00	0.00	0.00	f	\N		422
+4994	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		422
+4995	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		422
+4996	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		422
+4997	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		422
+4998	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		422
+4999	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		422
+5000	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		422
+5001	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		422
+5002	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		422
+5003	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		422
+5004	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		422
+5005	1	0.00	4800.00	0.00	0.00	0.00	f	\N		423
+5006	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		423
+5007	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		423
+5008	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		423
+5009	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		423
+5010	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		423
+5011	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		423
+5012	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		423
+5013	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		423
+5014	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		423
+5015	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		423
+5016	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		423
+5017	1	0.00	4800.00	0.00	0.00	0.00	f	\N		424
+5018	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		424
+5019	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		424
+5020	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		424
+5021	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		424
+5022	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		424
+5023	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		424
+5024	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		424
+5025	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		424
+5026	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		424
+5027	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		424
+5028	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		424
+5029	1	0.00	4800.00	0.00	0.00	0.00	f	\N		425
+5030	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		425
+5031	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		425
+5032	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		425
+5033	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		425
+5034	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		425
+5035	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		425
+5036	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		425
+5037	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		425
+5038	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		425
+5039	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		425
+5040	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		425
+5449	1	0.00	4800.00	0.00	0.00	0.00	f	\N		460
+5450	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		460
+5451	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		460
+5452	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		460
+5453	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		460
+5454	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		460
+5455	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		460
+5456	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		460
+5457	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		460
+5458	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		460
+5459	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		460
+5460	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		460
+5461	1	0.00	4800.00	0.00	0.00	0.00	f	\N		461
+5462	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		461
+5463	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		461
+5464	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		461
+5465	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		461
+5466	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		461
+5467	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		461
+5468	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		461
+5469	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		461
+5470	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		461
+5471	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		461
+5472	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		461
+5989	1	0.00	3800.00	0.00	0.00	0.00	f	\N		505
+5990	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		505
+5991	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		505
+5992	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		505
+5993	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		505
+5994	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		505
+5995	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		505
+5996	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		505
+5997	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		505
+5998	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		505
+5999	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		505
+5041	1	0.00	4800.00	0.00	0.00	0.00	f	\N		426
+5042	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		426
+5043	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		426
+5044	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		426
+5045	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		426
+5046	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		426
+5047	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		426
+5048	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		426
+5049	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		426
+5050	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		426
+5051	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		426
+5052	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		426
+5053	1	0.00	4800.00	0.00	0.00	0.00	f	\N		427
+5054	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		427
+5055	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		427
+5056	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		427
+5057	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		427
+5058	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		427
+5059	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		427
+5060	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		427
+5061	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		427
+5062	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		427
+5063	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		427
+5064	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		427
+5065	1	0.00	4800.00	0.00	0.00	0.00	f	\N		428
+5066	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		428
+5067	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		428
+5068	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		428
+5069	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		428
+5070	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		428
+5071	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		428
+5072	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		428
+5073	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		428
+5074	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		428
+5075	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		428
+5076	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		428
+5077	1	0.00	4800.00	0.00	0.00	0.00	f	\N		429
+5078	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		429
+5079	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		429
+5080	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		429
+5081	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		429
+5082	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		429
+5083	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		429
+5084	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		429
+5085	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		429
+5086	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		429
+5087	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		429
+5088	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		429
+5473	1	0.00	4800.00	0.00	0.00	0.00	f	\N		462
+5474	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		462
+5475	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		462
+5476	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		462
+5477	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		462
+5478	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		462
+5479	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		462
+5480	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		462
+5481	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		462
+5482	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		462
+5483	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		462
+5484	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		462
+5485	1	0.00	4800.00	0.00	0.00	0.00	f	\N		463
+5486	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		463
+5487	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		463
+5488	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		463
+5489	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		463
+5490	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		463
+5491	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		463
+5492	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		463
+5493	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		463
+5494	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		463
+5495	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		463
+5496	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		463
+6000	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		505
+6493	1	0.00	3800.00	0.00	0.00	0.00	f	\N		547
+6001	1	0.00	3800.00	0.00	0.00	0.00	f	\N		506
+6002	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		506
+6003	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		506
+6004	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		506
+6005	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		506
+6006	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		506
+6007	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		506
+6008	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		506
+6009	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		506
+6010	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		506
+6011	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		506
+6494	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		547
+6495	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		547
+6496	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		547
+6497	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		547
+6498	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		547
+6499	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		547
+6500	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		547
+6501	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		547
+6502	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		547
+5089	1	0.00	4800.00	0.00	0.00	0.00	f	\N		430
+5090	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		430
+5091	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		430
+5092	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		430
+5093	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		430
+5094	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		430
+5095	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		430
+5096	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		430
+5097	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		430
+5098	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		430
+5099	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		430
+5100	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		430
+5101	1	0.00	4800.00	0.00	0.00	0.00	f	\N		431
+5102	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		431
+5103	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		431
+5104	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		431
+5105	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		431
+5106	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		431
+5107	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		431
+5108	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		431
+5109	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		431
+5110	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		431
+5111	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		431
+5112	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		431
+5113	1	0.00	4800.00	0.00	0.00	0.00	f	\N		432
+5114	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		432
+5115	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		432
+5116	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		432
+5117	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		432
+5118	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		432
+5119	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		432
+5120	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		432
+5121	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		432
+5122	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		432
+5123	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		432
+5124	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		432
+5125	1	0.00	4800.00	0.00	0.00	0.00	f	\N		433
+5126	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		433
+5127	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		433
+5128	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		433
+5129	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		433
+5130	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		433
+5131	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		433
+5132	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		433
+5133	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		433
+5134	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		433
+5135	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		433
+5136	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		433
+5137	1	0.00	4800.00	0.00	0.00	0.00	f	\N		434
+5138	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		434
+5139	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		434
+5140	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		434
+5141	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		434
+5142	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		434
+5497	1	0.00	4800.00	0.00	0.00	0.00	f	\N		464
+5498	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		464
+5499	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		464
+5500	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		464
+5501	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		464
+5502	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		464
+5503	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		464
+5504	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		464
+5505	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		464
+5506	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		464
+5507	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		464
+5508	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		464
+6012	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		506
+5509	1	0.00	4800.00	0.00	0.00	0.00	f	\N		465
+5510	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		465
+5511	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		465
+5512	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		465
+5513	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		465
+5514	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		465
+5515	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		465
+5516	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		465
+5517	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		465
+5518	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		465
+5519	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		465
+6503	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		547
+6504	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		547
+6013	1	0.00	3800.00	0.00	0.00	0.00	f	\N		507
+6014	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		507
+6015	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		507
+6016	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		507
+6017	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		507
+6018	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		507
+5143	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		434
+5144	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		434
+5145	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		434
+5146	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		434
+5147	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		434
+5148	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		434
+5149	1	0.00	4800.00	0.00	0.00	0.00	f	\N		435
+5150	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		435
+5151	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		435
+5152	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		435
+5153	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		435
+5154	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		435
+5155	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		435
+5156	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		435
+5157	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		435
+5158	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		435
+5159	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		435
+5160	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		435
+5161	1	0.00	4800.00	0.00	0.00	0.00	f	\N		436
+5162	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		436
+5163	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		436
+5164	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		436
+5165	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		436
+5166	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		436
+5167	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		436
+5168	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		436
+5169	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		436
+5170	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		436
+5171	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		436
+5172	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		436
+5173	1	0.00	4800.00	0.00	0.00	0.00	f	\N		437
+5174	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		437
+5175	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		437
+5176	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		437
+5177	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		437
+5178	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		437
+5179	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		437
+5180	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		437
+5181	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		437
+5182	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		437
+5183	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		437
+5184	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		437
+5185	1	0.00	4800.00	0.00	0.00	0.00	f	\N		438
+5186	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		438
+5187	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		438
+5188	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		438
+5189	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		438
+5190	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		438
+5191	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		438
+5192	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		438
+5193	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		438
+5194	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		438
+5195	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		438
+5196	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		438
+5520	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		465
+5521	1	0.00	4800.00	0.00	0.00	0.00	f	\N		466
+5522	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		466
+5523	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		466
+5524	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		466
+5525	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		466
+5526	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		466
+5527	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		466
+5528	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		466
+5529	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		466
+5530	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		466
+5531	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		466
+5532	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		466
+5648	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		476
+5649	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		476
+5650	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		476
+5651	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		476
+5652	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		476
+5653	1	0.00	4200.00	0.00	0.00	0.00	f	\N		477
+5654	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		477
+5655	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		477
+5656	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		477
+5657	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		477
+5658	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		477
+5659	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		477
+5660	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		477
+5661	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		477
+5662	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		477
+5663	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		477
+5664	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		477
+6019	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		507
+6020	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		507
+6021	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		507
+6022	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		507
+6023	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		507
+6024	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		507
+6505	1	0.00	3800.00	0.00	0.00	0.00	f	\N		548
+5197	1	0.00	4800.00	0.00	0.00	0.00	f	\N		439
+5198	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		439
+5199	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		439
+5200	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		439
+5201	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		439
+5202	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		439
+5203	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		439
+5204	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		439
+5205	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		439
+5206	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		439
+5207	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		439
+5208	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		439
+5209	1	0.00	4800.00	0.00	0.00	0.00	f	\N		440
+5210	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		440
+5211	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		440
+5212	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		440
+5213	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		440
+5214	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		440
+5215	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		440
+5216	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		440
+5217	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		440
+5218	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		440
+5219	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		440
+5220	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		440
+5221	1	0.00	4800.00	0.00	0.00	0.00	f	\N		441
+5222	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		441
+5223	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		441
+5224	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		441
+5225	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		441
+5226	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		441
+5227	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		441
+5228	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		441
+5229	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		441
+5230	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		441
+5231	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		441
+5232	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		441
+5233	1	0.00	4800.00	0.00	0.00	0.00	f	\N		442
+5234	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		442
+5235	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		442
+5236	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		442
+5237	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		442
+5238	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		442
+5239	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		442
+5240	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		442
+5241	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		442
+5242	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		442
+5243	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		442
+5244	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		442
+5533	1	0.00	4200.00	0.00	0.00	0.00	f	\N		467
+5534	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		467
+5535	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		467
+5536	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		467
+5537	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		467
+5538	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		467
+5539	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		467
+5540	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		467
+5541	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		467
+5542	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		467
+5543	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		467
+5544	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		467
+5545	1	0.00	4200.00	0.00	0.00	0.00	f	\N		468
+5546	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		468
+5547	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		468
+5548	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		468
+5549	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		468
+5550	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		468
+5551	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		468
+5552	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		468
+5553	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		468
+5554	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		468
+5555	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		468
+5556	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		468
+6025	1	0.00	3800.00	0.00	0.00	0.00	f	\N		508
+6026	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		508
+6027	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		508
+6028	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		508
+6029	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		508
+6030	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		508
+6031	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		508
+6032	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		508
+6033	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		508
+6034	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		508
+6035	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		508
+6036	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		508
+6506	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		548
+6507	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		548
+6508	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		548
+6509	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		548
+6510	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		548
+6511	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		548
+6512	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		548
+6513	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		548
+6514	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		548
+6515	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		548
+5245	1	0.00	4800.00	0.00	0.00	0.00	f	\N		443
+5246	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		443
+5247	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		443
+5248	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		443
+5249	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		443
+5250	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		443
+5251	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		443
+5252	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		443
+5253	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		443
+5254	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		443
+5255	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		443
+5256	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		443
+5257	1	0.00	4800.00	0.00	0.00	0.00	f	\N		444
+5258	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		444
+5259	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		444
+5260	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		444
+5261	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		444
+5262	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		444
+5263	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		444
+5264	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		444
+5265	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		444
+5266	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		444
+5267	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		444
+5268	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		444
+5269	1	0.00	4800.00	0.00	0.00	0.00	f	\N		445
+5270	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		445
+5271	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		445
+5272	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		445
+5273	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		445
+5274	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		445
+5275	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		445
+5276	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		445
+5277	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		445
+5278	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		445
+5279	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		445
+5280	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		445
+5281	1	0.00	4800.00	0.00	0.00	0.00	f	\N		446
+5282	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		446
+5283	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		446
+5284	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		446
+5285	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		446
+5286	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		446
+5287	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		446
+5288	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		446
+5289	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		446
+5290	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		446
+5291	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		446
+5292	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		446
+5557	1	0.00	4200.00	0.00	0.00	0.00	f	\N		469
+5558	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		469
+5559	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		469
+5560	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		469
+5561	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		469
+5562	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		469
+5563	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		469
+5564	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		469
+5565	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		469
+5566	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		469
+5567	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		469
+5568	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		469
+5569	1	0.00	4200.00	0.00	0.00	0.00	f	\N		470
+5570	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		470
+5571	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		470
+5572	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		470
+5573	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		470
+5574	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		470
+5575	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		470
+5576	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		470
+5577	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		470
+5578	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		470
+5579	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		470
+5580	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		470
+6037	1	0.00	3800.00	0.00	0.00	0.00	f	\N		509
+6038	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		509
+6039	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		509
+6040	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		509
+6041	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		509
+6042	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		509
+6043	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		509
+6044	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		509
+6045	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		509
+6046	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		509
+6047	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		509
+6048	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		509
+6516	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		548
+5293	1	0.00	4800.00	0.00	0.00	0.00	f	\N		447
+5294	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		447
+5295	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		447
+5296	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		447
+5297	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		447
+5298	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		447
+5299	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		447
+5300	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		447
+5301	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		447
+5302	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		447
+5303	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		447
+5304	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		447
+5305	1	0.00	4800.00	0.00	0.00	0.00	f	\N		448
+5306	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		448
+5307	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		448
+5308	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		448
+5309	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		448
+5310	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		448
+5311	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		448
+5312	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		448
+5313	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		448
+5314	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		448
+5315	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		448
+5316	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		448
+5317	1	0.00	4800.00	0.00	0.00	0.00	f	\N		449
+5318	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		449
+5319	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		449
+5320	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		449
+5321	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		449
+5322	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		449
+5323	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		449
+5324	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		449
+5325	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		449
+5326	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		449
+5327	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		449
+5328	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		449
+5329	1	0.00	4800.00	0.00	0.00	0.00	f	\N		450
+5330	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		450
+5331	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		450
+5332	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		450
+5333	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		450
+5334	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		450
+5335	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		450
+5336	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		450
+5337	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		450
+5338	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		450
+5339	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		450
+5340	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		450
+5341	1	0.00	4800.00	0.00	0.00	0.00	f	\N		451
+5342	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		451
+5343	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		451
+5344	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		451
+5345	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		451
+5346	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		451
+5581	1	0.00	4200.00	0.00	0.00	0.00	f	\N		471
+5582	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		471
+5583	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		471
+5584	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		471
+5585	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		471
+5586	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		471
+5587	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		471
+5588	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		471
+5589	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		471
+5590	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		471
+5591	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		471
+5592	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		471
+5593	1	0.00	4200.00	0.00	0.00	0.00	f	\N		472
+5594	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		472
+5595	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		472
+5596	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		472
+5597	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		472
+5598	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		472
+5599	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		472
+5600	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		472
+5601	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		472
+5602	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		472
+5603	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		472
+6517	1	0.00	3800.00	0.00	0.00	0.00	f	\N		549
+6049	1	0.00	3800.00	0.00	0.00	0.00	f	\N		510
+6050	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		510
+6051	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		510
+6052	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		510
+6053	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		510
+6054	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		510
+6055	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		510
+6056	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		510
+6057	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		510
+6518	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		549
+6519	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		549
+6520	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		549
+6521	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		549
+6522	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		549
+6523	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		549
+5347	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		451
+5348	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		451
+5349	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		451
+5350	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		451
+5351	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		451
+5352	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		451
+5353	1	0.00	4800.00	0.00	0.00	0.00	f	\N		452
+5354	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		452
+5355	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		452
+5356	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		452
+5357	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		452
+5358	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		452
+5359	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		452
+5360	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		452
+5361	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		452
+5362	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		452
+5363	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		452
+5364	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		452
+5365	1	0.00	4800.00	0.00	0.00	0.00	f	\N		453
+5366	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		453
+5367	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		453
+5368	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		453
+5369	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		453
+5370	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		453
+5371	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		453
+5372	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		453
+5373	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		453
+5374	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		453
+5375	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		453
+5376	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		453
+5377	1	0.00	4800.00	0.00	0.00	0.00	f	\N		454
+5378	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		454
+5379	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		454
+5380	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		454
+5381	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		454
+5382	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		454
+5383	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		454
+5384	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		454
+5385	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		454
+5386	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		454
+5387	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		454
+5388	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		454
+5389	1	0.00	4800.00	0.00	0.00	0.00	f	\N		455
+5390	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		455
+5391	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		455
+5392	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		455
+5393	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		455
+5394	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		455
+5395	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		455
+5396	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		455
+5397	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		455
+5398	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		455
+5399	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		455
+5400	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		455
+5604	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		472
+5605	1	0.00	4200.00	0.00	0.00	0.00	f	\N		473
+5606	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		473
+5607	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		473
+5608	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		473
+5609	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		473
+5610	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		473
+5611	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		473
+5612	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		473
+5613	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		473
+5614	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		473
+5615	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		473
+5616	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		473
+6058	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		510
+6059	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		510
+6060	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		510
+5617	1	0.00	4200.00	0.00	0.00	0.00	f	\N		474
+5618	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		474
+5619	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		474
+5620	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		474
+5621	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		474
+5622	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		474
+6524	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		549
+6525	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		549
+6526	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		549
+6527	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		549
+6528	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		549
+6061	1	0.00	3800.00	0.00	0.00	0.00	f	\N		511
+6062	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		511
+6063	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		511
+6064	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		511
+6065	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		511
+6066	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		511
+6067	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		511
+5401	1	0.00	4800.00	0.00	0.00	0.00	f	\N		456
+5402	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		456
+5403	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		456
+5404	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		456
+5405	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		456
+5406	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		456
+5407	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		456
+5408	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		456
+5409	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		456
+5410	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		456
+5411	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		456
+5412	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		456
+5413	1	0.00	4800.00	0.00	0.00	0.00	f	\N		457
+5414	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		457
+5415	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		457
+5416	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		457
+5417	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		457
+5418	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		457
+5419	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		457
+5420	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		457
+5421	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		457
+5422	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		457
+5423	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		457
+5424	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		457
+5425	1	0.00	4800.00	0.00	0.00	0.00	f	\N		458
+5426	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		458
+5427	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		458
+5428	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		458
+5429	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		458
+5430	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		458
+5431	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		458
+5432	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		458
+5433	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		458
+5434	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		458
+5435	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		458
+5436	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		458
+5437	1	0.00	4800.00	0.00	0.00	0.00	f	\N		459
+5438	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		459
+5439	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		459
+5440	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		459
+5441	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		459
+5442	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		459
+5443	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		459
+5444	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		459
+5445	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		459
+5446	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		459
+5447	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		459
+5448	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		459
+5623	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		474
+5624	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		474
+5625	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		474
+5626	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		474
+5627	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		474
+5628	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		474
+5629	1	0.00	4200.00	0.00	0.00	0.00	f	\N		475
+5630	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		475
+5631	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		475
+5632	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		475
+5633	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		475
+5634	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		475
+5635	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		475
+5636	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		475
+5637	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		475
+5638	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		475
+5639	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		475
+5640	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		475
+6068	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		511
+6069	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		511
+6070	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		511
+6071	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		511
+6072	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		511
+5641	1	0.00	4200.00	0.00	0.00	0.00	f	\N		476
+5642	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		476
+5643	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		476
+5644	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		476
+5645	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		476
+5646	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		476
+5647	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		476
+6529	1	0.00	3800.00	0.00	0.00	0.00	f	\N		550
+6530	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		550
+6073	1	0.00	3800.00	0.00	0.00	0.00	f	\N		512
+6074	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		512
+6075	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		512
+6076	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		512
+6077	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		512
+6531	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		550
+6532	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		550
+6533	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		550
+6534	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		550
+6535	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		550
+5665	1	0.00	4200.00	0.00	0.00	0.00	f	\N		478
+5666	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		478
+5667	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		478
+5668	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		478
+5669	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		478
+5670	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		478
+5671	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		478
+5672	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		478
+5673	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		478
+5674	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		478
+5675	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		478
+5676	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		478
+5677	1	0.00	4200.00	0.00	0.00	0.00	f	\N		479
+5678	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		479
+5679	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		479
+5680	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		479
+5681	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		479
+5682	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		479
+5683	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		479
+5684	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		479
+5685	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		479
+5686	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		479
+5687	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		479
+5688	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		479
+5689	1	0.00	4200.00	0.00	0.00	0.00	f	\N		480
+5690	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		480
+5691	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		480
+5692	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		480
+5693	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		480
+5694	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		480
+5695	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		480
+5696	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		480
+5697	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		480
+5698	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		480
+5699	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		480
+5700	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		480
+5701	1	0.00	4200.00	0.00	0.00	0.00	f	\N		481
+5702	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		481
+5703	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		481
+5704	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		481
+5705	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		481
+5706	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		481
+5707	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		481
+5708	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		481
+5709	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		481
+5710	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		481
+5711	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		481
+5712	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		481
+6078	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		512
+6079	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		512
+6080	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		512
+6081	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		512
+6082	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		512
+6083	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		512
+6084	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		512
+6085	1	0.00	3800.00	0.00	0.00	0.00	f	\N		513
+6086	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		513
+6087	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		513
+6088	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		513
+6089	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		513
+6090	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		513
+6091	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		513
+6092	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		513
+6093	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		513
+6094	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		513
+6095	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		513
+6096	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		513
+6536	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		550
+6537	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		550
+6538	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		550
+6539	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		550
+6540	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		550
+6097	1	0.00	3800.00	0.00	0.00	0.00	f	\N		514
+6098	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		514
+6099	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		514
+6100	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		514
+6101	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		514
+6102	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		514
+6541	1	0.00	3800.00	0.00	0.00	0.00	f	\N		551
+6542	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		551
+6543	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		551
+6544	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		551
+6545	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		551
+5713	1	0.00	4200.00	0.00	0.00	0.00	f	\N		482
+5714	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		482
+5715	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		482
+5716	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		482
+5717	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		482
+5718	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		482
+5719	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		482
+5720	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		482
+5721	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		482
+5722	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		482
+5723	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		482
+5724	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		482
+5725	1	0.00	4200.00	0.00	0.00	0.00	f	\N		483
+5726	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		483
+5727	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		483
+5728	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		483
+5729	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		483
+5730	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		483
+5731	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		483
+5732	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		483
+5733	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		483
+5734	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		483
+5735	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		483
+5736	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		483
+5737	1	0.00	4200.00	0.00	0.00	0.00	f	\N		484
+5738	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		484
+5739	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		484
+5740	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		484
+5741	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		484
+5742	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		484
+5743	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		484
+5744	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		484
+5745	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		484
+5746	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		484
+5747	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		484
+5748	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		484
+5749	1	0.00	4200.00	0.00	0.00	0.00	f	\N		485
+5750	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		485
+5751	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		485
+5752	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		485
+5753	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		485
+5754	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		485
+5755	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		485
+5756	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		485
+5757	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		485
+5758	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		485
+5759	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		485
+5760	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		485
+6103	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		514
+6104	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		514
+6105	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		514
+6106	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		514
+6107	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		514
+6108	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		514
+6109	1	0.00	3800.00	0.00	0.00	0.00	f	\N		515
+6110	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		515
+6111	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		515
+6112	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		515
+6113	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		515
+6114	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		515
+6115	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		515
+6116	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		515
+6117	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		515
+6118	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		515
+6119	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		515
+6120	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		515
+6546	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		551
+6547	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		551
+6548	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		551
+6549	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		551
+6121	1	0.00	3800.00	0.00	0.00	0.00	f	\N		516
+6122	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		516
+6123	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		516
+6124	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		516
+6125	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		516
+6126	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		516
+6127	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		516
+6128	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		516
+6550	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		551
+6551	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		551
+6552	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		551
+6553	1	0.00	3800.00	0.00	0.00	0.00	f	\N		552
+6554	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		552
+6555	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		552
+5761	1	0.00	4200.00	0.00	0.00	0.00	f	\N		486
+5762	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		486
+5763	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		486
+5764	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		486
+5765	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		486
+5766	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		486
+5767	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		486
+5768	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		486
+5769	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		486
+5770	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		486
+5771	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		486
+5772	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		486
+5773	1	0.00	4200.00	0.00	0.00	0.00	f	\N		487
+5774	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		487
+5775	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		487
+5776	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		487
+5777	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		487
+5778	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		487
+5779	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		487
+5780	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		487
+5781	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		487
+5782	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		487
+5783	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		487
+5784	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		487
+5785	1	0.00	4200.00	0.00	0.00	0.00	f	\N		488
+5786	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		488
+5787	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		488
+5788	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		488
+5789	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		488
+5790	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		488
+5791	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		488
+5792	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		488
+5793	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		488
+5794	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		488
+5795	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		488
+5796	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		488
+5797	1	0.00	4200.00	0.00	0.00	0.00	f	\N		489
+5798	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		489
+5799	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		489
+5800	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		489
+5801	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		489
+5802	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		489
+5803	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		489
+5804	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		489
+5805	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		489
+5806	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		489
+5807	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		489
+5808	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		489
+6129	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		516
+6130	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		516
+6131	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		516
+6132	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		516
+5809	1	0.00	4200.00	0.00	0.00	0.00	f	\N		490
+5810	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		490
+5811	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		490
+5812	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		490
+5813	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		490
+5814	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		490
+6133	1	0.00	3800.00	0.00	0.00	0.00	f	\N		517
+6134	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		517
+6135	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		517
+6136	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		517
+6137	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		517
+6138	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		517
+6139	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		517
+6140	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		517
+6141	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		517
+6142	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		517
+6143	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		517
+6144	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		517
+6556	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		552
+6557	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		552
+6558	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		552
+6559	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		552
+6560	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		552
+6561	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		552
+6562	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		552
+6563	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		552
+6145	1	0.00	3800.00	0.00	0.00	0.00	f	\N		518
+6146	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		518
+6147	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		518
+6148	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		518
+6564	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		552
+6565	1	0.00	3800.00	0.00	0.00	0.00	f	\N		553
+5815	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		490
+5816	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		490
+5817	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		490
+5818	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		490
+5819	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		490
+5820	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		490
+5821	1	0.00	4200.00	0.00	0.00	0.00	f	\N		491
+5822	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		491
+5823	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		491
+5824	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		491
+5825	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		491
+5826	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		491
+5827	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		491
+5828	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		491
+5829	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		491
+5830	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		491
+5831	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		491
+5832	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		491
+5833	1	0.00	4200.00	0.00	0.00	0.00	f	\N		492
+5834	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		492
+5835	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		492
+5836	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		492
+5837	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		492
+5838	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		492
+5839	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		492
+5840	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		492
+5841	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		492
+5842	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		492
+5843	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		492
+5844	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		492
+5845	1	0.00	4200.00	0.00	0.00	0.00	f	\N		493
+5846	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		493
+5847	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		493
+5848	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		493
+5849	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		493
+5850	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		493
+5851	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		493
+5852	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		493
+5853	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		493
+5854	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		493
+5855	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		493
+5856	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		493
+5857	1	0.00	4200.00	0.00	0.00	0.00	f	\N		494
+5858	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		494
+5859	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		494
+5860	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		494
+5861	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		494
+5862	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		494
+5863	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		494
+5864	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		494
+5865	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		494
+5866	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		494
+5867	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		494
+5868	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		494
+6149	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		518
+6150	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		518
+6151	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		518
+6152	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		518
+6153	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		518
+6154	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		518
+6155	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		518
+6156	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		518
+6157	1	0.00	3800.00	0.00	0.00	0.00	f	\N		519
+6158	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		519
+6159	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		519
+6160	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		519
+6161	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		519
+6162	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		519
+6163	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		519
+6164	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		519
+6165	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		519
+6166	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		519
+6167	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		519
+6168	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		519
+6566	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		553
+6567	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		553
+6568	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		553
+6569	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		553
+6570	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		553
+6571	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		553
+6572	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		553
+6573	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		553
+6574	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		553
+6575	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		553
+6576	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		553
+5869	1	0.00	4200.00	0.00	0.00	0.00	f	\N		495
+5870	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		495
+5871	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		495
+5872	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		495
+5873	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		495
+5874	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		495
+5875	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		495
+5876	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		495
+5877	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		495
+5878	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		495
+5879	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		495
+5880	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		495
+5881	1	0.00	4200.00	0.00	0.00	0.00	f	\N		496
+5882	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		496
+5883	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		496
+5884	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		496
+5885	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		496
+5886	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		496
+5887	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		496
+5888	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		496
+5889	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		496
+5890	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		496
+5891	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		496
+5892	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		496
+5893	1	0.00	4200.00	0.00	0.00	0.00	f	\N		497
+5894	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		497
+5895	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		497
+5896	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		497
+5897	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		497
+5898	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		497
+5899	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		497
+5900	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		497
+5901	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		497
+5902	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		497
+5903	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		497
+5904	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		497
+5905	1	0.00	4200.00	0.00	0.00	0.00	f	\N		498
+5906	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		498
+5907	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		498
+5908	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		498
+5909	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		498
+5910	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		498
+5911	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		498
+5912	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		498
+5913	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		498
+5914	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		498
+5915	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		498
+5916	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		498
+6169	1	0.00	3800.00	0.00	0.00	0.00	f	\N		520
+6170	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		520
+6171	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		520
+6172	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		520
+6173	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		520
+6174	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		520
+6175	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		520
+6176	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		520
+6177	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		520
+6178	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		520
+6179	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		520
+6180	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		520
+6181	1	0.00	3800.00	0.00	0.00	0.00	f	\N		521
+6182	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		521
+6183	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		521
+6184	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		521
+6185	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		521
+6186	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		521
+6187	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		521
+6188	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		521
+6189	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		521
+6190	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		521
+6191	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		521
+6192	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		521
+6577	1	0.00	3800.00	0.00	0.00	0.00	f	\N		554
+6578	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		554
+6579	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		554
+6580	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		554
+6581	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		554
+6582	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		554
+6583	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		554
+6584	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		554
+6585	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		554
+6193	1	0.00	3800.00	0.00	0.00	0.00	f	\N		522
+6586	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		554
+6587	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		554
+6588	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		554
+6744	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		567
+6745	1	0.00	4800.00	0.00	0.00	0.00	f	\N		568
+5917	1	0.00	4200.00	0.00	0.00	0.00	f	\N		499
+5918	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		499
+5919	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		499
+5920	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		499
+5921	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		499
+5922	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		499
+5923	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		499
+5924	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		499
+5925	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		499
+5926	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		499
+5927	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		499
+5928	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		499
+5929	1	0.00	4200.00	0.00	0.00	0.00	f	\N		500
+5930	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		500
+5931	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		500
+5932	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		500
+5933	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		500
+5934	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		500
+5935	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		500
+5936	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		500
+5937	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		500
+5938	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		500
+5939	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		500
+5940	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		500
+5941	1	0.00	4200.00	0.00	0.00	0.00	f	\N		501
+5942	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		501
+5943	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		501
+5944	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		501
+5945	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		501
+5946	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		501
+5947	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		501
+5948	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		501
+5949	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		501
+5950	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		501
+5951	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		501
+5952	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		501
+5953	1	0.00	4200.00	0.00	0.00	0.00	f	\N		502
+5954	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		502
+5955	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		502
+5956	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		502
+5957	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		502
+5958	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		502
+5959	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		502
+5960	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		502
+5961	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		502
+5962	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		502
+5963	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		502
+5964	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		502
+6194	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		522
+6195	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		522
+6196	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		522
+6197	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		522
+6198	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		522
+6199	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		522
+6200	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		522
+6201	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		522
+6202	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		522
+6203	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		522
+6204	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		522
+6205	1	0.00	3800.00	0.00	0.00	0.00	f	\N		523
+6206	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		523
+6207	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		523
+6208	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		523
+6209	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		523
+6210	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		523
+6211	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		523
+6212	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		523
+6213	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		523
+6214	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		523
+6215	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		523
+6216	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		523
+6217	1	0.00	3800.00	0.00	0.00	0.00	f	\N		524
+6218	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		524
+6219	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		524
+6589	1	0.00	4800.00	0.00	0.00	0.00	f	\N		555
+6590	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		555
+6591	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		555
+6592	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		555
+6593	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		555
+6594	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		555
+6595	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		555
+6596	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		555
+6597	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		555
+6598	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		555
+5965	1	0.00	4200.00	0.00	0.00	0.00	f	\N		503
+5966	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		503
+5967	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		503
+5968	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		503
+5969	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		503
+5970	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		503
+5971	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		503
+5972	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		503
+5973	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		503
+5974	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		503
+5975	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		503
+5976	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		503
+5977	1	0.00	4200.00	0.00	0.00	0.00	f	\N		504
+5978	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		504
+5979	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		504
+5980	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		504
+5981	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		504
+5982	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		504
+5983	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		504
+5984	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		504
+5985	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		504
+5986	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		504
+5987	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		504
+5988	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		504
+6220	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		524
+6221	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		524
+6222	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		524
+6223	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		524
+6224	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		524
+6225	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		524
+6226	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		524
+6227	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		524
+6228	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		524
+6229	1	0.00	3800.00	0.00	0.00	0.00	f	\N		525
+6230	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		525
+6231	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		525
+6232	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		525
+6233	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		525
+6234	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		525
+6235	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		525
+6236	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		525
+6237	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		525
+6238	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		525
+6239	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		525
+6240	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		525
+6241	1	0.00	3800.00	0.00	0.00	0.00	f	\N		526
+6242	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		526
+6243	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		526
+6244	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		526
+6245	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		526
+6246	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		526
+6247	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		526
+6248	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		526
+6249	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		526
+6250	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		526
+6251	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		526
+6252	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		526
+6599	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		555
+6600	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		555
+6253	1	0.00	3800.00	0.00	0.00	0.00	f	\N		527
+6254	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		527
+6255	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		527
+6256	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		527
+6257	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		527
+6258	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		527
+6259	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		527
+6601	1	0.00	4800.00	0.00	0.00	0.00	f	\N		556
+6602	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		556
+6603	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		556
+6604	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		556
+6605	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		556
+6606	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		556
+6607	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		556
+6608	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		556
+6609	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		556
+6610	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		556
+6611	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		556
+6612	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		556
+6260	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		527
+6261	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		527
+6262	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		527
+6263	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		527
+6264	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		527
+6265	1	0.00	3800.00	0.00	0.00	0.00	f	\N		528
+6266	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		528
+6267	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		528
+6268	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		528
+6269	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		528
+6270	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		528
+6271	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		528
+6272	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		528
+6273	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		528
+6274	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		528
+6275	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		528
+6276	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		528
+6277	1	0.00	3800.00	0.00	0.00	0.00	f	\N		529
+6278	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		529
+6279	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		529
+6280	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		529
+6281	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		529
+6282	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		529
+6283	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		529
+6284	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		529
+6285	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		529
+6286	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		529
+6287	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		529
+6288	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		529
+6289	1	0.00	3800.00	0.00	0.00	0.00	f	\N		530
+6290	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		530
+6291	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		530
+6292	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		530
+6293	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		530
+6294	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		530
+6295	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		530
+6296	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		530
+6297	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		530
+6298	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		530
+6299	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		530
+6300	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		530
+6301	1	0.00	3800.00	0.00	0.00	0.00	f	\N		531
+6302	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		531
+6303	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		531
+6304	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		531
+6305	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		531
+6306	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		531
+6307	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		531
+6308	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		531
+6309	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		531
+6310	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		531
+6311	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		531
+6312	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		531
+6613	1	0.00	4800.00	0.00	0.00	0.00	f	\N		557
+6614	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		557
+6615	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		557
+6616	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		557
+6617	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		557
+6618	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		557
+6619	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		557
+6620	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		557
+6621	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		557
+6622	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		557
+6623	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		557
+6624	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		557
+6625	1	0.00	4800.00	0.00	0.00	0.00	f	\N		558
+6626	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		558
+6627	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		558
+6628	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		558
+6629	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		558
+6630	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		558
+6631	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		558
+6632	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		558
+6633	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		558
+6634	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		558
+6635	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		558
+6636	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		558
+6313	1	0.00	3800.00	0.00	0.00	0.00	f	\N		532
+6314	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		532
+6315	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		532
+6316	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		532
+6317	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		532
+6318	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		532
+6319	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		532
+6320	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		532
+6321	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		532
+6322	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		532
+6323	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		532
+6324	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		532
+6325	1	0.00	3800.00	0.00	0.00	0.00	f	\N		533
+6326	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		533
+6327	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		533
+6328	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		533
+6329	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		533
+6330	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		533
+6331	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		533
+6332	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		533
+6333	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		533
+6334	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		533
+6335	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		533
+6336	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		533
+6337	1	0.00	3800.00	0.00	0.00	0.00	f	\N		534
+6338	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		534
+6339	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		534
+6340	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		534
+6341	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		534
+6342	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		534
+6343	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		534
+6344	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		534
+6345	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		534
+6346	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		534
+6347	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		534
+6348	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		534
+6349	1	0.00	3800.00	0.00	0.00	0.00	f	\N		535
+6350	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		535
+6351	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		535
+6352	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		535
+6353	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		535
+6354	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		535
+6355	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		535
+6356	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		535
+6357	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		535
+6358	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		535
+6359	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		535
+6360	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		535
+6637	1	0.00	4800.00	0.00	0.00	0.00	f	\N		559
+6638	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		559
+6639	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		559
+6640	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		559
+6641	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		559
+6642	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		559
+6643	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		559
+6644	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		559
+6645	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		559
+6646	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		559
+6647	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		559
+6648	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		559
+6649	1	0.00	4800.00	0.00	0.00	0.00	f	\N		560
+6650	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		560
+6651	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		560
+6652	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		560
+6653	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		560
+6654	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		560
+6655	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		560
+6656	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		560
+6657	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		560
+6658	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		560
+6659	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		560
+6660	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		560
+6361	1	0.00	3800.00	0.00	0.00	0.00	f	\N		536
+6362	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		536
+6363	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		536
+6364	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		536
+6365	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		536
+6366	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		536
+6367	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		536
+6368	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		536
+6369	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		536
+6370	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		536
+6371	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		536
+6372	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		536
+6373	1	0.00	3800.00	0.00	0.00	0.00	f	\N		537
+6374	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		537
+6375	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		537
+6376	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		537
+6377	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		537
+6378	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		537
+6379	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		537
+6380	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		537
+6381	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		537
+6382	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		537
+6383	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		537
+6384	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		537
+6385	1	0.00	3800.00	0.00	0.00	0.00	f	\N		538
+6386	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		538
+6387	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		538
+6388	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		538
+6389	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		538
+6390	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		538
+6391	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		538
+6392	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		538
+6393	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		538
+6394	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		538
+6395	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		538
+6396	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		538
+6397	1	0.00	3800.00	0.00	0.00	0.00	f	\N		539
+6398	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		539
+6399	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		539
+6400	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		539
+6401	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		539
+6402	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		539
+6403	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		539
+6404	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		539
+6405	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		539
+6406	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		539
+6407	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		539
+6408	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		539
+6661	1	0.00	4800.00	0.00	0.00	0.00	f	\N		561
+6662	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		561
+6663	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		561
+6664	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		561
+6409	1	0.00	3800.00	0.00	0.00	0.00	f	\N		540
+6665	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		561
+6666	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		561
+6667	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		561
+6668	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		561
+6669	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		561
+6670	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		561
+6671	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		561
+6672	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		561
+6673	1	0.00	4800.00	0.00	0.00	0.00	f	\N		562
+6674	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		562
+6675	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		562
+6676	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		562
+6677	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		562
+6678	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		562
+6679	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		562
+6680	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		562
+6681	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		562
+6682	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		562
+6683	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		562
+6684	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		562
+6410	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		540
+6411	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		540
+6412	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		540
+6413	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		540
+6414	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		540
+6415	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		540
+6416	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		540
+6417	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		540
+6418	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		540
+6419	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		540
+6420	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		540
+6421	1	0.00	3800.00	0.00	0.00	0.00	f	\N		541
+6422	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		541
+6423	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		541
+6424	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		541
+6425	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		541
+6426	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		541
+6427	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		541
+6428	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		541
+6429	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		541
+6430	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		541
+6431	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		541
+6432	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		541
+6433	1	0.00	3800.00	0.00	0.00	0.00	f	\N		542
+6434	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		542
+6435	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		542
+6436	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		542
+6437	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		542
+6438	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		542
+6439	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		542
+6440	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		542
+6441	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		542
+6442	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		542
+6443	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		542
+6444	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		542
+6445	1	0.00	3800.00	0.00	0.00	0.00	f	\N		543
+6446	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		543
+6447	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		543
+6448	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		543
+6449	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		543
+6450	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		543
+6451	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		543
+6452	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		543
+6453	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		543
+6454	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		543
+6455	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		543
+6456	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		543
+6457	1	0.00	3800.00	0.00	0.00	0.00	f	\N		544
+6458	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		544
+6459	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		544
+6460	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		544
+6461	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		544
+6462	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		544
+6463	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		544
+6685	1	0.00	4800.00	0.00	0.00	0.00	f	\N		563
+6686	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		563
+6687	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		563
+6688	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		563
+6689	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		563
+6690	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		563
+6691	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		563
+6692	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		563
+6693	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		563
+6694	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		563
+6695	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		563
+6696	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		563
+6697	1	0.00	4800.00	0.00	0.00	0.00	f	\N		564
+6698	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		564
+6699	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		564
+6700	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		564
+6701	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		564
+6702	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		564
+6703	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		564
+6704	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		564
+6705	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		564
+6706	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		564
+6707	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		564
+6708	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		564
+6464	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		544
+6465	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		544
+6466	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		544
+6467	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		544
+6468	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		544
+6469	1	0.00	3800.00	0.00	0.00	0.00	f	\N		545
+6470	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		545
+6471	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		545
+6472	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		545
+6473	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		545
+6474	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		545
+6475	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		545
+6476	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		545
+6477	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		545
+6478	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		545
+6479	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		545
+6480	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		545
+6481	1	0.00	3800.00	0.00	0.00	0.00	f	\N		546
+6482	2	3800.00	3800.00	0.00	0.00	0.00	f	\N		546
+6483	3	7600.00	3800.00	0.00	0.00	0.00	f	\N		546
+6484	4	11400.00	3800.00	0.00	0.00	0.00	f	\N		546
+6485	5	15200.00	3800.00	0.00	0.00	0.00	f	\N		546
+6486	6	19000.00	3800.00	0.00	0.00	0.00	f	\N		546
+6487	7	22800.00	3800.00	0.00	0.00	0.00	f	\N		546
+6488	8	26600.00	3800.00	0.00	0.00	0.00	f	\N		546
+6489	9	30400.00	3800.00	0.00	0.00	0.00	f	\N		546
+6490	10	34200.00	3800.00	0.00	0.00	0.00	f	\N		546
+6491	11	38000.00	3800.00	0.00	0.00	0.00	f	\N		546
+6492	12	41800.00	3800.00	0.00	0.00	0.00	f	\N		546
+6709	1	0.00	4800.00	0.00	0.00	0.00	f	\N		565
+6710	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		565
+6711	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		565
+6712	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		565
+6713	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		565
+6714	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		565
+6715	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		565
+6716	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		565
+6717	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		565
+6718	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		565
+6719	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		565
+6720	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		565
+6721	1	0.00	4800.00	0.00	0.00	0.00	f	\N		566
+6722	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		566
+6723	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		566
+6724	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		566
+6725	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		566
+6726	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		566
+6727	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		566
+6728	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		566
+6729	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		566
+6730	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		566
+6731	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		566
+6732	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		566
+6733	1	0.00	4800.00	0.00	0.00	0.00	f	\N		567
+6734	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		567
+6735	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		567
+6736	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		567
+6737	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		567
+6738	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		567
+6739	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		567
+6740	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		567
+6741	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		567
+6742	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		567
+6743	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		567
+6746	2	4800.00	4800.00	0.00	0.00	0.00	f	\N		568
+6747	3	9600.00	4800.00	0.00	0.00	0.00	f	\N		568
+6748	4	14400.00	4800.00	0.00	0.00	0.00	f	\N		568
+6749	5	19200.00	4800.00	0.00	0.00	0.00	f	\N		568
+6750	6	24000.00	4800.00	0.00	0.00	0.00	f	\N		568
+6751	7	28800.00	4800.00	0.00	0.00	0.00	f	\N		568
+6752	8	33600.00	4800.00	0.00	0.00	0.00	f	\N		568
+6753	9	38400.00	4800.00	0.00	0.00	0.00	f	\N		568
+6754	10	43200.00	4800.00	0.00	0.00	0.00	f	\N		568
+6755	11	48000.00	4800.00	0.00	0.00	0.00	f	\N		568
+6756	12	52800.00	4800.00	0.00	0.00	0.00	f	\N		568
+6757	1	0.00	4200.00	0.00	0.00	0.00	f	\N		569
+6758	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		569
+6759	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		569
+6760	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		569
+6761	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		569
+6762	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		569
+6763	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		569
+6764	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		569
+6765	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		569
+6766	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		569
+6767	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		569
+6768	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		569
+6769	1	0.00	4200.00	0.00	0.00	0.00	f	\N		570
+6770	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		570
+6771	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		570
+6772	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		570
+6773	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		570
+6774	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		570
+6775	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		570
+6776	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		570
+6777	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		570
+6778	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		570
+6779	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		570
+6780	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		570
+6781	1	0.00	4200.00	0.00	0.00	0.00	f	\N		571
+6782	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		571
+6783	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		571
+6784	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		571
+6785	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		571
+6786	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		571
+6787	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		571
+6788	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		571
+6789	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		571
+6790	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		571
+6791	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		571
+6792	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		571
+6793	1	0.00	4200.00	0.00	0.00	0.00	f	\N		572
+6794	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		572
+6795	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		572
+6796	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		572
+6797	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		572
+6798	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		572
+6799	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		572
+6800	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		572
+6801	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		572
+6802	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		572
+6803	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		572
+6804	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		572
+6805	1	0.00	4200.00	0.00	0.00	0.00	f	\N		573
+6806	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		573
+6807	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		573
+6808	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		573
+6809	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		573
+6810	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		573
+6811	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		573
+6812	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		573
+6813	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		573
+6814	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		573
+6815	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		573
+6816	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		573
+6817	1	0.00	4200.00	0.00	0.00	0.00	f	\N		574
+6818	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		574
+6819	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		574
+6820	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		574
+6821	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		574
+6822	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		574
+6823	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		574
+6824	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		574
+6825	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		574
+6826	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		574
+6827	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		574
+6828	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		574
+6829	1	0.00	4200.00	0.00	0.00	0.00	f	\N		575
+6830	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		575
+6831	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		575
+6832	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		575
+6833	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		575
+6834	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		575
+6835	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		575
+6836	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		575
+6837	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		575
+6838	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		575
+6839	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		575
+6840	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		575
+6841	1	0.00	4200.00	0.00	0.00	0.00	f	\N		576
+6842	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		576
+6843	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		576
+6844	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		576
+6845	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		576
+6846	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		576
+6847	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		576
+6848	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		576
+6849	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		576
+6850	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		576
+6851	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		576
+6852	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		576
+6853	1	0.00	4200.00	0.00	0.00	0.00	f	\N		577
+6854	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		577
+6855	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		577
+6856	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		577
+6857	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		577
+6858	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		577
+6859	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		577
+6860	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		577
+6861	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		577
+6862	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		577
+6863	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		577
+6864	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		577
+6865	1	0.00	4200.00	0.00	0.00	0.00	f	\N		578
+6866	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		578
+6867	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		578
+6868	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		578
+6869	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		578
+6870	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		578
+6871	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		578
+6872	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		578
+6873	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		578
+6874	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		578
+6875	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		578
+6876	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		578
+6877	1	0.00	4200.00	0.00	0.00	0.00	f	\N		579
+6878	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		579
+6879	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		579
+6880	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		579
+6881	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		579
+6882	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		579
+6883	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		579
+6884	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		579
+6885	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		579
+6886	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		579
+6887	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		579
+6888	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		579
+6889	1	0.00	4200.00	0.00	0.00	0.00	f	\N		580
+6890	2	4200.00	4200.00	0.00	0.00	0.00	f	\N		580
+6891	3	8400.00	4200.00	0.00	0.00	0.00	f	\N		580
+6892	4	12600.00	4200.00	0.00	0.00	0.00	f	\N		580
+6893	5	16800.00	4200.00	0.00	0.00	0.00	f	\N		580
+6894	6	21000.00	4200.00	0.00	0.00	0.00	f	\N		580
+6895	7	25200.00	4200.00	0.00	0.00	0.00	f	\N		580
+6896	8	29400.00	4200.00	0.00	0.00	0.00	f	\N		580
+6897	9	33600.00	4200.00	0.00	0.00	0.00	f	\N		580
+6898	10	37800.00	4200.00	0.00	0.00	0.00	f	\N		580
+6899	11	42000.00	4200.00	0.00	0.00	0.00	f	\N		580
+6900	12	46200.00	4200.00	0.00	0.00	0.00	f	\N		580
+6949	1	0.00	3200.00	0.00	0.00	0.00	f	\N		585
+6950	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		585
+6951	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		585
+6952	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		585
+6953	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		585
+6954	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		585
+6955	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		585
+6956	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		585
+6957	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		585
+6958	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		585
+6959	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		585
+6960	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		585
+6961	1	0.00	3200.00	0.00	0.00	0.00	f	\N		586
+6962	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		586
+6963	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		586
+6964	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		586
+6965	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		586
+6966	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		586
+6967	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		586
+6968	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		586
+6969	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		586
+6970	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		586
+6971	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		586
+6972	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		586
+6973	1	0.00	3200.00	0.00	0.00	0.00	f	\N		587
+6974	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		587
+6975	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		587
+6976	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		587
+6977	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		587
+6978	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		587
+6979	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		587
+6980	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		587
+6981	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		587
+6982	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		587
+6983	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		587
+6984	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		587
+6937	1	0.00	3200.00	0.00	0.00	0.00	f	\N		584
+6938	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		584
+6939	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		584
+6940	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		584
+6941	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		584
+6942	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		584
+6943	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		584
+6944	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		584
+6945	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		584
+6946	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		584
+6947	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		584
+6948	12	35200.00	3200.00	0.00	0.00	8000.00	f	2026-09-19	REC-1059	584
+6985	1	0.00	3200.00	0.00	0.00	0.00	f	\N		588
+6986	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		588
+6987	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		588
+6988	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		588
+6989	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		588
+6990	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		588
+6991	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		588
+6992	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		588
+6993	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		588
+6994	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		588
+6995	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		588
+6996	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		588
+6997	1	0.00	3200.00	0.00	0.00	0.00	f	\N		589
+6998	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		589
+6999	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		589
+7000	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		589
+7001	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		589
+7002	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		589
+7003	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		589
+7004	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		589
+7005	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		589
+7006	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		589
+7007	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		589
+7008	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		589
+7009	1	0.00	3200.00	0.00	0.00	0.00	f	\N		590
+7010	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		590
+7011	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		590
+7012	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		590
+7013	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		590
+7014	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		590
+7015	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		590
+7016	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		590
+7017	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		590
+7018	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		590
+7019	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		590
+7020	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		590
+7021	1	0.00	3200.00	0.00	0.00	0.00	f	\N		591
+7022	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		591
+7023	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		591
+7024	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		591
+7025	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		591
+7026	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		591
+7027	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		591
+7028	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		591
+7029	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		591
+7030	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		591
+7031	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		591
+7032	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		591
+7033	1	0.00	3200.00	0.00	0.00	0.00	f	\N		592
+7034	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		592
+7035	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		592
+7036	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		592
+7037	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		592
+7038	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		592
+7039	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		592
+7040	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		592
+7041	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		592
+7042	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		592
+7043	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		592
+7044	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		592
+7045	1	0.00	3200.00	0.00	0.00	0.00	f	\N		593
+7046	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		593
+7047	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		593
+7048	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		593
+7049	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		593
+7050	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		593
+7051	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		593
+7052	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		593
+7053	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		593
+7054	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		593
+7055	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		593
+7056	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		593
+7057	1	0.00	3200.00	0.00	0.00	0.00	f	\N		594
+7058	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		594
+7059	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		594
+7060	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		594
+7061	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		594
+7062	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		594
+7063	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		594
+7064	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		594
+7065	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		594
+7066	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		594
+7067	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		594
+7068	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		594
+7069	1	0.00	3200.00	0.00	0.00	0.00	f	\N		595
+7070	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		595
+7071	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		595
+7072	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		595
+7081	1	0.00	3200.00	0.00	0.00	0.00	f	\N		596
+7082	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		596
+7083	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		596
+7084	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		596
+7085	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		596
+7073	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		595
+7074	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		595
+7075	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		595
+7076	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		595
+7077	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		595
+7078	10	28800.00	0.00	0.00	0.00	0.00	f	\N		595
+7079	11	28800.00	0.00	0.00	0.00	0.00	f	\N		595
+7080	12	28800.00	0.00	0.00	0.00	0.00	f	\N		595
+7086	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		596
+7087	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		596
+7088	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		596
+7089	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		596
+7090	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		596
+7091	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		596
+7092	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		596
+7093	1	0.00	3200.00	0.00	0.00	0.00	f	\N		597
+7094	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		597
+7095	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		597
+7096	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		597
+7097	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		597
+7098	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		597
+7099	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		597
+7100	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		597
+7101	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		597
+7102	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		597
+7103	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		597
+7104	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		597
+7105	1	0.00	3200.00	0.00	0.00	0.00	f	\N		598
+7106	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		598
+7107	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		598
+7108	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		598
+7109	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		598
+7110	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		598
+7111	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		598
+7112	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		598
+7113	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		598
+7114	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		598
+7115	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		598
+7116	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		598
+7117	1	0.00	3200.00	0.00	0.00	0.00	f	\N		599
+7118	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		599
+7119	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		599
+7120	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		599
+7121	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		599
+7122	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		599
+7123	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		599
+7124	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		599
+7125	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		599
+7126	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		599
+7127	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		599
+7128	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		599
+7129	1	0.00	3200.00	0.00	0.00	0.00	f	\N		600
+7130	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		600
+7131	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		600
+7132	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		600
+7133	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		600
+7134	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		600
+7135	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		600
+7136	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		600
+7137	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		600
+7138	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		600
+7139	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		600
+7140	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		600
+7141	1	0.00	3200.00	0.00	0.00	0.00	f	\N		601
+7142	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		601
+7143	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		601
+7144	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		601
+7145	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		601
+7146	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		601
+7147	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		601
+7148	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		601
+7149	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		601
+7150	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		601
+7151	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		601
+7152	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		601
+7153	1	0.00	3200.00	0.00	0.00	0.00	f	\N		602
+7154	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		602
+7155	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		602
+7156	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		602
+7157	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		602
+7158	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		602
+7159	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		602
+7160	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		602
+7161	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		602
+7162	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		602
+7163	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		602
+7164	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		602
+7165	1	0.00	3200.00	0.00	0.00	0.00	f	\N		603
+7166	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		603
+7167	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		603
+7168	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		603
+7169	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		603
+7170	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		603
+7171	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		603
+7172	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		603
+7173	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		603
+7174	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		603
+7175	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		603
+7176	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		603
+7177	1	0.00	3200.00	0.00	0.00	0.00	f	\N		604
+7178	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		604
+7179	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		604
+7180	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		604
+7181	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		604
+7182	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		604
+7183	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		604
+7184	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		604
+7185	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		604
+7186	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		604
+7187	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		604
+7188	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		604
+7189	1	0.00	3200.00	0.00	0.00	0.00	f	\N		605
+7190	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		605
+7191	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		605
+7192	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		605
+7193	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		605
+7194	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		605
+7195	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		605
+7196	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		605
+7197	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		605
+7198	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		605
+7199	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		605
+7200	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		605
+7201	1	0.00	3200.00	0.00	0.00	0.00	f	\N		606
+7202	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		606
+7203	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		606
+7204	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		606
+7205	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		606
+7206	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		606
+7207	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		606
+7208	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		606
+7209	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		606
+7210	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		606
+7211	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		606
+7212	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		606
+7213	1	0.00	3200.00	0.00	0.00	0.00	f	\N		607
+7214	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		607
+7215	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		607
+7216	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		607
+7217	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		607
+7218	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		607
+7219	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		607
+7220	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		607
+7221	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		607
+7222	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		607
+7223	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		607
+7224	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		607
+7225	1	0.00	3200.00	0.00	0.00	0.00	f	\N		608
+7226	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		608
+7227	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		608
+7228	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		608
+7229	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		608
+7230	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		608
+7231	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		608
+7232	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		608
+7233	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		608
+7234	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		608
+7235	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		608
+7236	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		608
+7237	1	0.00	3200.00	0.00	0.00	0.00	f	\N		609
+7238	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		609
+7239	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		609
+7240	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		609
+7241	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		609
+7242	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		609
+7243	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		609
+7244	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		609
+7245	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		609
+7246	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		609
+7247	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		609
+7248	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		609
+7249	1	0.00	3200.00	0.00	0.00	0.00	f	\N		610
+7250	2	3200.00	3200.00	0.00	0.00	0.00	f	\N		610
+7251	3	6400.00	3200.00	0.00	0.00	0.00	f	\N		610
+7252	4	9600.00	3200.00	0.00	0.00	0.00	f	\N		610
+7253	5	12800.00	3200.00	0.00	0.00	0.00	f	\N		610
+7254	6	16000.00	3200.00	0.00	0.00	0.00	f	\N		610
+7255	7	19200.00	3200.00	0.00	0.00	0.00	f	\N		610
+7256	8	22400.00	3200.00	0.00	0.00	0.00	f	\N		610
+7257	9	25600.00	3200.00	0.00	0.00	0.00	f	\N		610
+7258	10	28800.00	3200.00	0.00	0.00	0.00	f	\N		610
+7259	11	32000.00	3200.00	0.00	0.00	0.00	f	\N		610
+7260	12	35200.00	3200.00	0.00	0.00	0.00	f	\N		610
 \.
 
 
@@ -3002,7 +4645,7 @@ COPY public.school_classlevel (id, name, level, monthly_fee) FROM stdin;
 --
 
 COPY public.school_schoolsetting (id, name, address, logo, contact, academic_session_format, receipt_no_prefix, last_receipt_no) FROM stdin;
-1	Kohisar Model School & College	Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa	school_logos/logo.png	+92 344 9631323 / +92 345 3407095	2025-2026	REC-	1058
+1	Kohisar Model School & College	Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa	school_logos/logo.png	+92 344 9631323 / +92 345 3407095	2025-2026	REC-	1061
 \.
 
 
@@ -3011,8 +4654,6 @@ COPY public.school_schoolsetting (id, name, address, logo, contact, academic_ses
 --
 
 COPY public.school_section (id, name, class_teacher, class_level_id) FROM stdin;
-28	B	Teacher of 2nd Year Pre-Medical-B	14
-29	A	Teacher of 1st Year Pre-Engineering-A	15
 30	B	Teacher of 1st Year Pre-Engineering-B	15
 31	A	Teacher of 2nd Year Pre-Engineering-A	16
 32	B	Teacher of 2nd Year Pre-Engineering-B	16
@@ -3047,6 +4688,8 @@ COPY public.school_section (id, name, class_teacher, class_level_id) FROM stdin;
 25	A	Teacher of 1st Year Pre-Medical-A	13
 26	B	Teacher of 1st Year Pre-Medical-B	13
 27	A	Teacher of 2nd Year Pre-Medical-A	14
+28	B	Teacher of 2nd Year Pre-Medical-B	14
+29	A	Teacher of 1st Year Pre-Engineering-A	15
 \.
 
 
@@ -3055,7 +4698,6 @@ COPY public.school_section (id, name, class_teacher, class_level_id) FROM stdin;
 --
 
 COPY public.students_familyhousehold (id, family_id, father_guardian_name, contact_number, address) FROM stdin;
-48	FAM-0048	Kashan Zada	03001505236	Barikot Central, Swat KPK
 1	FAM-0001	Moiz Ahmad	03125044035	Ghalegay Near Rock Carving, Swat
 2	FAM-0002	Salman Hussain	03314274603	Kabal Main Road, Swat
 3	FAM-0003	Bilal Swati	03127943151	Main Bazaar Qalagay, Swat
@@ -3080,6 +4722,7 @@ COPY public.students_familyhousehold (id, family_id, father_guardian_name, conta
 22	FAM-0022	Moiz Khan	03476098559	Barikot Central, Swat KPK
 23	FAM-0023	Kashan Ali	03335853034	Khwazakhela Bazaar, Swat
 24	FAM-0024	Haris Rehman	03336741092	Matta Road, Swat KPK
+25	FAM-0025	Tariq Hussain	03127794449	Main Bazaar Qalagay, Swat
 26	FAM-0026	Zubair Khan	0345-1234567	Mingora Swat
 27	FAM-0027	Faizan Hussain	03452374466	Matta Road, Swat KPK
 28	FAM-0028	Moiz Ali	03007154376	Khwazakhela Bazaar, Swat
@@ -3102,7 +4745,7 @@ COPY public.students_familyhousehold (id, family_id, father_guardian_name, conta
 45	FAM-0045	Sami Shah	03335251884	Barikot Central, Swat KPK
 46	FAM-0046	Taimur Ali	03331535098	Barikot Central, Swat KPK
 47	FAM-0047	Zain Bibi	03312543849	Qalagay, Tehsil Barikot, District Swat
-25	FAM-0025	Tariq Hussain	03127794449	Main Bazaar Qalagay, Swat
+48	FAM-0048	Kashan Zada	03001505236	Barikot Central, Swat KPK
 \.
 
 
@@ -3111,10 +4754,6 @@ COPY public.students_familyhousehold (id, family_id, father_guardian_name, conta
 --
 
 COPY public.students_promotionhistory (id, session, promotion_date, from_class_id, from_section_id, to_class_id, to_section_id, student_id) FROM stdin;
-1	2026-2027	2026-09-05	3	5	6	12	3
-2	2026-2027	2026-09-05	3	5	6	12	21
-3	2026-2027	2026-09-05	3	5	6	12	39
-4	2026-2027	2026-09-05	3	5	6	12	57
 \.
 
 
@@ -3123,86 +4762,192 @@ COPY public.students_promotionhistory (id, session, promotion_date, from_class_i
 --
 
 COPY public.students_student (id, admission_no, admission_date, full_name, father_name, dob, gender, tribe_caste, father_occupation, residence, contact_number, profile_picture, status, inactive_date, remarks, withdrawal_date, class_at_withdrawal, arrears_at_withdrawal, current_class_id, current_section_id, family_id) FROM stdin;
-152	SSA26005	2026-09-09	Kamal Zada	Zaman Zada	2020-02-11	Male	Yousafzai	Business / Govt Service	Qalagay	03477251244	students/Gemini_Generated_Image_1ucpwj1ucpwj1ucp.jfif	Active	\N	need flexable	\N		0.00	1	3	\N
-160	1076	2026-09-09	Hussain	Ali Jan	2026-09-09	Male						Active	\N		\N		0.00	15	1	\N
-2	1002	2025-04-02	Mustafa Jan	Salman Hussain	2020-06-23	Male	Yousafzai	Business / Govt Service	Kabal Main Road, Swat	03472685102		Active	\N		\N		0.00	2	3	2
-4	1004	2025-06-26	Sana Khan	Zeeshan Khan	2018-09-17	Female	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03123975407		Active	\N		\N		0.00	4	7	4
-5	1005	2024-01-08	Moiz Zada	Danish Hussain	2017-07-13	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03471634287		Active	\N		\N		0.00	5	9	5
-6	1006	2024-09-08	Talha Yousafzai	Shahzad Zada	2016-07-26	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03121739719		Active	\N		\N		0.00	6	11	6
-7	1007	2023-10-23	Bakht Yousafzai	Waleed Rehman	2015-01-04	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03312410160		Active	\N		\N		0.00	7	13	7
-9	1009	2024-11-20	Junaid Shah	Sameer Gul	2013-06-12	Male	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03009741121		Active	\N		\N		0.00	9	17	9
-10	1010	2022-08-04	Shaukat Rehman	Bilal Yousafzai	2012-03-06	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03454268890		Active	\N		\N		0.00	10	19	10
-11	1011	2025-10-25	Shoaib Shah	Hassan Gul	2011-11-22	Male	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03318127731		Active	\N		\N		0.00	11	21	11
-12	1012	2024-09-07	Ayesha Khan	Sameer Jan	2010-01-23	Female	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03007871656		Active	\N		\N		0.00	12	23	12
-13	1013	2023-02-19	Salman Gul	Mustafa Zada	2009-06-05	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03477968362		Active	\N		\N		0.00	13	25	13
-3	1003	2024-03-10	Hamza Ahmad	Bilal Swati	2019-04-14	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03129686589		Active	\N		\N		0.00	6	12	3
-14	1014	2022-12-02	Sameer Hussain	Salman Ali	2022-05-20	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03128364582		Active	\N		\N		0.00	14	27	14
-15	1015	2025-08-27	Farhan Ali	Ibrahim Hussain	2021-11-12	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03455412181		Active	\N		\N		0.00	15	29	15
-16	1016	2025-03-19	Zainab Khan	Hazrat Hussain	2020-06-22	Female	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03332833453		Active	\N		\N		0.00	16	31	16
-17	1017	2025-07-02	Bilal Bibi	Abdullah Shah	2019-08-23	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03451595833		Active	\N		\N		0.00	17	33	17
-18	1018	2023-12-21	Rizwan Yousafzai	Junaid Khan	2018-11-18	Male	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03477225778		Active	\N		\N		0.00	18	35	18
-53	1053	2022-11-16	Aman Ali	Zubair Hussain	2011-07-02	Male	Yousafzai	Business / Govt Service	Kabal Main Road, Swat	03451716150		Active	\N		\N		0.00	17	33	\N
-161	1077	2026-09-09	Umar Zada	Zafar Zada	2026-09-09	Male						Active	\N		\N		0.00	1	1	\N
-8	1008	2023-04-02	Fatima Bibi	Noman Ahmad	2014-02-09	Female	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03337750494	students/boy__image_6.jpg	Active	\N		\N		0.00	8	15	8
-1	1001	2022-08-27	Zubair Gul	Moiz Ahmad	2021-11-01	Male	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03002512326		Active	\N		\N		0.00	1	1	1
-162	1078	2026-09-09	New Student Test	Mr Guardian	2015-01-01	Male						Active	\N		\N		0.00	15	29	\N
-163	1099	2026-09-11	Kamal Ali	Zaf	2002-09-11	Male	Y	job less	qalagay	4535345345		Active	\N	from ppmsq	\N		0.00	11	22	\N
-19	1019	2023-08-23	Abdullah Rehman	Sardar Jan	2017-07-14	Male	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03007454119		Active	\N		\N		0.00	1	1	19
-20	1020	2025-11-09	Hira Bibi	Zubair Yousafzai	2016-02-25	Female	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03337270825		Active	\N		\N		0.00	2	3	20
-22	1022	2024-12-08	Farhan Ahmad	Moiz Khan	2014-09-26	Male	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03335512732		Active	\N		\N		0.00	4	7	22
-23	1023	2024-01-19	Abdullah Ali	Kashan Ali	2013-12-19	Male	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03004020484		Active	\N		\N		0.00	5	9	23
-24	1024	2025-07-24	Mahnoor Khan	Haris Rehman	2012-12-07	Female	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03313892607		Active	\N		\N		0.00	6	11	24
-25	1025	2024-12-12	Shoaib Swati	Tariq Hussain	2011-10-27	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03003033612		Active	\N		\N		0.00	7	13	25
-26	1026	2023-12-22	Danish Ali	Moiz Ahmad	2010-07-01	Male	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03333845733		Active	\N		\N		0.00	8	15	1
-27	1027	2022-09-17	Danish Hussain	Salman Hussain	2009-09-09	Male	Yousafzai	Business / Govt Service	Kabal Main Road, Swat	03335220484		Active	\N		\N		0.00	9	17	2
-28	1028	2024-08-11	Mehwish Khan	Bilal Swati	2022-07-22	Female	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03459690395		Active	\N		\N		0.00	10	19	3
-29	1029	2024-10-18	Shahzad Bibi	Zeeshan Khan	2021-06-16	Male	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03121750777		Active	\N		\N		0.00	11	21	4
-30	1030	2024-06-14	Aman Jan	Danish Hussain	2020-11-17	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03129811012		Active	\N		\N		0.00	12	23	5
-31	1031	2022-11-22	Talha Bibi	Shahzad Zada	2019-07-25	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03008681550		Active	\N		\N		0.00	13	25	6
-32	1032	2023-06-11	Mehwish Khan	Waleed Rehman	2018-07-07	Female	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03479912190		Active	\N		\N		0.00	14	27	7
-33	1033	2024-04-10	Sami Bibi	Noman Ahmad	2017-12-16	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03311749557		Active	\N		\N		0.00	15	29	8
-34	1034	2022-01-13	Junaid Yousafzai	Sameer Gul	2016-05-11	Male	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03472732546		Active	\N		\N		0.00	16	31	9
-35	1035	2023-03-17	Zubair Hussain	Bilal Yousafzai	2015-03-17	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03331281179		Active	\N		\N		0.00	17	33	10
-36	1036	2023-10-05	Sidra Bibi	Hassan Gul	2014-02-15	Female	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03455813377		Active	\N		\N		0.00	18	35	11
-37	1037	2025-12-06	Zubair Swati	Sameer Jan	2013-09-02	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03126315733		Active	\N		\N		0.00	1	1	12
-38	1038	2024-12-07	Ali Gul	Mustafa Zada	2012-12-18	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03458755200		Active	\N		\N		0.00	2	3	13
-40	1040	2023-07-19	Maryam Khan	Ibrahim Hussain	2010-01-19	Female	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03474523976		Active	\N		\N		0.00	4	7	15
-41	1041	2025-10-09	Mustafa Swati	Hazrat Hussain	2009-11-12	Male	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03336521668		Active	\N		\N		0.00	5	9	16
-42	1042	2025-02-22	Shahzad Rehman	Abdullah Shah	2022-05-08	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03319459473		Active	\N		\N		0.00	6	11	17
-43	1043	2023-02-22	Adil Yousafzai	Junaid Khan	2021-10-13	Male	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03126190072		Active	\N		\N		0.00	7	13	18
-44	1044	2023-12-17	Hafsa Bibi	Sardar Jan	2020-10-08	Female	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03471457751		Active	\N		\N		0.00	8	15	19
-45	1045	2025-11-11	Junaid Ahmad	Zubair Yousafzai	2019-07-25	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03312096943		Active	\N		\N		0.00	9	17	20
-46	1046	2024-10-21	Noman Ahmad	Haris Swati	2018-01-23	Male	Yousafzai	Business / Govt Service	Kabal Main Road, Swat	03339785492		Active	\N		\N		0.00	10	19	21
-47	1047	2023-04-27	Junaid Khan	Moiz Khan	2017-09-14	Male	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03478939971		Active	\N		\N		0.00	11	21	22
-48	1048	2023-10-14	Sana Khan	Kashan Ali	2016-07-17	Female	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03336105253		Active	\N		\N		0.00	12	23	23
-49	1049	2023-03-28	Usman Khan	Haris Rehman	2015-09-11	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03456504151		Active	\N		\N		0.00	13	25	24
-50	1050	2022-08-19	Tariq Ahmad	Tariq Hussain	2014-11-13	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03459246033		Active	\N		\N		0.00	14	27	25
-51	1051	2025-07-03	Saad Ali	Faizan Hussain	2013-12-07	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03452374466		Active	\N		\N		0.00	15	29	\N
-52	1052	2022-10-01	Laiba Khan	Moiz Ali	2012-04-12	Female	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03007154376		Active	\N		\N		0.00	16	31	\N
-54	1054	2023-03-28	Haris Ahmad	Aman Hussain	2010-03-07	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03453356781		Active	\N		\N		0.00	18	35	\N
-55	1055	2024-06-28	Umar Ali	Hazrat Gul	2009-04-26	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03008431022		Active	\N		\N		0.00	1	1	\N
-56	1056	2023-03-02	Maryam Khan	Haris Khan	2022-11-06	Female	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03128286395		Active	\N		\N		0.00	2	3	\N
-58	1058	2025-01-09	Gulzar Rehman	Adil Swati	2020-03-22	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03004831340		Active	\N		\N		0.00	4	7	\N
-59	1059	2023-08-15	Sami Jan	Rizwan Shah	2019-12-06	Male	Yousafzai	Business / Govt Service	Saidu Sharif Near Central Hospital, Swat	03455325233		Active	\N		\N		0.00	5	9	\N
-60	1060	2024-12-27	Aiman Gul	Muhammad Ahmad	2018-08-03	Female	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03312252193		Active	\N		\N		0.00	6	11	\N
-61	1061	2025-07-23	Fazal Khan	Sami Ahmad	2017-02-17	Male	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03123862752		Active	\N		\N		0.00	7	13	\N
-62	1062	2023-08-21	Moiz Khan	Haris Yousafzai	2016-08-21	Male	Yousafzai	Business / Govt Service	Saidu Sharif Near Central Hospital, Swat	03477012725		Active	\N		\N		0.00	8	15	\N
-63	1063	2024-11-24	Shaukat Jan	Haris Yousafzai	2015-11-07	Male	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03335635048		Active	\N		\N		0.00	9	17	\N
-64	1064	2025-07-22	Zainab Bibi	Hazrat Shah	2014-09-13	Female	Yousafzai	Business / Govt Service	Ghalegay Near Rock Carving, Swat	03457911487		Active	\N		\N		0.00	10	19	\N
-65	1065	2024-06-28	Hassan Jan	Waleed Shah	2013-05-05	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03338961647		Active	\N		\N		0.00	11	21	\N
-66	1066	2022-08-20	Rizwan Ali	Hassan Hussain	2012-01-06	Male	Yousafzai	Business / Govt Service	Matta Road, Swat KPK	03459723063		Active	\N		\N		0.00	12	23	\N
-67	1067	2023-04-03	Adil Ali	Zubair Khan	2011-07-20	Male	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03333766857		Active	\N		\N		0.00	13	25	\N
-68	1068	2023-07-20	Zainab Khan	Gulzar Gul	2010-01-21	Female	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03459346045		Active	\N		\N		0.00	14	27	\N
-69	1069	2025-04-15	Ali Hussain	Abdullah Bibi	2009-06-02	Male	Yousafzai	Business / Govt Service	Khwazakhela Bazaar, Swat	03331010017		Active	\N		\N		0.00	15	29	\N
-70	1070	2022-01-04	Hamza Hussain	Junaid Hussain	2022-09-12	Male	Yousafzai	Business / Govt Service	Saidu Sharif Near Central Hospital, Swat	03335159745		Active	\N		\N		0.00	16	31	\N
-71	1071	2022-11-19	Farooq Zada	Sardar Hussain	2021-04-20	Male	Yousafzai	Business / Govt Service	Main Bazaar Qalagay, Swat	03124287387		Active	\N		\N		0.00	17	33	\N
-72	1072	2022-03-25	Maryam Gul	Sami Shah	2020-06-06	Female	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03335251884		Active	\N		\N		0.00	18	35	\N
-73	1073	2024-08-09	Farooq Khan	Taimur Ali	2019-10-15	Male	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03331535098		Active	\N		\N		0.00	1	1	\N
-74	1074	2023-10-21	Talha Zada	Zain Bibi	2018-11-09	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03312543849		Inactive	\N		\N		0.00	2	3	\N
-75	1075	2025-11-28	Hazrat Khan	Kashan Zada	2017-03-05	Male	Yousafzai	Business / Govt Service	Barikot Central, Swat KPK	03001505236		Withdrawn	\N		2026-06-15	Class 1 - A	0.00	3	5	\N
-21	1021	2025-03-24	Danish Yousafzai	Haris Swati	2015-11-17	Male	Yousafzai	Business / Govt Service	Kabal Main Road, Swat	03457711360		Active	\N		\N		0.00	6	12	21
-39	1039	2024-09-14	Usman Zada	Salman Ali	2011-08-02	Male	Yousafzai	Business / Govt Service	Qalagay, Tehsil Barikot, District Swat	03477325447		Active	\N		\N		0.00	6	12	14
-57	1057	2022-12-22	Umar Jan	Mustafa Zada	2021-03-05	Male	Yousafzai	Business / Govt Service	Mingora City, Swat KPK	03008217701	students/boy_image_5.jpg	Active	\N		\N		0.00	6	12	\N
+462	951	2026-09-18	Sarmad Hafeez	Yusuf Mehmood	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+463	953	2026-09-18	Rimsha Qadir	Kamran Durrani	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+464	954	2026-09-18	Warda Rafique	Adnan Soomro	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+465	955	2026-09-18	Hasnain Bhatti	Asim Saleem	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+466	957	2026-09-18	Ali Hassan	Faizan Durrani	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+467	958	2026-09-18	Imran Sheikh	Muhammad Durrani	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+468	959	2026-09-18	Dua Mirza	Muhammad Chishti	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+549	618	2026-09-18	Arham Siddiqui	Owais Rasheed	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+551	624	2026-09-18	Aizaz Gill	Muhammad Rafique	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+552	630	2026-09-18	Rania Kamran	Zohaib Shah	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+553	632	2026-09-18	Taimoor Khokhar	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+554	637	2026-09-18	Mahek Mehmood	Muhammad Yousuf	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+555	644	2026-09-18	Owais Anwar	Ibrahim Memon	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+556	645	2026-09-18	Nayab Javed	Muhammad Tariq	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+579	837	2026-09-18	Asad Mehmood	Haris Rafique	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+550	621	2026-09-18	Bushra Ansari	Ehtisham Iqbal	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+559	914	2026-09-18	Taimoor Khokhar	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+560	916	2026-09-18	Sadia Yousuf	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+561	920	2026-09-18	Asad Mehmood	Muhammad Hussain	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+562	922	2026-09-18	Mehak Aslam	Muhammad Riaz	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+563	929	2026-09-18	Ehtisham Zafar	Haris Baig	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+564	931	2026-09-18	Rizwan Chishti	Nabeel Ansari	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+565	937	2026-09-18	Asad Mehmood	Haris Rafique	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+566	939	2026-09-18	Amal Abbas	Rayyan Bhatti	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+567	940	2026-09-18	Sameer Chaudhry	Ahsan Iqbal	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+568	941	2026-09-18	Areeba Sheikh	Waleed Zaman	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+569	945	2026-09-18	Haris Nawaz	Aizaz Nadeem	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+570	950	2026-09-18	Adnan Soomro	Muhammad Khokhar	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+571	952	2026-09-18	Sufyan Latif	Junaid Nawaz	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+572	956	2026-09-18	Sameer Chaudhry	Muhammad Butt	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+580	839	2026-09-18	Amal Abbas	Rayyan Bhatti	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+581	840	2026-09-18	Sameer Chaudhry	Ahsan Iqbal	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+582	841	2026-09-18	Areeba Sheikh	Waleed Zaman	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+583	845	2026-09-18	Haris Nawaz	Aizaz Nadeem	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+584	850	2026-09-18	Adnan Soomro	Muhammad Khokhar	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+599	412	2026-09-19	JUNAID KHAN	HABIB UR RAHMAN	2015-01-01	Male						Withdrawn	\N		2026-09-19	Class 4 - A	144000.00	6	11	\N
+589	402	2026-09-19	MAAZ KHAN	GUL MUHD	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+590	403	2026-09-19	SALMAN KHAN	SHAH NAWAZ KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+591	404	2026-09-19	MUHD ANAS KHAN	BAKHT MUNEER	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+592	405	2026-09-19	MUHD BILAL	GGGGGGG	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+593	406	2026-09-19	MUHD AYAN	ABDUR RAHMAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+594	407	2026-09-19	MUHD AWAIS KHAN	MUHD AKBAR	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+595	408	2026-09-19	UBAID ULLAH	MANDAMIN KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+596	409	2026-09-19	HASSAN KHAN	MAHYEEN KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+597	410	2026-09-19	ABDULLAH	AFZAL KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+598	411	2026-09-19	REHAN KHAN	ADIL AWAIS	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+600	413	2026-09-19	AMIR RAWAN	SYED BACHA	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+601	414	2026-09-19	ANIA BIBI	LAHORE KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+602	415	2026-09-19	FATMA BIBI	MUHD SYED	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+603	416	2026-09-19	AYSHA BIBI	LAHORE KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+604	417	2026-09-19	MALKIA BIBI	MUHD ISHAQ	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+605	418	2026-09-19	REMA BIBI	SARDAR MUHD	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+606	419	2026-09-19	USRA BIBI	HABIB ULLAH	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+607	420	2026-09-19	WARESHA BIBI	LAHORE KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+608	421	2026-09-19	ANELA BIBI	RAHMAN HUSSAIN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+609	422	2026-09-19	MUNEEBA BIBI	KHAN NAWAB	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+610	423	2026-09-19	UZMA BIBI	MALAK AMAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+611	424	2026-09-19	AIMAN BIBI	FARID KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+612	425	2026-09-19	SONINA	EZAT KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+588	401	2026-09-19	MANSOOR KHAN	UMAR SYED KHAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+469	801	2026-09-18	Noman Sultan	Muhammad Yousuf	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+470	802	2026-09-18	Sadia Yousuf	Muhammad Farooqi	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+471	803	2026-09-18	Saad Iqbal	Muhammad Javed	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+472	804	2026-09-18	Shanzay Baig	Sarmad Farooqi	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+473	805	2026-09-18	Sufyan Latif	Muhammad Malik	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+474	806	2026-09-18	Asad Mehmood	Muhammad Bhatti	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+475	807	2026-09-18	Rabia Chaudhry	Muhammad Mirza	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+476	808	2026-09-18	Taimoor Khokhar	Muhammad Sarwar	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+477	809	2026-09-18	Ehtisham Zafar	Kashif Hussain	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+478	810	2026-09-18	Danish Raza	Muhammad Farooq	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+479	811	2026-09-18	Hira Khan	Muhammad Aslam	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+480	812	2026-09-18	Shahzaib Hussain	Zain Iqbal	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+481	813	2026-09-18	Moiz Arshad	Yusuf Javed	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+482	815	2026-09-18	Rizwan Chishti	Muhammad Mehmood	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+483	817	2026-09-18	Mehak Aslam	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+484	818	2026-09-18	Sameer Chaudhry	Muhammad Raza	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+485	819	2026-09-18	Adnan Soomro	Asad Arshad	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+486	821	2026-09-18	Amal Abbas	Ehtisham Waheed	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+487	823	2026-09-18	Mahek Mehmood	Muhammad Gill	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+488	824	2026-09-18	Muhammad Ahmed	Faizan Javed	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+489	825	2026-09-18	Furqan Memon	Muhammad Gill	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+490	826	2026-09-18	Areeba Sheikh	Yusuf Javed	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+491	827	2026-09-18	Nadia Hafeez	Danyal Khokhar	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+492	828	2026-09-18	Saba Siddiq	Salman Siddiqui	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+493	830	2026-09-18	Umaima Aziz	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+494	832	2026-09-18	Alishba Latif	Muhammad Aslam	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+495	833	2026-09-18	Nabeel Hashmi	Muhammad Nawaz	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+496	834	2026-09-18	Bilal Khan	Ammar Hussain	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+497	835	2026-09-18	Haris Nawaz	Muhammad Iqbal	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+498	836	2026-09-18	Fahad Malik	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+499	838	2026-09-18	Awais Nadeem	Muhammad Riaz	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+500	842	2026-09-18	Aizaz Gill	Muhammad Mehmood	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+501	843	2026-09-18	Adeel Rasheed	Umer Nadeem	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+502	844	2026-09-18	Ushna Gill	Adnan Siddiq	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+503	846	2026-09-18	Palwasha Raza	Sufyan Qadir	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+504	847	2026-09-18	Insha Rasheed	Muhammad Khan	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+505	848	2026-09-18	Sabahat Zaman	Muhammad Akram	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+506	849	2026-09-18	Zainab Hassan	Junaid Mirza	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+507	601	2026-09-18	Umaima Aziz	Saad Anwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+508	602	2026-09-18	Tayyab Riaz	Abdullah Zafar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+509	603	2026-09-18	Taimoor Khokhar	Muhammad Farooq	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+510	604	2026-09-18	Bilal Khan	Tayyab Sarwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+511	605	2026-09-18	Tehreem Sultan	Rizwan Tariq	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+512	606	2026-09-18	Arham Siddiqui	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+513	607	2026-09-18	Warda Rafique	Taimoor Bhatti	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+514	608	2026-09-18	Mahek Mehmood	Ibrahim Kareem	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+515	609	2026-09-18	Ibrahim Saleem	Muhammad Hafeez	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+516	610	2026-09-18	Maryam Baig	Muhammad Hafeez	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+517	611	2026-09-18	Muhammad Ahmed	Mustafa Zaman	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+518	612	2026-09-18	Furqan Memon	Muhammad Malik	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+519	613	2026-09-18	Moiz Arshad	Muhammad Memon	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+520	614	2026-09-18	Rania Kamran	Muhammad Chaudhry	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+521	615	2026-09-18	Mishal Qureshi	Muhammad Memon	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+522	616	2026-09-18	Bushra Ansari	Muhammad Sultan	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+523	617	2026-09-18	Aizaz Gill	Furqan Shah	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+524	619	2026-09-18	Hussain Javed	Muhammad Sultan	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+525	620	2026-09-18	Danyal Aslam	Usman Nadeem	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+526	622	2026-09-18	Anaya Arshad	Muhammad Saleem	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+527	623	2026-09-18	Owais Anwar	Muhammad Saleem	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+528	625	2026-09-18	Saad Iqbal	Muhammad Soomro	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+529	626	2026-09-18	Waqas Ahmed	Arham Bhatti	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+424	901	2026-09-18	Noman Sultan	Muhammad Yousuf	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+425	902	2026-09-18	Sadia Yousuf	Muhammad Farooqi	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+426	903	2026-09-18	Saad Iqbal	Muhammad Javed	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+427	904	2026-09-18	Shanzay Baig	Sarmad Farooqi	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+428	905	2026-09-18	Sufyan Latif	Muhammad Malik	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+429	906	2026-09-18	Asad Mehmood	Muhammad Bhatti	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+430	907	2026-09-18	Rabia Chaudhry	Muhammad Mirza	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+431	908	2026-09-18	Taimoor Khokhar	Muhammad Sarwar	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+432	909	2026-09-18	Ehtisham Zafar	Kashif Hussain	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+433	910	2026-09-18	Danish Raza	Muhammad Farooq	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+434	911	2026-09-18	Hira Khan	Muhammad Aslam	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+435	912	2026-09-18	Shahzaib Hussain	Zain Iqbal	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+436	913	2026-09-18	Moiz Arshad	Yusuf Javed	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+437	915	2026-09-18	Rizwan Chishti	Muhammad Mehmood	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+438	917	2026-09-18	Mehak Aslam	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+439	918	2026-09-18	Sameer Chaudhry	Muhammad Raza	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+440	919	2026-09-18	Adnan Soomro	Asad Arshad	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+441	921	2026-09-18	Amal Abbas	Ehtisham Waheed	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+442	923	2026-09-18	Mahek Mehmood	Muhammad Gill	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+443	924	2026-09-18	Muhammad Ahmed	Faizan Javed	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+444	925	2026-09-18	Furqan Memon	Muhammad Gill	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+445	926	2026-09-18	Areeba Sheikh	Yusuf Javed	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+446	927	2026-09-18	Nadia Hafeez	Danyal Khokhar	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+447	928	2026-09-18	Saba Siddiq	Salman Siddiqui	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+448	930	2026-09-18	Umaima Aziz	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+449	932	2026-09-18	Alishba Latif	Muhammad Aslam	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+450	933	2026-09-18	Nabeel Hashmi	Muhammad Nawaz	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+451	934	2026-09-18	Bilal Khan	Ammar Hussain	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+452	935	2026-09-18	Haris Nawaz	Muhammad Iqbal	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+453	936	2026-09-18	Fahad Malik	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+454	938	2026-09-18	Awais Nadeem	Muhammad Riaz	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+455	942	2026-09-18	Aizaz Gill	Muhammad Mehmood	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+456	943	2026-09-18	Adeel Rasheed	Umer Nadeem	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+457	944	2026-09-18	Ushna Gill	Adnan Siddiq	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+458	946	2026-09-18	Palwasha Raza	Sufyan Qadir	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+459	947	2026-09-18	Insha Rasheed	Muhammad Khan	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+460	948	2026-09-18	Sabahat Zaman	Muhammad Akram	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+461	949	2026-09-18	Zainab Hassan	Junaid Mirza	2015-01-01	Male						Active	\N		\N		0.00	11	21	\N
+530	627	2026-09-18	Yusuf Qureshi	Ibrahim Shah	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+531	628	2026-09-18	Ushna Gill	Muhammad Zafar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+532	629	2026-09-18	Nayab Javed	Muhammad Siddiqui	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+533	631	2026-09-18	Sufyan Latif	Muhammad Nadeem	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+534	633	2026-09-18	Haris Nawaz	Umer Sultan	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+535	634	2026-09-18	Ali Hassan	Ibrahim Shah	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+536	635	2026-09-18	Rida Akram	Muhammad Latif	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+537	636	2026-09-18	Zaid Mirza	Muhammad Aslam	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+538	638	2026-09-18	Sameen Shah	Moiz Baig	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+539	639	2026-09-18	Javeria Sarwar	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+540	640	2026-09-18	Sabahat Zaman	Muhammad Chaudhry	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+541	641	2026-09-18	Aqsa Anwar	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+542	642	2026-09-18	Talha Aziz	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+543	643	2026-09-18	Ayesha Siddiqui	Muhammad Zaman	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+544	646	2026-09-18	Mehak Aslam	Muhammad Sheikh	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+545	647	2026-09-18	Nabeel Hashmi	Fahad Mirza	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+546	648	2026-09-18	Komal Farooq	Moiz Sultan	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+547	649	2026-09-18	Hasnain Bhatti	Muhammad Soomro	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+548	650	2026-09-18	Abdullah Sattar	Noman Ahmed	2015-01-01	Male						Active	\N		\N		0.00	8	15	\N
+573	814	2026-09-18	Taimoor Khokhar	Muhammad Ansari	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+574	816	2026-09-18	Sadia Yousuf	Muhammad Anwar	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+575	820	2026-09-18	Asad Mehmood	Muhammad Hussain	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+576	822	2026-09-18	Mehak Aslam	Muhammad Riaz	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+577	829	2026-09-18	Ehtisham Zafar	Haris Baig	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+578	831	2026-09-18	Rizwan Chishti	Nabeel Ansari	2015-01-01	Male						Active	\N		\N		0.00	10	19	\N
+613	426	2026-09-19	QAREEB ULLAH	NASIB RAWAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
+614	427	2026-09-19	SANA ULLAH	MUHD RAWAN	2015-01-01	Male						Active	\N		\N		0.00	6	11	\N
 \.
 
 
@@ -3211,96 +4956,6 @@ COPY public.students_student (id, admission_no, admission_date, full_name, fathe
 --
 
 COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present, allowances, deductions, is_paid, payment_date, voucher_no, teacher_id, paid_amount) FROM stdin;
-243	9	2026	68000.00	30	22000.00	0.00	f	\N		3	0.00
-244	9	2026	68000.00	30	22000.00	0.00	f	\N		4	0.00
-245	9	2026	68000.00	30	22000.00	0.00	f	\N		5	0.00
-246	9	2026	68000.00	30	22000.00	0.00	f	\N		6	0.00
-247	9	2026	52000.00	30	17000.00	0.00	f	\N		7	0.00
-248	9	2026	52000.00	30	17000.00	0.00	f	\N		8	0.00
-249	9	2026	52000.00	30	17000.00	0.00	f	\N		9	0.00
-250	9	2026	38000.00	30	13000.00	0.00	f	\N		10	0.00
-251	9	2026	38000.00	30	13000.00	0.00	f	\N		11	0.00
-252	9	2026	38000.00	30	13000.00	0.00	f	\N		12	0.00
-253	9	2026	28000.00	30	9000.00	0.00	f	\N		13	0.00
-254	9	2026	28000.00	30	9000.00	0.00	f	\N		14	0.00
-255	9	2026	38000.00	30	13000.00	0.00	f	\N		15	0.00
-256	9	2026	38000.00	30	13000.00	0.00	f	\N		16	0.00
-257	9	2026	45000.00	30	13000.00	0.00	f	\N		17	0.00
-258	9	2026	45000.00	30	13000.00	0.00	f	\N		18	0.00
-259	9	2026	68000.00	30	22000.00	0.00	f	\N		19	0.00
-260	9	2026	68000.00	30	22000.00	0.00	f	\N		20	0.00
-261	9	2026	68000.00	30	22000.00	0.00	f	\N		21	0.00
-262	9	2026	68000.00	30	22000.00	0.00	f	\N		22	0.00
-264	9	2026	68000.00	30	22000.00	0.00	f	\N		24	0.00
-265	9	2026	52000.00	30	17000.00	0.00	f	\N		25	0.00
-266	9	2026	52000.00	30	17000.00	0.00	f	\N		26	0.00
-267	9	2026	52000.00	30	17000.00	0.00	f	\N		27	0.00
-268	9	2026	38000.00	30	13000.00	0.00	f	\N		28	0.00
-269	9	2026	38000.00	30	13000.00	0.00	f	\N		29	0.00
-270	9	2026	38000.00	30	13000.00	0.00	f	\N		30	0.00
-271	9	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
-272	9	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
-273	9	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
-274	9	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
-275	9	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
-276	9	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
-277	9	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
-278	9	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
-279	9	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
-280	9	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
-281	9	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
-282	9	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
-283	9	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
-284	9	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
-285	9	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
-286	9	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
-287	9	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
-288	9	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
-289	9	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
-290	9	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
-241	9	2026	68000.00	30	22000.00	0.00	f	2026-09-05	20005	1	0.00
-263	9	2026	68000.00	23	21999.99	0.00	t	2026-09-04	1000	23	89999.99
-312	8	2026	28000.00	30	0.00	0.00	t	2026-09-04	2000	56	28000.00
-242	9	2026	68000.00	30	22000.00	6000.00	t	2026-09-12		2	84000.00
-333	9	2026	68000.00	30	22000.00	0.00	f	\N		59	0.00
-119	4	2026	38000.00	30	13000.00	0.00	t	2026-04-28	VCH-2026-04-029	29	0.00
-291	5	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
-292	5	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
-293	5	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
-294	5	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
-295	5	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
-296	5	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
-297	5	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
-298	5	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
-299	5	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
-300	5	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
-301	5	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
-302	5	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
-303	5	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
-304	5	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
-305	5	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
-306	5	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
-307	5	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
-308	5	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
-309	5	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
-310	5	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
-1	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-001	1	0.00
-311	9	2026	28000.00	18	0.00	0.00	t	2026-09-04		56	28000.00
-2	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-002	2	0.00
-3	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-003	3	0.00
-4	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-004	4	0.00
-5	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-005	5	0.00
-6	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-006	6	0.00
-7	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-007	7	0.00
-8	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-008	8	0.00
-9	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-009	9	0.00
-10	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-010	10	0.00
-11	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-011	11	0.00
-12	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-012	12	0.00
-13	1	2026	28000.00	30	9000.00	0.00	t	2026-01-28	VCH-2026-01-013	13	0.00
-14	1	2026	28000.00	30	9000.00	0.00	t	2026-01-28	VCH-2026-01-014	14	0.00
-15	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-015	15	0.00
-16	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-016	16	0.00
 17	1	2026	45000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-017	17	0.00
 18	1	2026	45000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-018	18	0.00
 19	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-019	19	0.00
@@ -3333,6 +4988,7 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 46	2	2026	38000.00	30	13000.00	0.00	t	2026-02-28	VCH-2026-02-016	16	0.00
 47	2	2026	45000.00	30	13000.00	0.00	t	2026-02-28	VCH-2026-02-017	17	0.00
 48	2	2026	45000.00	30	13000.00	0.00	t	2026-02-28	VCH-2026-02-018	18	0.00
+119	4	2026	38000.00	30	13000.00	0.00	t	2026-04-28	VCH-2026-04-029	29	0.00
 49	2	2026	68000.00	30	22000.00	0.00	t	2026-02-28	VCH-2026-02-019	19	0.00
 50	2	2026	68000.00	30	22000.00	0.00	t	2026-02-28	VCH-2026-02-020	20	0.00
 51	2	2026	68000.00	30	22000.00	0.00	t	2026-02-28	VCH-2026-02-021	21	0.00
@@ -3393,6 +5049,22 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 106	4	2026	38000.00	30	13000.00	0.00	t	2026-04-28	VCH-2026-04-016	16	0.00
 107	4	2026	45000.00	30	13000.00	0.00	t	2026-04-28	VCH-2026-04-017	17	0.00
 108	4	2026	45000.00	30	13000.00	0.00	t	2026-04-28	VCH-2026-04-018	18	0.00
+1	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-001	1	0.00
+2	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-002	2	0.00
+3	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-003	3	0.00
+4	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-004	4	0.00
+5	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-005	5	0.00
+6	1	2026	68000.00	30	22000.00	0.00	t	2026-01-28	VCH-2026-01-006	6	0.00
+7	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-007	7	0.00
+8	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-008	8	0.00
+9	1	2026	52000.00	30	17000.00	0.00	t	2026-01-28	VCH-2026-01-009	9	0.00
+10	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-010	10	0.00
+11	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-011	11	0.00
+12	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-012	12	0.00
+13	1	2026	28000.00	30	9000.00	0.00	t	2026-01-28	VCH-2026-01-013	13	0.00
+14	1	2026	28000.00	30	9000.00	0.00	t	2026-01-28	VCH-2026-01-014	14	0.00
+15	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-015	15	0.00
+16	1	2026	38000.00	30	13000.00	0.00	t	2026-01-28	VCH-2026-01-016	16	0.00
 109	4	2026	68000.00	30	22000.00	0.00	t	2026-04-28	VCH-2026-04-019	19	0.00
 110	4	2026	68000.00	30	22000.00	0.00	t	2026-04-28	VCH-2026-04-020	20	0.00
 111	4	2026	68000.00	30	22000.00	0.00	t	2026-04-28	VCH-2026-04-021	21	0.00
@@ -3435,6 +5107,7 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 149	5	2026	38000.00	30	13000.00	0.00	t	2026-05-28	VCH-2026-05-029	29	0.00
 150	5	2026	38000.00	30	13000.00	0.00	t	2026-05-28	VCH-2026-05-030	30	0.00
 151	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-001	1	0.00
+166	6	2026	38000.00	30	13000.00	0.00	t	2026-06-28	VCH-2026-06-016	16	0.00
 170	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-020	20	0.00
 171	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-021	21	0.00
 172	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-022	22	0.00
@@ -3451,7 +5124,6 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 183	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-003	3	0.00
 184	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-004	4	0.00
 185	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-005	5	0.00
-166	6	2026	38000.00	30	13000.00	0.00	t	2026-06-28	VCH-2026-06-016	16	0.00
 186	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-006	6	0.00
 187	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-007	7	0.00
 188	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-008	8	0.00
@@ -3464,43 +5136,6 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 195	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-015	15	0.00
 196	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-016	16	0.00
 197	7	2026	45000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-017	17	0.00
-198	7	2026	45000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-018	18	0.00
-199	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-019	19	0.00
-200	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-020	20	0.00
-201	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-021	21	0.00
-202	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-022	22	0.00
-203	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-023	23	0.00
-204	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-024	24	0.00
-205	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-025	25	0.00
-206	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-026	26	0.00
-207	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-027	27	0.00
-208	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-028	28	0.00
-209	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-029	29	0.00
-210	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-030	30	0.00
-211	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-001	1	0.00
-212	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-002	2	0.00
-213	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-003	3	0.00
-214	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-004	4	0.00
-313	8	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
-314	8	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
-315	8	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
-316	8	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
-317	8	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
-318	8	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
-319	8	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
-320	8	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
-321	8	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
-322	8	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
-323	8	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
-324	8	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
-325	8	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
-326	8	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
-327	8	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
-328	8	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
-329	8	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
-330	8	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
-331	8	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
-332	8	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
 152	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-002	2	0.00
 153	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-003	3	0.00
 154	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-004	4	0.00
@@ -3518,6 +5153,50 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 167	6	2026	45000.00	30	13000.00	0.00	t	2026-06-28	VCH-2026-06-017	17	0.00
 168	6	2026	45000.00	30	13000.00	0.00	t	2026-06-28	VCH-2026-06-018	18	0.00
 169	6	2026	68000.00	30	22000.00	0.00	t	2026-06-28	VCH-2026-06-019	19	0.00
+198	7	2026	45000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-018	18	0.00
+199	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-019	19	0.00
+200	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-020	20	0.00
+201	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-021	21	0.00
+202	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-022	22	0.00
+203	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-023	23	0.00
+204	7	2026	68000.00	30	22000.00	0.00	t	2026-07-28	VCH-2026-07-024	24	0.00
+205	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-025	25	0.00
+206	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-026	26	0.00
+207	7	2026	52000.00	30	17000.00	0.00	t	2026-07-28	VCH-2026-07-027	27	0.00
+208	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-028	28	0.00
+209	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-029	29	0.00
+210	7	2026	38000.00	30	13000.00	0.00	t	2026-07-28	VCH-2026-07-030	30	0.00
+211	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-001	1	0.00
+212	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-002	2	0.00
+213	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-003	3	0.00
+214	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-004	4	0.00
+241	9	2026	68000.00	30	22000.00	0.00	f	2026-09-05	20005	1	0.00
+242	9	2026	68000.00	30	22000.00	6000.00	t	2026-09-12		2	84000.00
+243	9	2026	68000.00	30	22000.00	0.00	f	\N		3	0.00
+244	9	2026	68000.00	30	22000.00	0.00	f	\N		4	0.00
+245	9	2026	68000.00	30	22000.00	0.00	f	\N		5	0.00
+246	9	2026	68000.00	30	22000.00	0.00	f	\N		6	0.00
+247	9	2026	52000.00	30	17000.00	0.00	f	\N		7	0.00
+248	9	2026	52000.00	30	17000.00	0.00	f	\N		8	0.00
+249	9	2026	52000.00	30	17000.00	0.00	f	\N		9	0.00
+250	9	2026	38000.00	30	13000.00	0.00	f	\N		10	0.00
+251	9	2026	38000.00	30	13000.00	0.00	f	\N		11	0.00
+252	9	2026	38000.00	30	13000.00	0.00	f	\N		12	0.00
+253	9	2026	28000.00	30	9000.00	0.00	f	\N		13	0.00
+254	9	2026	28000.00	30	9000.00	0.00	f	\N		14	0.00
+255	9	2026	38000.00	30	13000.00	0.00	f	\N		15	0.00
+256	9	2026	38000.00	30	13000.00	0.00	f	\N		16	0.00
+257	9	2026	45000.00	30	13000.00	0.00	f	\N		17	0.00
+258	9	2026	45000.00	30	13000.00	0.00	f	\N		18	0.00
+259	9	2026	68000.00	30	22000.00	0.00	f	\N		19	0.00
+260	9	2026	68000.00	30	22000.00	0.00	f	\N		20	0.00
+261	9	2026	68000.00	30	22000.00	0.00	f	\N		21	0.00
+262	9	2026	68000.00	30	22000.00	0.00	f	\N		22	0.00
+263	9	2026	68000.00	23	21999.99	0.00	t	2026-09-04	1000	23	89999.99
+264	9	2026	68000.00	30	22000.00	0.00	f	\N		24	0.00
+265	9	2026	52000.00	30	17000.00	0.00	f	\N		25	0.00
+266	9	2026	52000.00	30	17000.00	0.00	f	\N		26	0.00
+267	9	2026	52000.00	30	17000.00	0.00	f	\N		27	0.00
 215	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-005	5	0.00
 216	8	2026	68000.00	30	22000.00	0.00	f	\N	VCH-2026-08-006	6	0.00
 217	8	2026	52000.00	30	17000.00	0.00	f	\N	VCH-2026-08-007	7	0.00
@@ -3544,6 +5223,72 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 238	8	2026	38000.00	30	13000.00	0.00	f	\N	VCH-2026-08-028	28	0.00
 239	8	2026	38000.00	30	13000.00	0.00	f	\N	VCH-2026-08-029	29	0.00
 240	8	2026	38000.00	30	13000.00	0.00	f	\N	VCH-2026-08-030	30	0.00
+268	9	2026	38000.00	30	13000.00	0.00	f	\N		28	0.00
+269	9	2026	38000.00	30	13000.00	0.00	f	\N		29	0.00
+270	9	2026	38000.00	30	13000.00	0.00	f	\N		30	0.00
+271	9	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
+272	9	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
+273	9	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
+274	9	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
+275	9	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
+276	9	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
+277	9	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
+278	9	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
+279	9	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
+280	9	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
+281	9	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
+282	9	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
+283	9	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
+284	9	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
+285	9	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
+286	9	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
+287	9	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
+288	9	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
+289	9	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
+290	9	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
+291	5	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
+292	5	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
+293	5	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
+294	5	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
+295	5	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
+296	5	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
+297	5	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
+298	5	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
+299	5	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
+300	5	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
+301	5	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
+302	5	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
+303	5	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
+304	5	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
+305	5	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
+306	5	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
+307	5	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
+308	5	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
+309	5	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
+310	5	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
+311	9	2026	28000.00	18	0.00	0.00	t	2026-09-04		56	28000.00
+312	8	2026	28000.00	30	0.00	0.00	t	2026-09-04	2000	56	28000.00
+313	8	2026	28000.00	30	9000.00	0.00	f	\N		31	0.00
+314	8	2026	28000.00	30	9000.00	0.00	f	\N		32	0.00
+315	8	2026	38000.00	30	13000.00	0.00	f	\N		33	0.00
+316	8	2026	38000.00	30	13000.00	0.00	f	\N		34	0.00
+317	8	2026	45000.00	30	13000.00	0.00	f	\N		35	0.00
+318	8	2026	45000.00	30	13000.00	0.00	f	\N		36	0.00
+319	8	2026	68000.00	30	22000.00	0.00	f	\N		37	0.00
+320	8	2026	68000.00	30	22000.00	0.00	f	\N		38	0.00
+321	8	2026	68000.00	30	22000.00	0.00	f	\N		39	0.00
+322	8	2026	68000.00	30	22000.00	0.00	f	\N		40	0.00
+323	8	2026	68000.00	30	22000.00	0.00	f	\N		41	0.00
+324	8	2026	68000.00	30	22000.00	0.00	f	\N		42	0.00
+325	8	2026	52000.00	30	17000.00	0.00	f	\N		43	0.00
+326	8	2026	52000.00	30	17000.00	0.00	f	\N		44	0.00
+327	8	2026	52000.00	30	17000.00	0.00	f	\N		45	0.00
+328	8	2026	38000.00	30	13000.00	0.00	f	\N		46	0.00
+329	8	2026	38000.00	30	13000.00	0.00	f	\N		47	0.00
+330	8	2026	38000.00	30	13000.00	0.00	f	\N		48	0.00
+331	8	2026	28000.00	30	9000.00	0.00	f	\N		49	0.00
+332	8	2026	28000.00	30	9000.00	0.00	f	\N		50	0.00
+333	9	2026	68000.00	30	22000.00	0.00	f	\N		59	0.00
 \.
 
 
@@ -3552,12 +5297,12 @@ COPY public.teachers_monthlysalarybill (id, month, year, base_pay, days_present,
 --
 
 COPY public.teachers_salaryscale (id, name, basic_pay, medical_allowance, conveyance_allowance, other_allowances) FROM stdin;
-6	BPS-16	25000.00	2000.00	3000.00	0.00
 1	PST Scale (Grade 12)	28000.00	3000.00	4000.00	2000.00
 2	CT Scale (Grade 15)	38000.00	4500.00	5500.00	3000.00
 3	SST Science (Grade 16)	52000.00	6000.00	7000.00	4000.00
 4	Lecturer F.Sc (Grade 17)	68000.00	8000.00	9000.00	5000.00
 5	Admin & Accounts Scale	45000.00	5000.00	5000.00	3000.00
+6	BPS-16	25000.00	2000.00	3000.00	0.00
 \.
 
 
@@ -3566,6 +5311,10 @@ COPY public.teachers_salaryscale (id, name, basic_pay, medical_allowance, convey
 --
 
 COPY public.teachers_teacher (id, teacher_id, full_name, father_name, cnic, dob, qualification, experience, contact_number, address, joining_date, designation, profile_picture, status, remarks, salary_scale_id) FROM stdin;
+23	T-023	Hamza Gul	Shoaib Ali	15602-5647256-1	1987-05-04	M.Phil / Master Degree in relevant subject	5 years teaching experience	03127797452	Qalagay, Tehsil Barikot, District Swat	2023-12-08	Chemistry Lecturer		Active		4
+24	T-024	Mustafa Hussain	Waleed Jan	15602-3610447-1	1993-02-27	M.Phil / Master Degree in relevant subject	9 years teaching experience	03479164551	Kabal Main Road, Swat	2023-03-24	Biology Lecturer		Active		4
+25	T-025	Sidra Bibi	Shahzad Ahmad	15602-6844288-1	1988-04-05	M.Phil / Master Degree in relevant subject	10 years teaching experience	03315280624	Main Bazaar Qalagay, Swat	2020-08-28	Mathematics Specialist		Active		3
+26	T-026	Salman Zada	Ibrahim Jan	15602-8188622-1	1980-03-24	M.Phil / Master Degree in relevant subject	13 years teaching experience	03477612487	Kabal Main Road, Swat	2018-04-19	Computer Science Instructor		Active		3
 27	T-027	Shahzad Ali	Moiz Jan	15602-2782253-1	1992-08-19	M.Phil / Master Degree in relevant subject	12 years teaching experience	03455356373	Mingora City, Swat KPK	2018-08-12	Urdu & Pashto Teacher		Active		3
 28	T-028	Danish Swati	Salman Yousafzai	15602-7282016-1	1982-06-02	M.Phil / Master Degree in relevant subject	3 years teaching experience	03472875566	Qalagay, Tehsil Barikot, District Swat	2018-10-15	Islamic Studies Teacher		Active		2
 29	T-029	Gulzar Hussain	Ibrahim Zada	15602-9706496-1	1994-07-16	M.Phil / Master Degree in relevant subject	14 years teaching experience	03129029282	Kabal Main Road, Swat	2019-06-24	Pakistan Studies Teacher		Active		2
@@ -3573,18 +5322,12 @@ COPY public.teachers_teacher (id, teacher_id, full_name, father_name, cnic, dob,
 39	T-039	Hazrat Zada	Umar Gul	15602-5917747-1	1980-09-24	M.Phil / Master Degree in relevant subject	8 years teaching experience	03457776176	Mingora City, Swat KPK	2018-08-15	Senior English Lecturer		Active		4
 41	T-041	Haris Khan	Saad Khan	15602-8318357-1	1995-10-09	M.Phil / Master Degree in relevant subject	14 years teaching experience	03339233048	Main Bazaar Qalagay, Swat	2022-04-19	Chemistry Lecturer		Active		4
 42	T-042	Bilal Shah	Junaid Ahmad	15602-8073480-1	1993-12-13	M.Phil / Master Degree in relevant subject	3 years teaching experience	03457344253	Barikot Central, Swat KPK	2021-08-03	Biology Lecturer		Active		4
-59	T-999	Rashid Zada			1995-05-10	BS Computer Science	5 Years	0347-0983567		2026-09-05	IT Incharge / Full Stack Developer		Active		4
-23	T-023	Hamza Gul	Shoaib Ali	15602-5647256-1	1987-05-04	M.Phil / Master Degree in relevant subject	5 years teaching experience	03127797452	Qalagay, Tehsil Barikot, District Swat	2023-12-08	Chemistry Lecturer		Active		4
-24	T-024	Mustafa Hussain	Waleed Jan	15602-3610447-1	1993-02-27	M.Phil / Master Degree in relevant subject	9 years teaching experience	03479164551	Kabal Main Road, Swat	2023-03-24	Biology Lecturer		Active		4
-25	T-025	Sidra Bibi	Shahzad Ahmad	15602-6844288-1	1988-04-05	M.Phil / Master Degree in relevant subject	10 years teaching experience	03315280624	Main Bazaar Qalagay, Swat	2020-08-28	Mathematics Specialist		Active		3
-26	T-026	Salman Zada	Ibrahim Jan	15602-8188622-1	1980-03-24	M.Phil / Master Degree in relevant subject	13 years teaching experience	03477612487	Kabal Main Road, Swat	2018-04-19	Computer Science Instructor		Active		3
 43	T-043	Abdullah Bibi	Sameer Khan	15602-8969499-1	1985-02-19	M.Phil / Master Degree in relevant subject	3 years teaching experience	03331101162	Barikot Central, Swat KPK	2021-12-08	Mathematics Specialist		Active		3
 44	T-044	Tariq Jan	Ali Swati	15602-9526029-1	1987-08-12	M.Phil / Master Degree in relevant subject	15 years teaching experience	03451172354	Mingora City, Swat KPK	2021-05-03	Computer Science Instructor		Active		3
 45	T-045	Sadia Gul	Salman Ahmad	15602-4643355-1	1985-04-06	M.Phil / Master Degree in relevant subject	15 years teaching experience	03332461557	Saidu Sharif Near Central Hospital, Swat	2023-01-04	Urdu & Pashto Teacher		Active		3
-49	T-049	Rizwan Jan	Fazal Khan	15602-5905954-1	1987-12-15	M.Phil / Master Degree in relevant subject	5 years teaching experience	03006780383	Main Bazaar Qalagay, Swat	2021-10-16	Primary Class Teacher		Active		1
+59	T-999	Rashid Zada			1995-05-10	BS Computer Science	5 Years	0347-0983567		2026-09-05	IT Incharge / Full Stack Developer		Active		4
 1	T-001	Dr. Farman Ali	Tariq Gul	15602-4835727-1	1982-11-02	M.Phil / Master Degree in relevant subject	9 years teaching experience	+92 344 9631323	Matta Road, Swat KPK	2019-05-25	Principal		Active		4
 2	T-002	Umar Saeed	Kashan Gul	15602-2804339-1	1990-07-22	M.Phil / Master Degree in relevant subject	8 years teaching experience	+92 345 3407095	Matta Road, Swat KPK	2023-10-04	Vice Principal		Active		4
-56	10001	Gul Zeb	M Zeb	156040933554	1995-09-22	Msc English	Five Years	03419540730	Totano bandai Qalagay Kabal swat Kpk Pakistan	2026-09-04	PST	teachers/ChatGPT_Image_Sep_4_2026_01_23_22_AM.png	Active		1
 3	T-003	Hamza Rehman	Ibrahim Rehman	15602-1096477-1	1985-01-24	M.Phil / Master Degree in relevant subject	3 years teaching experience	03312987085	Qalagay, Tehsil Barikot, District Swat	2020-07-07	Senior English Lecturer		Active		4
 4	T-004	Junaid Hussain	Shaukat Gul	15602-2936293-1	1986-10-04	M.Phil / Master Degree in relevant subject	6 years teaching experience	03123740761	Saidu Sharif Near Central Hospital, Swat	2021-01-22	Physics Lecturer		Active		4
 5	T-005	Ayesha Khan	Danish Swati	15602-9422907-1	1980-01-08	M.Phil / Master Degree in relevant subject	7 years teaching experience	03334999448	Mingora City, Swat KPK	2024-01-28	Chemistry Lecturer		Active		4
@@ -3594,9 +5337,11 @@ COPY public.teachers_teacher (id, teacher_id, full_name, father_name, cnic, dob,
 9	T-009	Zain Zada	Salman Swati	15602-1898017-1	1987-11-20	M.Phil / Master Degree in relevant subject	8 years teaching experience	03002843211	Saidu Sharif Near Central Hospital, Swat	2022-07-17	Urdu & Pashto Teacher		Active		3
 10	T-010	Hira Khan	Mustafa Jan	15602-2192414-1	1980-12-23	M.Phil / Master Degree in relevant subject	6 years teaching experience	03124091105	Mingora City, Swat KPK	2023-12-05	Islamic Studies Teacher		Active		2
 40	T-040	Hira Gul	Usman Yousafzai	15602-2152091-1	1983-07-12	M.Phil / Master Degree in relevant subject	3 years teaching experience	03334411559	Mingora City, Swat KPK	2023-12-16	Physics Lecturer		Active		4
-46	T-046	Adil Ali	Fazal Gul	15602-1371077-1	1978-01-10	M.Phil / Master Degree in relevant subject	7 years teaching experience	03313486853	Kabal Main Road, Swat	2023-02-28	Islamic Studies Teacher		Active		2
 47	T-047	Zain Shah	Danish Ali	15602-6530119-1	1982-01-17	M.Phil / Master Degree in relevant subject	15 years teaching experience	03129272858	Saidu Sharif Near Central Hospital, Swat	2023-05-12	Pakistan Studies Teacher		Active		2
 48	T-048	Noman Ali	Fazal Gul	15602-6976648-1	1983-08-03	M.Phil / Master Degree in relevant subject	6 years teaching experience	03123259340	Barikot Central, Swat KPK	2021-01-03	General Science Teacher		Active		2
+46	T-046	Adil Ali	Fazal Gul	15602-1371077-1	1978-01-10	M.Phil / Master Degree in relevant subject	7 years teaching experience	03313486853	Kabal Main Road, Swat	2023-02-28	Islamic Studies Teacher		Active		2
+49	T-049	Rizwan Jan	Fazal Khan	15602-5905954-1	1987-12-15	M.Phil / Master Degree in relevant subject	5 years teaching experience	03006780383	Main Bazaar Qalagay, Swat	2021-10-16	Primary Class Teacher		Active		1
+56	10001	Gul Zeb	M Zeb	156040933554	1995-09-22	Msc English	Five Years	03419540730	Totano bandai Qalagay Kabal swat Kpk Pakistan	2026-09-04	PST	teachers/ChatGPT_Image_Sep_4_2026_01_23_22_AM.png	Active		1
 50	T-050	Ayesha Khan	Aman Ahmad	15602-5297881-1	1992-06-23	M.Phil / Master Degree in relevant subject	14 years teaching experience	03123532081	Saidu Sharif Near Central Hospital, Swat	2020-10-23	Early Childhood Trainer		Active		1
 51	T-051	Zain Hussain	Ahmad Rehman	15602-7788745-1	1978-04-15	M.Phil / Master Degree in relevant subject	14 years teaching experience	03453304846	Main Bazaar Qalagay, Swat	2023-03-13	Physical Training Instructor (PTI)		Inactive		2
 52	T-052	Waleed Shah	Gulzar Ali	15602-1729737-1	1991-05-19	M.Phil / Master Degree in relevant subject	15 years teaching experience	03456928273	Matta Road, Swat KPK	2021-06-23	Senior Librarian		Inactive		2
@@ -3679,7 +5424,7 @@ SELECT pg_catalog.setval('public.auth_user_user_permissions_id_seq', 1, false);
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 3, true);
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 391, true);
 
 
 --
@@ -3693,7 +5438,7 @@ SELECT pg_catalog.setval('public.django_content_type_id_seq', 24, true);
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 27, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 30, true);
 
 
 --
@@ -3714,7 +5459,7 @@ SELECT pg_catalog.setval('public.exams_exam_id_seq', 3, true);
 -- Name: exams_exammark_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.exams_exammark_id_seq', 160, true);
+SELECT pg_catalog.setval('public.exams_exammark_id_seq', 504, true);
 
 
 --
@@ -3728,28 +5473,28 @@ SELECT pg_catalog.setval('public.exams_subject_id_seq', 16, true);
 -- Name: finance_feepaymentreceipt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.finance_feepaymentreceipt_id_seq', 60, true);
+SELECT pg_catalog.setval('public.finance_feepaymentreceipt_id_seq', 63, true);
 
 
 --
 -- Name: finance_feepaymentreceipt_month_entries_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.finance_feepaymentreceipt_month_entries_id_seq', 106, true);
+SELECT pg_catalog.setval('public.finance_feepaymentreceipt_month_entries_id_seq', 109, true);
 
 
 --
 -- Name: finance_studentfeeledger_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.finance_studentfeeledger_id_seq', 161, true);
+SELECT pg_catalog.setval('public.finance_studentfeeledger_id_seq', 637, true);
 
 
 --
 -- Name: finance_studentfeemonthentry_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.finance_studentfeemonthentry_id_seq', 1932, true);
+SELECT pg_catalog.setval('public.finance_studentfeemonthentry_id_seq', 7584, true);
 
 
 --
@@ -3777,28 +5522,28 @@ SELECT pg_catalog.setval('public.school_schoolsetting_id_seq', 1, true);
 -- Name: school_section_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.school_section_id_seq', 36, true);
+SELECT pg_catalog.setval('public.school_section_id_seq', 41, true);
 
 
 --
 -- Name: students_familyhousehold_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.students_familyhousehold_id_seq', 48, true);
+SELECT pg_catalog.setval('public.students_familyhousehold_id_seq', 53, true);
 
 
 --
 -- Name: students_promotionhistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.students_promotionhistory_id_seq', 8, true);
+SELECT pg_catalog.setval('public.students_promotionhistory_id_seq', 4, true);
 
 
 --
 -- Name: students_student_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.students_student_id_seq', 163, true);
+SELECT pg_catalog.setval('public.students_student_id_seq', 646, true);
 
 
 --
@@ -4167,14 +5912,6 @@ ALTER TABLE ONLY public.students_promotionhistory
 
 
 --
--- Name: students_student students_student_admission_no_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.students_student
-    ADD CONSTRAINT students_student_admission_no_key UNIQUE (admission_no);
-
-
---
 -- Name: students_student students_student_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4487,13 +6224,6 @@ CREATE INDEX students_promotionhistory_to_class_id_d284316c ON public.students_p
 --
 
 CREATE INDEX students_promotionhistory_to_section_id_ec1f7bb7 ON public.students_promotionhistory USING btree (to_section_id);
-
-
---
--- Name: students_student_admission_no_feb174a2_like; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX students_student_admission_no_feb174a2_like ON public.students_student USING btree (admission_no varchar_pattern_ops);
 
 
 --
@@ -4813,5 +6543,5 @@ ALTER TABLE ONLY public.teachers_teacher
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ucWj8IzFgpv5QiFqd0BdHQoK4yOfgQZdwFoIbwnkZ2PLKaWdUR57dy341K6QFAN
+\unrestrict i1A1gHqAKtz9pT1JjCLwRm3n3rgwmVdejYlBBTiCz5ZOiTMbGj0cmaKAinGLDmh
 

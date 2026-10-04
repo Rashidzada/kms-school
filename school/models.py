@@ -9,6 +9,22 @@ class SchoolSetting(models.Model):
     academic_session_format = models.CharField(max_length=50, default="2025-2026")
     receipt_no_prefix = models.CharField(max_length=10, default="REC-")
     last_receipt_no = models.IntegerField(default=1000)
+    passing_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        default=30.0,
+        help_text="Default passing percentage for school examinations (e.g. 30%, 33%, 40%)",
+    )
+    passing_rule = models.CharField(
+        max_length=50,
+        default="overall_only",
+        choices=[
+            ("overall_only", "Overall Percentage Only (Pass if Total % >= Passing %)"),
+            ("subject_and_overall", "Each Subject & Overall %"),
+            ("subject_only", "Each Subject Must Pass"),
+        ],
+        help_text="Passing evaluation criteria",
+    )
 
     class Meta:
         verbose_name = "School Setting"

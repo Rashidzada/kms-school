@@ -26,6 +26,9 @@
     <a href="{% url 'dob_certificate_general' %}" target="_blank" class="btn btn-outline-dark" title="Issue or Print D.O.B Certificate">
       <i class="fas fa-birthday-cake me-1"></i> DOB Cert
     </a>
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteByClassModal" title="Delete students of a specific class only">
+      <i class="fas fa-trash-alt me-1"></i> Delete Class
+    </button>
     <a href="{% url 'student_create' %}" class="btn btn-primary">
       <i class="fas fa-user-plus me-1"></i> New Admission
     </a>
@@ -107,7 +110,7 @@
         </div>
       </div>
       <div class="col-md-2">
-        <select name="class" class="form-select">
+        <select name="class" class="form-select" onchange="this.form.submit()" title="Selecting a class automatically filters the list">
           <option value="">All Classes</option>
           {% for c in classes %}
             <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
@@ -115,7 +118,7 @@
         </select>
       </div>
       <div class="col-md-2">
-        <select name="status" class="form-select">
+        <select name="status" class="form-select" onchange="this.form.submit()">
           <option value="">All Statuses</option>
           <option value="Active" {% if selected_status == "Active" %}selected{% endif %}>Active</option>
           <option value="Inactive" {% if selected_status == "Inactive" %}selected{% endif %}>Inactive</option>
@@ -123,7 +126,7 @@
         </select>
       </div>
       <div class="col-md-3">
-        <select name="fee_status" class="form-select">
+        <select name="fee_status" class="form-select" onchange="this.form.submit()">
           <option value="">All Fee Statuses</option>
           <option value="has_dues" {% if selected_fee_status == "has_dues" %}selected{% endif %}>⚠️ Has Outstanding Dues</option>
           <option value="cleared" {% if selected_fee_status == "cleared" %}selected{% endif %}>✓ Fully Cleared / Paid</option>
@@ -131,144 +134,340 @@
       </div>
       <div class="col-md-2 d-flex gap-2">
         <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter me-1"></i> Filter</button>
+        {% if selected_class %}
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#classDeleteModal" title="Delete all students in this class">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        {% endif %}
         <a href="{% url 'student_list' %}" class="btn btn-outline-secondary" title="Reset Filters"><i class="fas fa-sync-alt"></i></a>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Student Directory Table -->
-<div class="card shadow-sm">
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light small">
-        <tr>
-          <th style="width: 45px;">Photo</th>
-          <th>Adm #</th>
-          <th>Student & Father</th>
-          <th>Class & Sec</th>
-          <th>Status</th>
-          <th style="min-width: 280px;">Fee Status & Monthly Dues Breakdown</th>
-          <th>Family / Sibling Dues</th>
-          <th class="text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in students %}
-          <tr>
-            <td>
-              {% if s.profile_picture %}
-                <img src="{{ s.profile_picture.url }}" alt="{{ s.full_name }}" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;">
-              {% else %}
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-size: 0.85rem; font-weight: bold;">
-                  {{ s.full_name|slice:":1" }}
-                </div>
-              {% endif %}
-            </td>
-            <td class="fw-bold text-primary">{{ s.admission_no }}</td>
-            <td>
-              <div>
-                <a href="{% url 'student_detail' s.pk %}" class="text-decoration-none fw-bold text-dark">
-                  {{ s.full_name }}
-                </a>
-              </div>
-              <small class="text-muted">S/O {{ s.father_name }}</small>
-            </td>
-            <td>
-              <span class="badge bg-light text-dark border">{{ s.current_class.name }} - {{ s.current_section.name }}</span>
-            </td>
-            <td>
-              {% if s.status == "Active" %}
-                <span class="badge bg-success">Active</span>
-              {% elif s.status == "Inactive" %}
-                <span class="badge bg-warning text-dark">Inactive</span>
-              {% else %}
-                <span class="badge bg-danger">Withdrawn</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if s.has_dues %}
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="badge bg-danger px-2 py-1">
-                    <i class="fas fa-exclamation-circle me-1"></i> Dues: PKR {{ s.total_dues|floatformat:0|intcomma }}
-                  </span>
-                </div>
-              {% else %}
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="badge bg-success px-2 py-1">
-                    <i class="fas fa-check-circle me-1"></i> Cleared (PKR 0)
-                  </span>
-                </div>
-              {% endif %}
-              
-              <!-- Paid Months -->
-              {% if s.paid_months_list %}
-                <div class="small text-success">
-                  <i class="fas fa-check-double me-1 text-success"></i><strong class="text-dark">Paid:</strong> {{ s.paid_months_display }}
-                </div>
-              {% else %}
-                <div class="small text-muted">
-                  <i class="fas fa-times-circle me-1 text-muted"></i><span class="text-muted">No payments recorded</span>
-                </div>
-              {% endif %}
+{% if selected_class_obj %}
+<!-- Active Class Filter Indicator -->
+<div class="alert alert-info py-2 px-3 d-flex flex-wrap justify-content-between align-items-center mb-3 shadow-sm rounded border-start border-primary border-4">
+  <div>
+    <i class="fas fa-filter me-2 text-primary"></i>
+    <span>Filtered to: <strong class="fs-6 text-dark">{{ selected_class_obj.name }}</strong></span>
+    <span class="badge bg-primary ms-2">{{ students|length }} Student{{ students|length|pluralize }} in this class</span>
+  </div>
+  <div class="d-flex gap-2 mt-1 mt-md-0">
+    <a href="{% url 'student_list' %}" class="btn btn-outline-dark btn-sm" title="Show all classes">
+      <i class="fas fa-times me-1"></i> Show All Classes
+    </a>
+    <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#classDeleteModal">
+      <i class="fas fa-trash-alt me-1"></i> Delete All {{ selected_class_obj.name }} Students
+    </button>
+  </div>
+</div>
+{% endif %}
 
-              <!-- Pending Months -->
-              {% if s.pending_months_list %}
-                <div class="small text-danger mt-1">
-                  <i class="fas fa-calendar-times me-1 text-danger"></i><strong>Pending:</strong> {{ s.pending_months_display }}
-                </div>
-              {% endif %}
-            </td>
-            <td>
-              {% if s.family %}
-                <div>
-                  <a href="{% url 'family_payment' s.family.pk %}" class="fw-bold text-decoration-none {% if s.family_total_dues > 0 %}text-danger{% else %}text-success{% endif %}" title="View / Pay Family Fee">
-                    <i class="fas fa-users me-1"></i>PKR {{ s.family_total_dues|floatformat:0|intcomma }}
-                  </a>
-                </div>
-                <small class="text-muted">{{ s.family_siblings_count }} student{{ s.family_siblings_count|pluralize }} in family</small>
-              {% else %}
-                <span class="text-muted small">-</span>
-              {% endif %}
-            </td>
-            <td class="text-end">
-              <div class="btn-group btn-group-sm">
-                <a href="{% url 'collect_fee' s.pk %}" class="btn btn-outline-success" title="Collect Fee">
-                  <i class="fas fa-money-bill-wave"></i>
-                </a>
-                <a href="{% url 'student_detail' s.pk %}" class="btn btn-outline-secondary" title="View Profile">
-                  <i class="fas fa-eye"></i>
-                </a>
-                <a href="{% url 'student_roll_number_slip' s.pk %}" class="btn btn-outline-dark" title="Print Roll Number Slip" target="_blank">
-                  <i class="fas fa-id-badge"></i>
-                </a>
-                <a href="{% url 'dob_certificate' s.pk %}" class="btn btn-outline-secondary text-dark" title="Print D.O.B Certificate" target="_blank">
-                  <i class="fas fa-birthday-cake"></i>
-                </a>
-                <a href="{% url 'student_update' s.pk %}" class="btn btn-outline-secondary" title="Edit Student">
-                  <i class="fas fa-edit"></i>
-                </a>
-                {% if s.status != "Withdrawn" %}
-                  <a href="{% url 'student_promote' s.pk %}" class="btn btn-outline-primary" title="Promote Student">
-                    <i class="fas fa-level-up-alt"></i>
-                  </a>
-                  <a href="{% url 'student_withdraw' s.pk %}" class="btn btn-outline-danger" title="Withdraw Student">
-                    <i class="fas fa-user-times"></i>
-                  </a>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-        {% empty %}
+<!-- Bulk Action Bar -->
+<div id="bulkActionsBar" class="alert alert-danger d-none d-flex justify-content-between align-items-center py-2 px-3 mb-3 shadow-sm rounded">
+  <div>
+    <i class="fas fa-check-square me-2"></i>
+    <span id="selectedCount" class="fw-bold fs-6">0</span> student(s) selected
+  </div>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm" id="deselectAllBtn">Deselect All</button>
+    <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+      <i class="fas fa-trash-alt me-1"></i> Delete Selected Students
+    </button>
+  </div>
+</div>
+
+<!-- Student Directory Table -->
+<form id="bulkDeleteForm" method="post" action="{% url 'student_bulk_delete' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">
-              <i class="fas fa-user-slash fa-3x mb-3 d-block text-secondary"></i>
-              No students found matching your criteria.
-            </td>
+            <th style="width: 35px;" class="text-center">
+              <input type="checkbox" id="selectAllStudents" class="form-check-input" title="Select / Deselect All">
+            </th>
+            <th style="width: 45px;">Photo</th>
+            <th>Adm #</th>
+            <th>Student & Father</th>
+            <th>Class & Sec</th>
+            <th>Status</th>
+            <th style="min-width: 280px;">Fee Status & Monthly Dues Breakdown</th>
+            <th>Family / Sibling Dues</th>
+            <th class="text-end">Actions</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for s in students %}
+            <tr>
+              <td class="text-center">
+                <input type="checkbox" name="student_ids" value="{{ s.pk }}" class="form-check-input student-select-chk" data-class-id="{{ s.current_class.id }}" data-class-name="{{ s.current_class.name }}">
+              </td>
+              <td>
+                {% if s.profile_picture %}
+                  <img src="{{ s.profile_picture.url }}" alt="{{ s.full_name }}" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;">
+                {% else %}
+                  <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-size: 0.85rem; font-weight: bold;">
+                    {{ s.full_name|slice:":1" }}
+                  </div>
+                {% endif %}
+              </td>
+              <td class="fw-bold text-primary">{{ s.admission_no }}</td>
+              <td>
+                <div>
+                  <a href="{% url 'student_detail' s.pk %}" class="text-decoration-none fw-bold text-dark">
+                    {{ s.full_name }}
+                  </a>
+                </div>
+                <small class="text-muted">S/O {{ s.father_name }}</small>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ s.current_class.name }} - {{ s.current_section.name }}</span>
+              </td>
+              <td>
+                {% if s.status == "Active" %}
+                  <span class="badge bg-success">Active</span>
+                {% elif s.status == "Inactive" %}
+                  <span class="badge bg-warning text-dark">Inactive</span>
+                {% else %}
+                  <span class="badge bg-danger">Withdrawn</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if s.has_dues %}
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-danger px-2 py-1">
+                      <i class="fas fa-exclamation-circle me-1"></i> Dues: PKR {{ s.total_dues|floatformat:0|intcomma }}
+                    </span>
+                  </div>
+                {% else %}
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-success px-2 py-1">
+                      <i class="fas fa-check-circle me-1"></i> Cleared (PKR 0)
+                    </span>
+                  </div>
+                {% endif %}
+                
+                <!-- Paid Months -->
+                {% if s.paid_months_list %}
+                  <div class="small text-success">
+                    <i class="fas fa-check-double me-1 text-success"></i><strong class="text-dark">Paid:</strong> {{ s.paid_months_display }}
+                  </div>
+                {% else %}
+                  <div class="small text-muted">
+                    <i class="fas fa-times-circle me-1 text-muted"></i><span class="text-muted">No payments recorded</span>
+                  </div>
+                {% endif %}
+
+                <!-- Pending Months -->
+                {% if s.pending_months_list %}
+                  <div class="small text-danger mt-1">
+                    <i class="fas fa-calendar-times me-1 text-danger"></i><strong>Pending:</strong> {{ s.pending_months_display }}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                {% if s.family %}
+                  <div>
+                    <a href="{% url 'family_payment' s.family.pk %}" class="fw-bold text-decoration-none {% if s.family_total_dues > 0 %}text-danger{% else %}text-success{% endif %}" title="View / Pay Family Fee">
+                      <i class="fas fa-users me-1"></i>PKR {{ s.family_total_dues|floatformat:0|intcomma }}
+                    </a>
+                  </div>
+                  <small class="text-muted">{{ s.family_siblings_count }} student{{ s.family_siblings_count|pluralize }} in family</small>
+                {% else %}
+                  <span class="text-muted small">-</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'collect_fee' s.pk %}" class="btn btn-outline-success" title="Collect Fee">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </a>
+                  <a href="{% url 'student_detail' s.pk %}" class="btn btn-outline-secondary" title="View Profile">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'student_roll_number_slip' s.pk %}" class="btn btn-outline-dark" title="Print Roll Number Slip" target="_blank">
+                    <i class="fas fa-id-badge"></i>
+                  </a>
+                  <a href="{% url 'dob_certificate' s.pk %}" class="btn btn-outline-secondary text-dark" title="Print D.O.B Certificate" target="_blank">
+                    <i class="fas fa-birthday-cake"></i>
+                  </a>
+                  <a href="{% url 'student_update' s.pk %}" class="btn btn-outline-secondary" title="Edit Student">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  {% if s.status != "Withdrawn" %}
+                    <a href="{% url 'student_promote' s.pk %}" class="btn btn-outline-primary" title="Promote Student">
+                      <i class="fas fa-level-up-alt"></i>
+                    </a>
+                    <a href="{% url 'student_withdraw' s.pk %}" class="btn btn-outline-warning text-dark" title="Withdraw Student">
+                      <i class="fas fa-user-times"></i>
+                    </a>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline-danger btn-delete-single" title="Permanently Delete Student" data-bs-toggle="modal" data-bs-target="#singleDeleteModal" data-id="{{ s.pk }}" data-name="{{ s.full_name }}" data-adm="{{ s.admission_no }}" data-class="{{ s.current_class.name }}">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="fas fa-user-slash fa-3x mb-3 d-block text-secondary"></i>
+                No students found matching your criteria.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+
+<!-- Modal: Single Student Delete Confirmation -->
+<div class="modal fade" id="singleDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="singleDeleteForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-exclamation-triangle me-2"></i> Delete Student Record
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Are you sure you want to permanently delete:</p>
+          <div class="p-3 bg-light rounded border mb-3">
+            <h5 class="fw-bold text-dark mb-1" id="singleDeleteStudentName">-</h5>
+            <div class="text-muted small">
+              Admission #: <strong id="singleDeleteStudentAdm" class="text-primary">-</strong> |
+              Class: <strong id="singleDeleteStudentClass">-</strong>
+            </div>
+          </div>
+          <div class="alert alert-warning small mb-0">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            This will permanently remove the student, their exam marks, fee ledgers, and attendance records. This cannot be undone.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold shadow-sm">
+            <i class="fas fa-trash-alt me-1"></i> Yes, Permanently Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Bulk Delete Confirmation -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-trash-alt me-2"></i> Confirm Bulk Deletion
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+          You have selected <strong id="bulkModalCount" class="text-danger">0</strong> student(s) for permanent deletion.
+        </p>
+        <div id="bulkModalClassesBreakdown" class="my-2 p-2 bg-light rounded border small"></div>
+        <div class="alert alert-danger small mb-0">
+          <i class="fas fa-exclamation-triangle me-1"></i>
+          <strong>Warning:</strong> All selected students along with their examination marks and fee ledgers will be permanently deleted from the database.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger fw-bold shadow-sm" id="confirmBulkDeleteBtn">
+          <i class="fas fa-trash-alt me-1"></i> Delete Selected Students
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if selected_class %}
+<!-- Modal: Class-Wide Delete Confirmation -->
+<div class="modal fade" id="classDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'class_students_delete' selected_class %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-trash-alt me-2"></i> Delete All Students in {{ selected_class_obj.name }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">
+            Are you sure you want to delete <strong>ALL {{ students|length }} students</strong> currently enrolled in <strong>{{ selected_class_obj.name }}</strong>?
+          </p>
+          <div class="alert alert-danger small mb-0">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            <strong>This will delete ONLY {{ selected_class_obj.name }} students.</strong> Students in all other classes will remain safe and untouched.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold shadow-sm">
+            <i class="fas fa-trash-alt me-1"></i> Yes, Delete All {{ selected_class_obj.name }} Students
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Modal: Delete Students by Class Dropdown -->
+<div class="modal fade" id="deleteByClassModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="deleteByClassForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-trash-alt me-2"></i> Delete Students by Class
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Select a class below. <strong>ONLY</strong> students belonging to that specific class will be deleted. Students in other classes will remain completely untouched.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select Class to Delete:</label>
+            <select id="deleteClassModalSelect" class="form-select" required>
+              <option value="">-- Choose Class --</option>
+              {% for c in classes %}
+                <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="alert alert-danger small mb-0">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            <strong>Warning:</strong> All students in the chosen class will be permanently removed along with their exam marks and fee ledgers.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold shadow-sm" id="confirmClassDeleteModalBtn" disabled>
+            <i class="fas fa-trash-alt me-1"></i> Delete Class Students Only
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -312,4 +511,138 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Multi-select handling
+  var selectAll = document.getElementById("selectAllStudents");
+  var checkboxes = document.querySelectorAll(".student-select-chk");
+  var bulkBar = document.getElementById("bulkActionsBar");
+  var selectedCountSpan = document.getElementById("selectedCount");
+  var bulkModalCount = document.getElementById("bulkModalCount");
+  var bulkModalBreakdown = document.getElementById("bulkModalClassesBreakdown");
+  var deselectBtn = document.getElementById("deselectAllBtn");
+  var bulkForm = document.getElementById("bulkDeleteForm");
+  var confirmBulkBtn = document.getElementById("confirmBulkDeleteBtn");
+
+  function updateCount() {
+    var checkedCount = 0;
+    var classCounts = {};
+
+    checkboxes.forEach(function(chk) {
+      if (chk.checked) {
+        checkedCount++;
+        var cName = chk.getAttribute("data-class-name") || "Other";
+        classCounts[cName] = (classCounts[cName] || 0) + 1;
+      }
+    });
+
+    if (selectedCountSpan) selectedCountSpan.innerText = checkedCount;
+    if (bulkModalCount) bulkModalCount.innerText = checkedCount;
+
+    if (bulkModalBreakdown) {
+      var keys = Object.keys(classCounts);
+      if (keys.length > 0) {
+        var breakdownHtml = "<strong>Classes selected:</strong><br>";
+        keys.forEach(function(k) {
+          breakdownHtml += "• <strong>" + k + "</strong>: " + classCounts[k] + " student(s)<br>";
+        });
+        if (keys.length > 1) {
+          breakdownHtml += "<div class='text-danger fw-bold mt-1'>⚠️ Warning: Multiple classes selected! If you only want to delete one class, filter by that class first or use 'Delete Class'.</div>";
+        }
+        bulkModalBreakdown.innerHTML = breakdownHtml;
+        bulkModalBreakdown.classList.remove("d-none");
+      } else {
+        bulkModalBreakdown.innerHTML = "";
+        bulkModalBreakdown.classList.add("d-none");
+      }
+    }
+
+    if (bulkBar) {
+      if (checkedCount > 0) {
+        bulkBar.classList.remove("d-none");
+      } else {
+        bulkBar.classList.add("d-none");
+      }
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener("change", function() {
+      checkboxes.forEach(function(chk) {
+        chk.checked = selectAll.checked;
+      });
+      updateCount();
+    });
+  }
+
+  checkboxes.forEach(function(chk) {
+    chk.addEventListener("change", function() {
+      updateCount();
+      if (!chk.checked && selectAll) {
+        selectAll.checked = false;
+      }
+    });
+  });
+
+  if (deselectBtn) {
+    deselectBtn.addEventListener("click", function() {
+      if (selectAll) selectAll.checked = false;
+      checkboxes.forEach(function(chk) { chk.checked = false; });
+      updateCount();
+    });
+  }
+
+  if (confirmBulkBtn && bulkForm) {
+    confirmBulkBtn.addEventListener("click", function() {
+      bulkForm.submit();
+    });
+  }
+
+  // Delete by Class Modal handling
+  var classModalSelect = document.getElementById("deleteClassModalSelect");
+  var classModalForm = document.getElementById("deleteByClassForm");
+  var classModalBtn = document.getElementById("confirmClassDeleteModalBtn");
+
+  function syncClassModal() {
+    if (!classModalSelect || !classModalForm || !classModalBtn) return;
+    var val = classModalSelect.value;
+    if (val) {
+      classModalForm.action = "/students/class/" + val + "/delete/";
+      classModalBtn.disabled = false;
+    } else {
+      classModalForm.action = "";
+      classModalBtn.disabled = true;
+    }
+  }
+
+  if (classModalSelect) {
+    classModalSelect.addEventListener("change", syncClassModal);
+    syncClassModal(); // Run initially if preselected
+  }
+
+  // Single Delete Modal handling
+  var deleteButtons = document.querySelectorAll(".btn-delete-single");
+  var singleForm = document.getElementById("singleDeleteForm");
+  var nameEl = document.getElementById("singleDeleteStudentName");
+  var admEl = document.getElementById("singleDeleteStudentAdm");
+  var classEl = document.getElementById("singleDeleteStudentClass");
+
+  deleteButtons.forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var sId = btn.getAttribute("data-id");
+      var sName = btn.getAttribute("data-name");
+      var sAdm = btn.getAttribute("data-adm");
+      var sClass = btn.getAttribute("data-class");
+
+      if (singleForm) {
+        singleForm.action = "/students/" + sId + "/delete/";
+      }
+      if (nameEl) nameEl.innerText = sName;
+      if (admEl) admEl.innerText = sAdm;
+      if (classEl) classEl.innerText = sClass;
+    });
+  });
+});
+</script>
 {% endblock %}

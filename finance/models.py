@@ -95,7 +95,7 @@ class FeePaymentReceipt(models.Model):
         StudentFeeMonthEntry, related_name="payments"
     )
     student = models.ForeignKey(
-        "students.Student", on_delete=models.PROTECT, related_name="payments"
+        "students.Student", on_delete=models.CASCADE, related_name="payments"
     )
     remarks = models.TextField(blank=True)
 

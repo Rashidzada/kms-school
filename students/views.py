@@ -171,12 +171,15 @@ def student_list(request):
     classes = ClassLevel.objects.all()
     sections = Section.objects.all()
 
+    selected_class_obj = ClassLevel.objects.filter(id=class_id).first() if class_id else None
+
     context = {
         "students": students_list,
         "classes": classes,
         "sections": sections,
         "query": query,
         "selected_class": class_id,
+        "selected_class_obj": selected_class_obj,
         "selected_section": section_id,
         "selected_status": status,
         "selected_fee_status": fee_status,
@@ -1040,14 +1043,21 @@ def import_students_excel(request):
                     r.get("admission") or r.get("roll_no") or r.get("roll") or r.get("reg_no") or ""
                 )
                 student = None
-                if adm_no:
+                if adm_no and class_obj:
+                    # Match strictly within designated class
+                    student = Student.objects.filter(current_class=class_obj, admission_no__iexact=adm_no).first()
+                elif adm_no and not class_obj:
                     student = Student.objects.filter(admission_no__iexact=adm_no).first()
+
                 if not student and full_name and father_name and class_obj:
-                    student = Student.objects.filter(
+                    # Only match by name if the candidate has matching father name and no conflicting admission_no
+                    candidate = Student.objects.filter(
                         full_name__iexact=full_name,
                         father_name__iexact=father_name,
                         current_class=class_obj,
                     ).first()
+                    if candidate and (not candidate.admission_no or not adm_no or clean_adm_no(candidate.admission_no).lower() == adm_no.lower()):
+                        student = candidate
 
                 if student:
                     # Update existing student - DO NOT DUPLICATE
@@ -1085,9 +1095,8 @@ def import_students_excel(request):
                         residence=residence,
                         status=status,
                         admission_date=adm_date,
+                        admission_no=adm_no,  # Set directly! No cross-class rejection!
                     )
-                    if adm_no and not Student.objects.filter(admission_no=adm_no).exists():
-                        student.admission_no = adm_no
                     student.save()
                     created_count += 1
 
@@ -1111,4 +1120,80 @@ def import_students_excel(request):
         messages.error(request, f"Excel Import Failed: {str(e)}")
 
     return redirect("student_list")
+
+
+@login_required
+def student_delete(request, pk):
+    """
+    Deletes an individual student record and all associated records cleanly.
+    """
+    student = get_object_or_404(Student, pk=pk)
+    name = student.full_name
+    adm = student.admission_no
+    class_name = student.current_class.name if student.current_class else ""
+    next_url = request.POST.get("next") or request.GET.get("next") or request.META.get("HTTP_REFERER") or "/students/"
+
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                student.delete()
+            messages.success(request, f"Student '{name}' (Adm #{adm}, {class_name}) was successfully deleted.")
+        except Exception as e:
+            messages.error(request, f"Error deleting student '{name}': {str(e)}")
+        return redirect(next_url)
+
+    return render(request, "students/student_confirm_delete.html", {
+        "student": student,
+        "next": next_url,
+    })
+
+
+@login_required
+def student_bulk_delete(request):
+    """
+    Bulk deletes selected students by their primary keys.
+    """
+    if request.method != "POST":
+        return redirect("student_list")
+
+    student_ids = request.POST.getlist("student_ids")
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or "/students/"
+
+    if not student_ids:
+        messages.warning(request, "No students were selected for deletion.")
+        return redirect(next_url)
+
+    try:
+        with transaction.atomic():
+            qs = Student.objects.filter(id__in=student_ids)
+            count = qs.count()
+            qs.delete()
+        messages.success(request, f"Successfully deleted {count} selected student(s).")
+    except Exception as e:
+        messages.error(request, f"Error deleting selected students: {str(e)}")
+
+    return redirect(next_url)
+
+
+@login_required
+def class_students_delete(request, class_id):
+    """
+    Deletes all students enrolled in a specified class (useful for wrong Excel imports or resets).
+    """
+    if request.method != "POST":
+        return redirect("student_list")
+
+    class_level = get_object_or_404(ClassLevel, id=class_id)
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or f"/students/?current_class={class_id}"
+
+    try:
+        with transaction.atomic():
+            qs = Student.objects.filter(current_class=class_level)
+            count = qs.count()
+            qs.delete()
+        messages.success(request, f"Successfully deleted all {count} student(s) from {class_level.name}.")
+    except Exception as e:
+        messages.error(request, f"Error deleting students of {class_level.name}: {str(e)}")
+
+    return redirect(next_url)
 

@@ -43,10 +43,10 @@ class Student(models.Model):
         ("Withdrawn", "Withdrawn"),
     ]
 
-    admission_no = models.CharField(max_length=20, unique=True, blank=True)
+    admission_no = models.CharField(max_length=50, blank=True, default="")
     admission_date = models.DateField(default=timezone.now)
     full_name = models.CharField(max_length=255)
-    father_name = models.CharField(max_length=255)
+    father_name = models.CharField(max_length=255, blank=True, default="")
     dob = models.DateField(null=True, blank=True, default=timezone.now)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="Male")
     tribe_caste = models.CharField(max_length=100, blank=True)
@@ -97,8 +97,6 @@ class Student(models.Model):
                 if s and s.isdigit():
                     existing_numbers.append(int(s))
             next_num = max(existing_numbers) + 1 if existing_numbers else 1001
-            while Student.objects.filter(admission_no=str(next_num)).exists():
-                next_num += 1
             self.admission_no = str(next_num)
         super().save(*args, **kwargs)
 

@@ -3,13 +3,17 @@ from django.db import models
 from django.urls import reverse
 
 
-def calculate_grade(percentage):
+def calculate_grade(percentage, passing_pct=30.0):
     """
-    Standard Pakistani / KP Board School Grading System.
+    Standard Pakistani / KP Board School Grading System with configurable passing percentage threshold.
     """
     if percentage is None:
         return "-"
-    pct = float(percentage)
+    try:
+        pct = float(percentage)
+        pass_thresh = float(passing_pct) if passing_pct is not None else 30.0
+    except (ValueError, TypeError):
+        return "-"
     if pct >= 80.0:
         return "A+"
     elif pct >= 70.0:
@@ -20,7 +24,7 @@ def calculate_grade(percentage):
         return "C"
     elif pct >= 40.0:
         return "D"
-    elif pct >= 33.0:
+    elif pct >= pass_thresh:
         return "E"
     else:
         return "Fail"

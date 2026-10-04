@@ -548,6 +548,31 @@ def export_subject_award_excel(request):
     return excel_download_response(output, filename)
 
 
+def detect_class_mismatch(rows, uploaded_file, target_class):
+    """
+    Checks if an uploaded Excel file explicitly belongs to a DIFFERENT class than target_class.
+    Prevents teachers from accidentally uploading e.g. a Class 4 spreadsheet into Class 3.
+    """
+    filename_lower = uploaded_file.name.lower()
+    title_text = " ".join([str(c).lower() for r in rows[:4] for c in r if c is not None])
+
+    target_clean = re.sub(r"[^a-z0-9]+", " ", target_class.name.lower()).strip()
+    target_in_text = bool(re.search(r"\b" + re.escape(target_clean) + r"\b", title_text))
+    target_in_file = bool(re.search(r"\b" + re.escape(target_clean.replace(" ", "_")) + r"\b", filename_lower)) or bool(re.search(r"\b" + re.escape(target_clean) + r"\b", filename_lower))
+
+    if target_in_text or target_in_file:
+        return None
+
+    for other_c in ClassLevel.objects.exclude(id=target_class.id):
+        other_clean = re.sub(r"[^a-z0-9]+", " ", other_c.name.lower()).strip()
+        found_in_text = bool(re.search(r"\b" + re.escape(other_clean) + r"\b", title_text))
+        found_in_file = bool(re.search(r"\b" + re.escape(other_clean.replace(" ", "_")) + r"\b", filename_lower)) or bool(re.search(r"\b" + re.escape(other_clean) + r"\b", filename_lower))
+        if found_in_text or found_in_file:
+            return other_c
+
+    return None
+
+
 @login_required
 def import_subject_award_excel(request):
     """
@@ -580,6 +605,17 @@ def import_subject_award_excel(request):
         rows = list(ws.iter_rows(values_only=True))
     except Exception as e:
         messages.error(request, f"Error reading Excel file: {str(e)}")
+        return redirect(target_redirect)
+
+    # Validate against class mismatch
+    mismatched_class = detect_class_mismatch(rows, uploaded_file, class_level)
+    if mismatched_class:
+        messages.error(
+            request,
+            f"Class Mismatch Warning! The uploaded file appears to be for '{mismatched_class.name}', "
+            f"but you currently have '{class_level.name}' selected. "
+            f"Upload was stopped to prevent corrupting student data."
+        )
         return redirect(target_redirect)
 
     # Find header row (contains "name" or "o/marks" or "admission")
@@ -620,9 +656,8 @@ def import_subject_award_excel(request):
         name_col = 2
 
     # Map existing students in this class
-    class_students = Student.objects.filter(current_class=class_level)
-    student_by_adm = {s.admission_no.strip().lower(): s for s in class_students if s.admission_no}
-    student_by_name = {s.full_name.strip().lower(): s for s in class_students}
+    class_students = list(Student.objects.filter(current_class=class_level))
+    student_by_adm = {clean_adm_no(s.admission_no).lower(): s for s in class_students if s.admission_no}
 
     updated_count = 0
     newly_added = 0
@@ -636,50 +671,59 @@ def import_subject_award_excel(request):
                     continue
 
                 target_student = None
-                adm_val = str(row_values[adm_col]).strip() if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] is not None else ""
+                adm_val = clean_adm_no(row_values[adm_col]) if adm_col != -1 and adm_col < len(row_values) and row_values[adm_col] is not None else ""
                 name_val = str(row_values[name_col]).strip() if name_col != -1 and name_col < len(row_values) and row_values[name_col] is not None else ""
                 fname_val = str(row_values[fname_col]).strip() if fname_col != -1 and fname_col < len(row_values) and row_values[fname_col] is not None else ""
 
+                # 1. Match by admission number within THIS class
                 if adm_val:
                     target_student = student_by_adm.get(adm_val.lower())
-                    if not target_student:
-                        # Check globally across school
-                        target_student = Student.objects.filter(admission_no__iexact=adm_val).first()
-                        if target_student and target_student.current_class != class_level:
-                            target_student.current_class = class_level
-                            target_student.save(update_fields=["current_class"])
 
+                # 2. If not matched by admission number, match by name+father ONLY if no conflicting admission number
                 if not target_student and name_val:
-                    target_student = student_by_name.get(name_val.lower())
-                    if not target_student:
-                        # Check globally by name
-                        target_student = Student.objects.filter(full_name__iexact=name_val).first()
-                        if target_student and target_student.current_class != class_level:
-                            target_student.current_class = class_level
-                            target_student.save(update_fields=["current_class"])
+                    for s in class_students:
+                        if s.full_name.strip().lower() == name_val.lower():
+                            father_matches = (
+                                not fname_val or not s.father_name or
+                                s.father_name.strip().lower() == fname_val.lower()
+                            )
+                            s_adm = clean_adm_no(s.admission_no).lower() if s.admission_no else ""
+                            if father_matches and (not s_adm or not adm_val or s_adm == adm_val.lower()):
+                                target_student = s
+                                if adm_val and not s.admission_no:
+                                    target_student.admission_no = adm_val
+                                    target_student.save(update_fields=["admission_no"])
+                                    student_by_adm[adm_val.lower()] = target_student
+                                break
 
-                # If student is brand new, auto-add to this class and to the result
+                # 3. If student is brand new, auto-add to THIS class and to the result
                 if not target_student and name_val:
                     default_section = Section.objects.filter(class_level=class_level).first()
                     if not default_section:
                         default_section = Section.objects.create(class_level=class_level, name="A")
                     target_student = Student(
                         full_name=name_val,
-                        father_name=fname_val or "Guardian",
+                        father_name=fname_val,
+                        admission_no=adm_val,
                         current_class=class_level,
                         current_section=default_section,
                         status="Active",
                         dob=date(2015, 1, 1),
                         gender="Male",
+                        admission_date=timezone.now().date(),
                         residence="",
                         contact_number="",
                     )
-                    if adm_val and not Student.objects.filter(admission_no=adm_val).exists():
-                        target_student.admission_no = adm_val
                     target_student.save()
-                    student_by_adm[target_student.admission_no.lower()] = target_student
-                    student_by_name[target_student.full_name.lower()] = target_student
+                    class_students.append(target_student)
+                    if adm_val:
+                        student_by_adm[adm_val.lower()] = target_student
                     newly_added += 1
+
+                # If student matched and father name was not known, update if provided now
+                if target_student and fname_val and (not target_student.father_name or target_student.father_name.strip().lower() in ["guardian", "", "-", "none", "not provided"]):
+                    target_student.father_name = fname_val
+                    target_student.save(update_fields=["father_name"])
 
                 if not target_student:
                     skipped_count += 1
@@ -805,6 +849,10 @@ def compute_class_result_matrix(exam, class_level, section=None):
     - Pass/Fail Status
     - Class Summary Statistics
     """
+    school_setting = SchoolSetting.objects.first()
+    pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+    pass_rule = school_setting.passing_rule if (school_setting and school_setting.passing_rule) else "overall_only"
+
     # 1. Get class subjects ordered
     class_subjects = list(
         ClassSubject.objects.filter(class_level=class_level).select_related("subject").order_by("order", "subject__order")
@@ -873,11 +921,16 @@ def compute_class_result_matrix(exam, class_level, section=None):
                 "mark_obj": m,
             })
 
-        # Calculate percentage
+        # Calculate percentage, grade, and status based on school passing criteria
         if grand_total_max > 0 and not all_absent and has_any_mark:
             percentage = round((float(obtained_total) / float(grand_total_max)) * 100, 2)
-            grade = calculate_grade(percentage)
-            status = "Fail" if (has_failed_subject or percentage < 33.0) else "Pass"
+            grade = calculate_grade(percentage, passing_pct=pass_pct)
+            if pass_rule == "overall_only":
+                status = "Pass" if percentage >= pass_pct else "Fail"
+            elif pass_rule == "subject_only":
+                status = "Fail" if has_failed_subject else "Pass"
+            else:  # subject_and_overall
+                status = "Fail" if (has_failed_subject or percentage < pass_pct) else "Pass"
         else:
             percentage = 0.0 if has_any_mark else None
             grade = "Fail" if has_any_mark else ""
@@ -933,6 +986,8 @@ def compute_class_result_matrix(exam, class_level, section=None):
         "pass_percentage": pass_percentage,
         "highest_marks": int(highest_marks) if highest_marks % 1 == 0 else highest_marks,
         "avg_marks": avg_marks,
+        "criteria_pass_pct": pass_pct,
+        "criteria_pass_rule": pass_rule,
     }
 
     return class_subjects, grand_total_max, student_records, stats
@@ -1231,7 +1286,7 @@ def class_marks_entry_grid(request):
     # Handle Quick-Add Student directly to this class
     if request.method == "POST" and request.POST.get("action") == "quick_add_student":
         q_name = request.POST.get("full_name", "").strip()
-        q_fname = request.POST.get("father_name", "").strip() or "Guardian"
+        q_fname = request.POST.get("father_name", "").strip()
         q_adm = clean_adm_no(request.POST.get("admission_no", ""))
         q_sec_id = request.POST.get("section_id")
         q_gender = request.POST.get("gender", "Male").strip().capitalize()
@@ -1247,10 +1302,9 @@ def class_marks_entry_grid(request):
         if not q_name:
             messages.error(request, "Student Full Name is required.")
         else:
-            if q_adm and Student.objects.filter(admission_no__iexact=q_adm).exists():
-                existing = Student.objects.filter(admission_no__iexact=q_adm).first()
-                c_name = existing.current_class.name if existing.current_class else "another record"
-                messages.error(request, f"Admission # '{q_adm}' already exists (assigned to '{existing.full_name}' in {c_name}). Please choose a unique number.")
+            if q_adm and Student.objects.filter(current_class=selected_class, admission_no__iexact=q_adm).exists():
+                existing = Student.objects.filter(current_class=selected_class, admission_no__iexact=q_adm).first()
+                messages.error(request, f"Admission # '{q_adm}' is already used by '{existing.full_name}' in this class. Please choose a unique number for {selected_class.name}.")
             else:
                 new_s = Student(
                     full_name=q_name,
@@ -1281,11 +1335,21 @@ def class_marks_entry_grid(request):
 
         return redirect(f"{request.path}?exam_id={selected_exam.id}&class_id={selected_class.id}&section_id={selected_section.id if selected_section else ''}")
 
-    # Handle POST - Save Grid Marks directly from web
+    # Handle POST - Save Grid Marks & Admission Numbers directly from web
     if request.method == "POST" and request.POST.get("action") == "save_grid_marks":
         saved_marks_count = 0
+        updated_adm_count = 0
         with transaction.atomic():
             for s in students:
+                # Update admission number if changed in the grid
+                adm_key = f"adm_{s.id}"
+                if adm_key in request.POST:
+                    new_adm = clean_adm_no(request.POST.get(adm_key, ""))
+                    if new_adm != s.admission_no:
+                        s.admission_no = new_adm
+                        s.save(update_fields=["admission_no"])
+                        updated_adm_count += 1
+
                 for cs in class_subjects:
                     field_key = f"mark_{s.id}_{cs.subject_id}"
                     val = request.POST.get(field_key, "").strip()
@@ -1323,8 +1387,42 @@ def class_marks_entry_grid(request):
                         except Exception:
                             continue
 
-        messages.success(request, f"Successfully saved {saved_marks_count} marks entries for {len(students)} students in {selected_class.name}!")
+        adm_info = f" and updated {updated_adm_count} admission #s" if updated_adm_count > 0 else ""
+        messages.success(request, f"Successfully saved {saved_marks_count} marks entries{adm_info} for {len(students)} students in {selected_class.name}!")
         return redirect(f"{request.path}?exam_id={selected_exam.id}&class_id={selected_class.id}&section_id={selected_section.id if selected_section else ''}")
+
+    # Handle POST - Save Passing Criteria as School Default
+    if request.method == "POST" and request.POST.get("action") == "save_passing_criteria":
+        new_pct = request.POST.get("passing_percentage")
+        new_rule = request.POST.get("passing_rule", "overall_only")
+        if new_pct:
+            try:
+                setting_obj = SchoolSetting.objects.first()
+                if not setting_obj:
+                    setting_obj = SchoolSetting.objects.create()
+                setting_obj.passing_percentage = Decimal(str(new_pct).strip())
+                setting_obj.passing_rule = new_rule
+                setting_obj.save()
+                messages.success(request, f"Passing criteria updated to {setting_obj.passing_percentage}% ({setting_obj.get_passing_rule_display()}) and saved as school default!")
+            except Exception as e:
+                messages.error(request, f"Could not update passing criteria: {e}")
+        return redirect(f"{request.path}?exam_id={selected_exam.id if selected_exam else ''}&class_id={selected_class.id if selected_class else ''}&section_id={selected_section.id if selected_section else ''}")
+
+    # Handle POST - Sync Class Subject Passing Marks
+    if request.method == "POST" and request.POST.get("action") == "sync_class_subject_pass_marks":
+        pct_raw = request.POST.get("passing_percentage") or (school_setting.passing_percentage if school_setting else 30.0)
+        try:
+            pct_val = Decimal(str(pct_raw).strip())
+            if selected_class:
+                updated_count = 0
+                for cs in ClassSubject.objects.filter(class_level=selected_class):
+                    cs.passing_marks = round((cs.total_marks * pct_val) / Decimal("100.0"), 1)
+                    cs.save()
+                    updated_count += 1
+                messages.success(request, f"Updated passing marks for {updated_count} subjects in {selected_class.name} to match {pct_val}% threshold.")
+        except Exception as e:
+            messages.error(request, f"Could not update subject passing marks: {e}")
+        return redirect(f"{request.path}?exam_id={selected_exam.id if selected_exam else ''}&class_id={selected_class.id if selected_class else ''}&section_id={selected_section.id if selected_section else ''}")
 
     # Build existing marks map
     existing_marks = {}
@@ -1338,11 +1436,14 @@ def class_marks_entry_grid(request):
             existing_marks[(m.student_id, m.subject_id)] = m
 
     grand_total_max = sum(cs.total_marks for cs in class_subjects)
+    active_pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+    active_pass_rule = school_setting.passing_rule if (school_setting and school_setting.passing_rule) else "overall_only"
 
     for idx, s in enumerate(students, start=1):
         subj_inputs = []
         row_total = Decimal("0.0")
         has_any_mark = False
+        has_sub_fail = False
 
         for cs in class_subjects:
             m = existing_marks.get((s.id, cs.subject_id))
@@ -1351,10 +1452,13 @@ def class_marks_entry_grid(request):
                 if m.is_absent:
                     score = "A"
                     is_abs = True
+                    has_sub_fail = True
                 else:
                     score = int(m.obtained_marks) if m.obtained_marks % 1 == 0 else m.obtained_marks
                     row_total += m.obtained_marks
                     is_abs = False
+                    if m.obtained_marks < cs.passing_marks:
+                        has_sub_fail = True
             else:
                 score = ""
                 is_abs = False
@@ -1364,13 +1468,29 @@ def class_marks_entry_grid(request):
                 "score": score,
                 "is_absent": is_abs,
                 "max_marks": int(cs.total_marks) if cs.total_marks % 1 == 0 else cs.total_marks,
+                "passing_marks": int(cs.passing_marks) if cs.passing_marks % 1 == 0 else cs.passing_marks,
             })
+
+        row_pct = round((float(row_total) / float(grand_total_max)) * 100, 1) if (grand_total_max > 0 and has_any_mark) else None
+        row_grade = calculate_grade(row_pct, passing_pct=active_pass_pct) if row_pct is not None else "-"
+        if row_pct is not None:
+            if active_pass_rule == "overall_only":
+                row_status = "Pass" if row_pct >= active_pass_pct else "Fail"
+            elif active_pass_rule == "subject_only":
+                row_status = "Fail" if has_sub_fail else "Pass"
+            else:
+                row_status = "Pass" if (not has_sub_fail and row_pct >= active_pass_pct) else "Fail"
+        else:
+            row_status = "-"
 
         student_grid_rows.append({
             "sr_no": idx,
             "student": s,
             "subjects": subj_inputs,
             "row_total": int(row_total) if row_total % 1 == 0 else row_total,
+            "row_pct": row_pct,
+            "row_grade": row_grade,
+            "row_status": row_status,
             "has_any_mark": has_any_mark,
         })
 
@@ -1386,6 +1506,8 @@ def class_marks_entry_grid(request):
         "grand_total_max": int(grand_total_max) if grand_total_max % 1 == 0 else grand_total_max,
         "student_grid_rows": student_grid_rows,
         "total_students": len(students),
+        "passing_percentage": active_pass_pct,
+        "passing_rule": active_pass_rule,
     }
     return render(request, "exams/class_marks_entry_grid.html", context)
 
@@ -1653,6 +1775,17 @@ def import_class_result_excel(request):
         messages.error(request, f"Error reading Excel file: {str(e)}")
         return redirect(target_redirect)
 
+    # Validate against class mismatch
+    mismatched_class = detect_class_mismatch(rows, uploaded_file, class_level)
+    if mismatched_class:
+        messages.error(
+            request,
+            f"Class Mismatch Detected! The uploaded spreadsheet appears to be for '{mismatched_class.name}', "
+            f"but you currently have '{class_level.name}' selected. "
+            f"Upload was aborted to prevent putting students into the wrong class."
+        )
+        return redirect(target_redirect)
+
     # Locate header row: scan first 12 rows
     header_idx = -1
     for idx, r in enumerate(rows[:12]):
@@ -1716,9 +1849,8 @@ def import_class_result_excel(request):
         return redirect(target_redirect)
 
     # Students belonging STRICTLY to THIS class
-    class_students = Student.objects.filter(current_class=class_level)
+    class_students = list(Student.objects.filter(current_class=class_level))
     student_by_adm = {clean_adm_no(s.admission_no).lower(): s for s in class_students if s.admission_no}
-    student_by_name = {s.full_name.strip().lower(): s for s in class_students}
 
     updated_entries = 0
     updated_students = set()
@@ -1744,31 +1876,34 @@ def import_class_result_excel(request):
 
                 # Match strictly within THIS class
                 target_student = None
+
+                # 1. Match by admission number within THIS class
                 if adm_val:
                     target_student = student_by_adm.get(adm_val.lower())
 
+                # 2. If not matched by admission number, match by name+father ONLY if no conflicting admission number
                 if not target_student and name_val:
-                    target_student = student_by_name.get(name_val.lower())
-                    if target_student and adm_val and not target_student.admission_no:
-                        # Update student admission number if free
-                        if not Student.objects.filter(admission_no__iexact=adm_val).exclude(id=target_student.id).exists():
-                            target_student.admission_no = adm_val
-                            target_student.save(update_fields=["admission_no"])
-                            student_by_adm[adm_val.lower()] = target_student
+                    for s in class_students:
+                        if s.full_name.strip().lower() == name_val.lower():
+                            father_matches = (
+                                not fname_val or not s.father_name or
+                                s.father_name.strip().lower() == fname_val.lower()
+                            )
+                            s_adm = clean_adm_no(s.admission_no).lower() if s.admission_no else ""
+                            if father_matches and (not s_adm or not adm_val or s_adm == adm_val.lower()):
+                                target_student = s
+                                if adm_val and not s.admission_no:
+                                    target_student.admission_no = adm_val
+                                    target_student.save(update_fields=["admission_no"])
+                                    student_by_adm[adm_val.lower()] = target_student
+                                break
 
-                # If student does not exist in this class, CREATE them exclusively in this class
+                # 3. If student does not exist in this class, CREATE them exclusively in this class
                 if not target_student and name_val:
-                    assigned_adm = adm_val
-                    if assigned_adm:
-                        # Check if another student in another class already has this exact admission number
-                        clash = Student.objects.filter(admission_no__iexact=assigned_adm).first()
-                        if clash:
-                            # Avoid collision while preserving the intended serial prefix
-                            assigned_adm = f"{assigned_adm}-{class_level.name.replace(' ', '')}"
-
                     target_student = Student(
                         full_name=name_val,
-                        father_name=fname_val or "Guardian",
+                        father_name=fname_val,  # Clean blank if father not known in advance!
+                        admission_no=adm_val,  # Exact admission number from Excel, NO class suffix, NO cross-class clash!
                         current_class=class_level,
                         current_section=default_section,
                         status="Active",
@@ -1778,12 +1913,10 @@ def import_class_result_excel(request):
                         residence="",
                         contact_number="",
                     )
-                    if assigned_adm:
-                        target_student.admission_no = assigned_adm
                     target_student.save()
-
-                    student_by_adm[target_student.admission_no.lower()] = target_student
-                    student_by_name[target_student.full_name.lower()] = target_student
+                    class_students.append(target_student)
+                    if adm_val:
+                        student_by_adm[adm_val.lower()] = target_student
                     newly_added_students += 1
 
                     # Initialize Fee Ledger
@@ -1796,6 +1929,11 @@ def import_class_result_excel(request):
                             initialize_ledger_months(ledger, target_student, class_level.monthly_fee)
                         except Exception:
                             pass
+
+                # If student matched and father name was empty or not set, update with real father name if provided now
+                if target_student and fname_val and (not target_student.father_name or target_student.father_name.strip().lower() in ["guardian", "", "-", "none", "not provided"]):
+                    target_student.father_name = fname_val
+                    target_student.save(update_fields=["father_name"])
 
                 if not target_student:
                     continue
@@ -1859,6 +1997,52 @@ def import_class_result_excel(request):
 
     redirect_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or default_redirect
     return redirect(redirect_url)
+
+
+@login_required
+def class_marks_reset(request):
+    """
+    Clears marks or purges all students for a specific class in an examination.
+    Provides a safe, one-click reset for teachers if wrong data was entered or imported.
+    """
+    if request.method != "POST":
+        return redirect("class_marks_entry_grid")
+
+    exam_id = request.POST.get("exam_id")
+    class_id = request.POST.get("class_id")
+    reset_mode = request.POST.get("reset_mode", "marks_only")
+    target_redirect = request.POST.get("next") or f"/exams/enter-marks/?exam_id={exam_id}&class_id={class_id}"
+
+    if not (exam_id and class_id):
+        messages.error(request, "Missing examination or class selection.")
+        return redirect("class_marks_entry_grid")
+
+    exam = get_object_or_404(Exam, id=exam_id)
+    class_level = get_object_or_404(ClassLevel, id=class_id)
+
+    try:
+        with transaction.atomic():
+            if reset_mode == "all_students":
+                qs = Student.objects.filter(current_class=class_level)
+                count = qs.count()
+                qs.delete()
+                messages.success(
+                    request,
+                    f"Successfully deleted all {count} student(s) from {class_level.name}, along with their marks and records."
+                )
+            else:
+                # Default: marks_only
+                marks_qs = ExamMark.objects.filter(exam=exam, class_level=class_level)
+                count = marks_qs.count()
+                marks_qs.delete()
+                messages.success(
+                    request,
+                    f"Successfully cleared all {count} exam mark(s) for {class_level.name} in '{exam.name}'. Students remain enrolled."
+                )
+    except Exception as e:
+        messages.error(request, f"Error resetting class data: {str(e)}")
+
+    return redirect(target_redirect)
 
 
 # ==============================================================================

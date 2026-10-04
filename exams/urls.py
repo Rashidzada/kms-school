@@ -12,6 +12,7 @@ urlpatterns = [
     path("award-sheet/import/", views.import_subject_award_excel, name="import_subject_award_excel"),
     path("award-sheet/print/", views.print_subject_award_sheet, name="print_subject_award_sheet"),
     path("enter-marks/", views.class_marks_entry_grid, name="class_marks_entry_grid"),
+    path("class-marks/reset/", views.class_marks_reset, name="class_marks_reset"),
     path("bulk-dmc/", views.bulk_dmc_print, name="bulk_dmc_print"),
     path("class-template/export/", views.export_class_template_excel, name="export_class_template_excel"),
     path("class-result/import/", views.import_class_result_excel, name="import_class_result_excel"),

@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Faculty QR Attendance Badges | {{ school_setting.name }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    body {
+      background: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+    }
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 1050px;
+      margin: 0 auto;
+    }
+    .badge-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #cbd5e0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .badge-card:hover {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    .badge-card-header {
+      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+      color: #fff;
+      padding: 10px 8px;
+    }
+    .badge-card-body {
+      padding: 12px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .badge-qr {
+      width: 130px;
+      height: 130px;
+      margin: 6px 0;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 4px;
+      background: #fff;
+    }
+    .badge-card-footer {
+      background: #f8fafc;
+      border-top: 1px solid #edf2f7;
+      padding: 6px;
+      font-size: 7.5pt;
+      color: #718096;
+    }
+    .punch-success {
+      border: 2px solid #10b981 !important;
+      background-color: #f0fdf4 !important;
+      animation: flashGreen 0.6s ease-out;
+    }
+    @keyframes flashGreen {
+      0% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.9); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .badge-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        width: 100% !important;
+      }
+      .badge-card {
+        box-shadow: none !important;
+        border: 1px solid #718096 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sound Audio Element -->
+  <audio id="badge-chime" src="{% static 'sounds/chime.wav' %}" preload="auto"></audio>
+
+  <div class="no-print mb-4" style="max-width: 1050px; margin: 0 auto;">
+    <div class="card shadow-sm border-0 bg-white">
+      <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <a href="{% url 'qr_attendance_scan' %}" class="btn btn-primary fw-bold">
+            <i class="fas fa-camera me-1"></i> Open QR Scanner
+          </a>
+          <a href="{% url 'all_staff_id_cards' %}" class="btn btn-outline-primary fw-bold">
+            <i class="fas fa-id-card me-1"></i> Full Staff ID Cards
+          </a>
+          <button onclick="window.print()" class="btn btn-outline-dark fw-bold">
+            <i class="fas fa-print me-1"></i> Print All Badges (A4)
+          </button>
+        </div>
+
+        <!-- Live Search Filter for Screen Mode -->
+        <div class="d-flex align-items-center gap-2">
+          <input type="text" id="badge-search-input" class="form-control form-control-sm" placeholder="Search teacher name or ID..." style="width: 250px;">
+          <span class="badge bg-success py-2 px-3 fw-bold small">
+            <i class="fas fa-hand-pointer me-1"></i> Click any card to punch attendance
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-banner" class="alert alert-success shadow fw-bold position-fixed top-0 start-50 translate-middle-x mt-3 no-print" style="display: none; z-index: 9999;">
+    <i class="fas fa-check-circle me-1"></i> <span id="toast-msg">Attendance Recorded!</span>
+  </div>
+
+  <div class="badge-grid" id="badge-container">
+    {% for teacher in teachers %}
+    <div class="badge-card" id="card-{{ teacher.teacher_id }}" data-search="{{ teacher.full_name|lower }} {{ teacher.teacher_id|lower }} {{ teacher.designation|lower }}">
+      <div class="badge-card-header">
+        <div style="font-size: 8.5pt; font-weight: bold; line-height: 1.2;">{{ school_setting.name }}</div>
+        <div style="font-size: 6.5pt; opacity: 0.85; text-transform: uppercase;">Teacher QR Attendance Badge</div>
+      </div>
+      <div class="badge-card-body">
+        <h6 class="fw-bold text-dark mb-0" style="font-size: 9.5pt;">{{ teacher.full_name }}</h6>
+        <div class="badge bg-primary text-uppercase px-2 py-0 my-1" style="font-size: 6.5pt;">{{ teacher.designation }}</div>
+        <div class="text-muted small fw-bold" style="font-size: 7.5pt;">Staff ID: {{ teacher.teacher_id }}</div>
+
+        <img src="{% url 'teacher_qr_image' teacher.pk %}?v=4" alt="QR" class="badge-qr">
+
+        <div style="font-size: 6.5pt; color: #4a5568;" class="mb-2">Scan badge at laptop camera or click below</div>
+
+        <!-- Interactive Punch Button on Screen -->
+        <button 
+          type="button" 
+          class="btn btn-sm btn-outline-success fw-bold w-100 py-1 no-print btn-punch-action"
+          data-id="{{ teacher.teacher_id }}"
+          id="btn-punch-{{ teacher.teacher_id }}"
+        >
+          <i class="fas fa-fingerprint me-1"></i> Mark Attendance
+        </button>
+      </div>
+      <div class="badge-card-footer">
+        <div>{{ school_setting.address|truncatewords:6 }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const audio = document.getElementById('badge-chime');
+    const toast = document.getElementById('toast-banner');
+    const toastMsg = document.getElementById('toast-msg');
+    const searchInput = document.getElementById('badge-search-input');
+
+    function playSound() {
+      try {
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch(e => console.warn(e));
+        }
+      } catch(e) {}
+    }
+
+    function showToast(text, isLate) {
+      toastMsg.textContent = text;
+      toast.className = 'alert shadow fw-bold position-fixed top-0 start-50 translate-middle-x mt-3 no-print ' + (isLate ? 'alert-warning' : 'alert-success');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    function punchAttendance(staffId) {
+      const btn = document.getElementById('btn-punch-' + staffId);
+      const card = document.getElementById('card-' + staffId);
+      if (btn) btn.disabled = true;
+
+      fetch("{% url 'api_process_qr_scan' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ code: staffId }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (btn) btn.disabled = false;
+        if (data.success) {
+          playSound();
+          if (card) {
+            card.classList.add('punch-success');
+            setTimeout(() => card.classList.remove('punch-success'), 2000);
+          }
+          if (btn) {
+            btn.className = 'btn btn-sm btn-success fw-bold w-100 py-1 no-print';
+            btn.innerHTML = `<i class="fas fa-check-circle"></i> ${data.status} (${data.check_in || data.check_out})`;
+          }
+          showToast(`✔ ${data.teacher.name} (${data.teacher.staff_id}): ${data.message} [Status: ${data.status}]`, data.status === 'Late');
+        } else {
+          alert(data.message || 'Error recording attendance.');
+        }
+      })
+      .catch(err => {
+        if (btn) btn.disabled = false;
+        console.error(err);
+      });
+    }
+
+    // Attach click events
+    document.querySelectorAll('.btn-punch-action').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const id = this.getAttribute('data-id');
+        if (id) punchAttendance(id);
+      });
+    });
+
+    // Search filter
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const q = this.value.trim().toLowerCase();
+        document.querySelectorAll('.badge-card').forEach(card => {
+          const s = card.getAttribute('data-search') || '';
+          card.style.display = s.includes(q) ? 'flex' : 'none';
+        });
+      });
+    }
+  });
+  </script>
+</body>
+</html>

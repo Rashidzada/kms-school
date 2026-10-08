@@ -1,10 +1,16 @@
-from datetime import date, datetime
+import calendar
+import io
+import json
+from datetime import date, datetime, time
 from decimal import Decimal
+import qrcode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from school.excel_utils import (
@@ -15,13 +21,22 @@ from school.excel_utils import (
 from school.models import SchoolSetting
 
 from .forms import (
+    BiometricImportForm,
     GenerateSalaryBillsForm,
     MonthlySalaryBillForm,
     SalaryScaleForm,
+    TeacherAttendanceSettingForm,
     TeacherForm,
 )
-from .models import MonthlySalaryBill, SalaryScale, Teacher
+from .models import (
+    MonthlySalaryBill,
+    SalaryScale,
+    Teacher,
+    TeacherAttendance,
+    TeacherAttendanceSetting,
+)
 from school.whatsapp_utils import build_teacher_salary_slip_msg
+
 
 
 @login_required
@@ -112,7 +127,31 @@ def staff_id_card(request, pk):
     Printable Staff ID Card (FR-6.8, FR-8.3).
     """
     teacher = get_object_or_404(Teacher, pk=pk)
-    return render(request, "teachers/staff_id_card.html", {"teacher": teacher})
+    school_setting = SchoolSetting.objects.first()
+    all_teachers = Teacher.objects.filter(status="Active").order_by("teacher_id")
+    return render(
+        request,
+        "teachers/staff_id_card.html",
+        {
+            "teacher": teacher,
+            "school_setting": school_setting,
+            "all_teachers": all_teachers,
+        },
+    )
+
+
+@login_required
+def all_staff_id_cards(request):
+    """
+    Printable batch sheet of full professional Faculty ID Cards for all active teachers (A4 batch sheet).
+    """
+    teachers = Teacher.objects.filter(status="Active").order_by("teacher_id")
+    school_setting = SchoolSetting.objects.first()
+    return render(
+        request,
+        "teachers/staff_id_cards_batch_print.html",
+        {"teachers": teachers, "school_setting": school_setting},
+    )
 
 
 @login_required
@@ -392,7 +431,8 @@ def salary_bill_update(request, pk):
 @login_required
 def generate_salary_bills(request):
     """
-    Batch generate salary bills for active teachers with assigned salary scales (FR-6.4, Rule 9).
+    Batch generate salary bills for active teachers with assigned salary scales (FR-6.4, Rule 9),
+    with intelligent attendance sync for late comers, absences, and bonuses.
     """
     today = timezone.now().date()
     if request.method == "POST":
@@ -400,41 +440,48 @@ def generate_salary_bills(request):
         if form.is_valid():
             month = int(form.cleaned_data["month"])
             year = int(form.cleaned_data["year"])
+            sync_attendance = form.cleaned_data.get("sync_attendance", True)
 
             active_teachers = Teacher.objects.filter(
                 status="Active", salary_scale__isnull=False
             ).select_related("salary_scale")
 
             created_count = 0
+            synced_count = 0
             with transaction.atomic():
                 for teacher in active_teachers:
-                    if not MonthlySalaryBill.objects.filter(
-                        teacher=teacher, month=month, year=year
-                    ).exists():
-                        scale = teacher.salary_scale
-                        MonthlySalaryBill.objects.create(
-                            teacher=teacher,
-                            month=month,
-                            year=year,
-                            base_pay=scale.basic_pay,
-                            days_present=30,
-                            allowances=scale.total_allowances,
-                            deductions=Decimal("0.00"),
-                            is_paid=False,
-                        )
+                    scale = teacher.salary_scale
+                    bill, created = MonthlySalaryBill.objects.get_or_create(
+                        teacher=teacher,
+                        month=month,
+                        year=year,
+                        defaults={
+                            "base_pay": scale.basic_pay,
+                            "days_present": 30,
+                            "allowances": scale.total_allowances,
+                            "deductions": Decimal("0.00"),
+                            "is_paid": False,
+                        },
+                    )
+                    if created:
                         created_count += 1
 
-            messages.success(
-                request,
-                f"Generated {created_count} salary bills for {month}/{year}.",
-            )
+                    if sync_attendance:
+                        if bill.sync_from_attendance():
+                            synced_count += 1
+
+            msg = f"Generated {created_count} salary bills for {month}/{year}."
+            if sync_attendance and synced_count > 0:
+                msg += f" Successfully synced attendance cuts & bonuses for {synced_count} teachers."
+            messages.success(request, msg)
             return redirect(f"/teachers/salary-bills/?month={month}&year={year}")
     else:
-        form = GenerateSalaryBillsForm(initial={"month": today.month, "year": today.year})
+        form = GenerateSalaryBillsForm(initial={"month": today.month, "year": today.year, "sync_attendance": True})
 
     return render(
         request, "teachers/generate_salary_bills.html", {"form": form}
     )
+
 
 
 @login_required
@@ -694,4 +741,1062 @@ def import_teachers_excel(request):
         messages.error(request, f"Excel Import Failed: {str(e)}")
 
     return redirect("teacher_list")
+
+
+# ==============================================================================
+# KMS V4 TEACHER ATTENDANCE, QR CODE & SALARY CUTTING SYSTEM
+# ==============================================================================
+
+@login_required
+def teacher_qr_image(request, pk):
+    """
+    Dynamically stream crisp high-contrast PNG QR Code for staff attendance scanning.
+    """
+    teacher = get_object_or_404(Teacher, pk=pk)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=3,
+    )
+    qr.add_data(str(teacher.teacher_id))
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    response = HttpResponse(buf.getvalue(), content_type="image/png")
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
+
+
+
+@login_required
+def qr_attendance_scan(request):
+    """
+    Live real-time QR Code scanning terminal for teacher check-in and check-out.
+    """
+    today = timezone.localtime(timezone.now()).date()
+    setting = TeacherAttendanceSetting.get_settings()
+
+    today_attendances = (
+        TeacherAttendance.objects.filter(date=today)
+        .select_related("teacher", "teacher__salary_scale")
+        .order_by("-updated_at")
+    )
+
+    active_teachers = (
+        Teacher.objects.filter(status="Active")
+        .select_related("salary_scale")
+        .order_by("full_name")
+    )
+
+    today_att_map = {a.teacher_id: a for a in today_attendances}
+    for t in active_teachers:
+        t.today_attendance = today_att_map.get(t.pk)
+
+    total_active = active_teachers.count()
+    present_count = today_attendances.filter(status="Present").count()
+    late_count = today_attendances.filter(status="Late").count()
+    absent_count = today_attendances.filter(status="Absent").count()
+    half_day_count = today_attendances.filter(status="Half Day").count()
+    total_deductions_today = sum(a.deduction_amount for a in today_attendances)
+
+    context = {
+        "today": today,
+        "setting": setting,
+        "today_attendances": today_attendances,
+        "active_teachers": active_teachers,
+        "total_active": total_active,
+        "present_count": present_count,
+        "late_count": late_count,
+        "absent_count": absent_count,
+        "half_day_count": half_day_count,
+        "total_deductions_today": total_deductions_today,
+    }
+    return render(request, "teachers/qr_attendance_scan.html", context)
+
+
+@login_required
+def api_process_qr_scan(request):
+    """
+    AJAX handler for live QR barcode scans. Handles Check-in, Check-out,
+    late minutes calculation, and instant hourly/daily cutting amounts.
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "POST method required."}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    raw_code = str(data.get("code", "")).strip()
+    if not raw_code:
+        return JsonResponse({"success": False, "message": "No QR code detected."})
+
+    clean_code = raw_code
+    if "KMS-STAFF:" in raw_code.upper():
+        clean_code = raw_code.split(":", 1)[1].strip()
+    elif " - " in clean_code:
+        clean_code = clean_code.split(" - ")[0].strip()
+
+    teacher = Teacher.objects.filter(
+        Q(teacher_id__iexact=clean_code) |
+        Q(teacher_id__iexact=raw_code) |
+        Q(full_name__iexact=clean_code)
+    ).select_related("salary_scale").first()
+
+    if not teacher and clean_code.isdigit():
+        teacher = Teacher.objects.filter(pk=int(clean_code)).select_related("salary_scale").first()
+
+    if not teacher:
+        return JsonResponse({
+            "success": False,
+            "message": f"Staff ID '{raw_code}' not found in school database.",
+        })
+
+
+    now_dt = timezone.localtime(timezone.now())
+    today = now_dt.date()
+    now_time = now_dt.time().replace(microsecond=0)
+    setting = TeacherAttendanceSetting.get_settings()
+
+    att = TeacherAttendance.objects.filter(teacher=teacher, date=today).first()
+
+    if not att:
+        # First scan of the day -> Check In
+        att = TeacherAttendance(
+            teacher=teacher,
+            date=today,
+            check_in=now_time,
+            attendance_method="QR Code",
+            status="Present",
+        )
+        att.calculate_and_apply_deduction(setting)
+        att.save()
+        action = "check_in"
+        msg = f"Check-In recorded at {now_time.strftime('%I:%M %p')}."
+    else:
+        # Subsequent scan -> Check Out
+        if not att.check_out:
+            att.check_out = now_time
+            action = "check_out"
+            msg = f"Check-Out recorded at {now_time.strftime('%I:%M %p')}."
+        else:
+            att.check_out = now_time
+            action = "check_out_updated"
+            msg = f"Check-Out updated to {now_time.strftime('%I:%M %p')}."
+
+        att.calculate_and_apply_deduction(setting)
+        att.save()
+
+    photo_url = teacher.profile_picture.url if teacher.profile_picture else ""
+
+    return JsonResponse({
+        "success": True,
+        "action": action,
+        "message": msg,
+        "teacher": {
+            "id": teacher.pk,
+            "staff_id": teacher.teacher_id,
+            "name": teacher.full_name,
+            "designation": teacher.designation,
+            "photo_url": photo_url,
+            "basic_pay": float(teacher.salary_scale.basic_pay) if (teacher.salary_scale and teacher.salary_scale.basic_pay) else 0.0,
+        },
+        "status": att.status,
+        "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "",
+        "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "",
+        "late_minutes": att.late_minutes,
+        "working_hours": float(att.working_hours),
+        "deduction_amount": float(att.deduction_amount),
+        "bonus_amount": float(att.bonus_amount),
+    })
+
+
+@login_required
+def daily_attendance_register(request):
+    """
+    Daily manual attendance roster for all teachers. Allows rapid Present,
+    Late, Absent, Half-day marking with custom salary cut and bonus overrides.
+    """
+    date_str = request.GET.get("date") or request.POST.get("date")
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            target_date = timezone.localtime(timezone.now()).date()
+    else:
+        target_date = timezone.localtime(timezone.now()).date()
+
+    setting = TeacherAttendanceSetting.get_settings()
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+
+    if request.method == "POST":
+        action = request.POST.get("action", "save")
+        with transaction.atomic():
+            for t in teachers:
+                prefix = f"teacher_{t.pk}_"
+                status = request.POST.get(prefix + "status", "Present")
+                check_in_str = request.POST.get(prefix + "check_in", "").strip()
+                check_out_str = request.POST.get(prefix + "check_out", "").strip()
+                deduction_str = request.POST.get(prefix + "deduction", "0.00").strip()
+                bonus_str = request.POST.get(prefix + "bonus", "0.00").strip()
+                remarks = request.POST.get(prefix + "remarks", "").strip()
+                auto_calc = request.POST.get(prefix + "auto_calc", "off") == "on"
+
+                check_in = None
+                if check_in_str:
+                    try:
+                        check_in = datetime.strptime(check_in_str, "%H:%M").time()
+                    except ValueError:
+                        pass
+
+                check_out = None
+                if check_out_str:
+                    try:
+                        check_out = datetime.strptime(check_out_str, "%H:%M").time()
+                    except ValueError:
+                        pass
+
+                try:
+                    deduction_amount = Decimal(deduction_str or "0.00")
+                except Exception:
+                    deduction_amount = Decimal("0.00")
+
+                try:
+                    bonus_amount = Decimal(bonus_str or "0.00")
+                except Exception:
+                    bonus_amount = Decimal("0.00")
+
+                att, _ = TeacherAttendance.objects.get_or_create(
+                    teacher=t,
+                    date=target_date,
+                    defaults={"attendance_method": "Manual"}
+                )
+                att.status = status
+                att.check_in = check_in
+                att.check_out = check_out
+                att.remarks = remarks
+                att.bonus_amount = bonus_amount
+                att.attendance_method = "Manual"
+
+                if auto_calc or action == "auto_calculate_all":
+                    att.calculate_and_apply_deduction(setting)
+                else:
+                    att.deduction_amount = deduction_amount
+                    if att.check_in and setting.shift_start_time:
+                        in_m = att.check_in.hour * 60 + att.check_in.minute
+                        shift_m = setting.shift_start_time.hour * 60 + setting.shift_start_time.minute
+                        att.late_minutes = max(0, in_m - shift_m)
+
+                att.save()
+
+        messages.success(request, f"Attendance register for {target_date.strftime('%d %b %Y')} saved successfully.")
+        return redirect(f"{reverse('daily_attendance_register')}?date={target_date.strftime('%Y-%m-%d')}")
+
+    existing_map = {
+        a.teacher_id: a for a in TeacherAttendance.objects.filter(date=target_date)
+    }
+
+    attendance_rows = []
+    for t in teachers:
+        att = existing_map.get(t.pk)
+        attendance_rows.append({
+            "teacher": t,
+            "attendance": att,
+            "status": att.status if att else "Present",
+            "check_in": att.check_in.strftime("%H:%M") if (att and att.check_in) else (setting.shift_start_time.strftime("%H:%M") if setting.shift_start_time else "08:00"),
+            "check_out": att.check_out.strftime("%H:%M") if (att and att.check_out) else (setting.shift_end_time.strftime("%H:%M") if setting.shift_end_time else "12:30"),
+            "deduction": att.deduction_amount if att else Decimal("0.00"),
+            "bonus": att.bonus_amount if att else Decimal("0.00"),
+            "late_minutes": att.late_minutes if att else 0,
+            "remarks": att.remarks if att else "",
+        })
+
+    status_choices = [
+        ("Present", "🟢 Present (Full Day)"),
+        ("Late", "🟡 Late Comer"),
+        ("Half Day", "🟠 Half Day"),
+        ("Absent", "🔴 Absent"),
+        ("Leave", "🔵 Leave (Approved)"),
+        ("Holiday", "⚪ Holiday / Off Day"),
+    ]
+
+    school_setting = SchoolSetting.objects.first()
+
+    context = {
+        "target_date": target_date,
+        "setting": setting,
+        "school_setting": school_setting,
+        "attendance_rows": attendance_rows,
+        "status_choices": status_choices,
+    }
+    return render(request, "teachers/daily_attendance_register.html", context)
+
+
+@login_required
+def daily_attendance_print(request):
+    """
+    Printable / PDF report of Daily Faculty Attendance for Principal, Vice Principal & Admin.
+    """
+    date_str = request.GET.get("date")
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            target_date = timezone.localtime(timezone.now()).date()
+    else:
+        target_date = timezone.localtime(timezone.now()).date()
+
+    setting = TeacherAttendanceSetting.get_settings()
+    school_setting = SchoolSetting.objects.first()
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+
+    existing_map = {
+        a.teacher_id: a for a in TeacherAttendance.objects.filter(date=target_date)
+    }
+
+    attendance_rows = []
+    present_cnt = 0
+    late_cnt = 0
+    absent_cnt = 0
+    half_day_cnt = 0
+    leave_cnt = 0
+    holiday_cnt = 0
+    total_deductions = Decimal("0.00")
+    total_bonuses = Decimal("0.00")
+
+    for t in teachers:
+        att = existing_map.get(t.pk)
+        status = att.status if att else "Present"
+
+        if status == "Present":
+            present_cnt += 1
+        elif status == "Late":
+            late_cnt += 1
+        elif status == "Absent":
+            absent_cnt += 1
+        elif status == "Half Day":
+            half_day_cnt += 1
+        elif status == "Leave":
+            leave_cnt += 1
+        elif status == "Holiday":
+            holiday_cnt += 1
+
+        ded = att.deduction_amount if att else Decimal("0.00")
+        bon = att.bonus_amount if att else Decimal("0.00")
+        total_deductions += ded
+        total_bonuses += bon
+
+        attendance_rows.append({
+            "teacher": t,
+            "attendance": att,
+            "status": status,
+            "check_in": att.check_in.strftime("%I:%M %p") if (att and att.check_in) else "---",
+            "check_out": att.check_out.strftime("%I:%M %p") if (att and att.check_out) else "---",
+            "late_minutes": att.late_minutes if att else 0,
+            "deduction": ded,
+            "bonus": bon,
+            "remarks": att.remarks if att else "",
+            "method": att.attendance_method if att else "---",
+        })
+
+    context = {
+        "target_date": target_date,
+        "setting": setting,
+        "school_setting": school_setting,
+        "attendance_rows": attendance_rows,
+        "total_staff": len(teachers),
+        "present_count": present_cnt,
+        "late_count": late_cnt,
+        "absent_count": absent_cnt,
+        "half_day_count": half_day_cnt,
+        "leave_count": leave_cnt,
+        "holiday_count": holiday_cnt,
+        "total_deductions": total_deductions,
+        "total_bonuses": total_bonuses,
+    }
+    return render(request, "teachers/daily_attendance_print.html", context)
+
+
+@login_required
+def biometric_fingerprint_import(request):
+    """
+    Import punch logs from Biometric / Fingerprint machine via file upload or pasting logs.
+    """
+    setting = TeacherAttendanceSetting.get_settings()
+    if request.method == "POST":
+        form = BiometricImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            override_date = form.cleaned_data.get("attendance_date")
+            paste_data = form.cleaned_data.get("paste_data", "")
+            upload_file = request.FILES.get("import_file")
+
+            lines_to_process = []
+            if paste_data.strip():
+                lines_to_process.extend(paste_data.strip().splitlines())
+
+            if upload_file:
+                fname = upload_file.name.lower()
+                if fname.endswith((".xlsx", ".xls")):
+                    import openpyxl
+                    wb = openpyxl.load_workbook(upload_file, data_only=True)
+                    ws = wb.active
+                    for row in ws.iter_rows(values_only=True):
+                        if not any(row):
+                            continue
+                        row_strs = [str(c or "").strip() for c in row]
+                        lines_to_process.append(",".join(row_strs))
+                else:
+                    content = upload_file.read().decode("utf-8", errors="ignore")
+                    lines_to_process.extend(content.splitlines())
+
+            imported_count = 0
+            errors = []
+            with transaction.atomic():
+                for line_idx, line in enumerate(lines_to_process, 1):
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    delims = [",", "\t", ";"]
+                    parts = []
+                    for d in delims:
+                        if d in line:
+                            parts = [p.strip() for p in line.split(d)]
+                            break
+                    if not parts:
+                        parts = [p.strip() for p in line.split()]
+
+                    if not parts or len(parts) < 2:
+                        continue
+
+                    staff_code = parts[0]
+                    if "KMS-STAFF:" in staff_code.upper():
+                        staff_code = staff_code.split(":", 1)[1].strip()
+
+                    teacher = Teacher.objects.filter(
+                        Q(teacher_id__iexact=staff_code) | Q(full_name__iexact=staff_code)
+                    ).first()
+
+                    if not teacher:
+                        errors.append(f"Line {line_idx}: Staff ID '{staff_code}' not found.")
+                        continue
+
+                    rec_date = override_date
+                    in_time = None
+                    out_time = None
+                    idx = 1
+
+                    if len(parts) >= 3 and any(char in parts[1] for char in ["-", "/"]):
+                        try:
+                            d_str = parts[1].replace("/", "-")
+                            p_date = datetime.strptime(d_str, "%Y-%m-%d").date()
+                            rec_date = p_date
+                            idx = 2
+                        except ValueError:
+                            try:
+                                p_date = datetime.strptime(parts[1], "%d-%m-%Y").date()
+                                rec_date = p_date
+                                idx = 2
+                            except ValueError:
+                                pass
+
+                    if not rec_date:
+                        rec_date = timezone.localtime(timezone.now()).date()
+
+                    if len(parts) > idx:
+                        t1_str = parts[idx]
+                        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+                            try:
+                                in_time = datetime.strptime(t1_str, fmt).time()
+                                break
+                            except ValueError:
+                                pass
+                        idx += 1
+
+                    if len(parts) > idx:
+                        t2_str = parts[idx]
+                        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+                            try:
+                                out_time = datetime.strptime(t2_str, fmt).time()
+                                break
+                            except ValueError:
+                                pass
+
+                    att, _ = TeacherAttendance.objects.get_or_create(
+                        teacher=teacher,
+                        date=rec_date,
+                        defaults={
+                            "attendance_method": "Fingerprint",
+                            "status": "Present",
+                        }
+                    )
+                    att.attendance_method = "Fingerprint"
+                    if in_time:
+                        att.check_in = in_time
+                    if out_time:
+                        att.check_out = out_time
+                    att.calculate_and_apply_deduction(setting)
+                    att.save()
+                    imported_count += 1
+
+            if imported_count > 0:
+                messages.success(request, f"Successfully processed {imported_count} biometric / fingerprint attendance records.")
+            if errors:
+                messages.warning(request, f"Some records were skipped: {'; '.join(errors[:4])}")
+            return redirect("qr_attendance_scan")
+    else:
+        form = BiometricImportForm(initial={"attendance_date": timezone.localtime(timezone.now()).date()})
+
+    return render(request, "teachers/biometric_import.html", {"form": form, "setting": setting})
+
+
+@login_required
+def monthly_attendance_sheet(request):
+    """
+    Complete Monthly Teacher Attendance & Salary Cutting Sheet (Image B requirement).
+    Displays day-by-day matrix (1-31), late cuts, absent cuts, bonuses, and net payable.
+    """
+    today = timezone.localtime(timezone.now()).date()
+    month = int(request.GET.get("month", today.month))
+    year = int(request.GET.get("year", today.year))
+    setting = TeacherAttendanceSetting.get_settings()
+
+    num_days = calendar.monthrange(year, month)[1]
+    days_range = list(range(1, num_days + 1))
+
+    day_headers = []
+    for d in days_range:
+        cur_d = date(year, month, d)
+        day_headers.append({
+            "day": d,
+            "weekday": cur_d.strftime("%a"),
+            "is_sunday": cur_d.weekday() == 6,
+        })
+
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+
+    attendances = TeacherAttendance.objects.filter(
+        date__year=year,
+        date__month=month,
+    ).select_related("teacher")
+
+    att_map = {}
+    for a in attendances:
+        att_map[(a.teacher_id, a.date.day)] = a
+
+    sheet_rows = []
+    grand_totals = {
+        "present": 0,
+        "late": 0,
+        "absent": 0,
+        "half_day": 0,
+        "leave": 0,
+        "late_mins": 0,
+        "late_deductions": Decimal("0.00"),
+        "absent_deductions": Decimal("0.00"),
+        "total_deductions": Decimal("0.00"),
+        "bonuses": Decimal("0.00"),
+        "gross_salary": Decimal("0.00"),
+        "net_salary": Decimal("0.00"),
+    }
+
+    for t in teachers:
+        day_cells = []
+        p_cnt = 0
+        l_cnt = 0
+        a_cnt = 0
+        hd_cnt = 0
+        lv_cnt = 0
+        late_mins = 0
+        late_ded = Decimal("0.00")
+        absent_ded = Decimal("0.00")
+        bonuses = Decimal("0.00")
+
+        base_pay = t.salary_scale.basic_pay if (t.salary_scale and t.salary_scale.basic_pay) else Decimal("0.00")
+        allowances = t.salary_scale.total_allowances if t.salary_scale else Decimal("0.00")
+        gross = base_pay + allowances
+
+        for d in days_range:
+            att = att_map.get((t.pk, d))
+            cur_d = date(year, month, d)
+            is_sun = cur_d.weekday() == 6
+
+            if att:
+                status = att.status
+                badge = "P"
+                badge_class = "bg-success"
+                if status == "Late":
+                    badge = "L"
+                    badge_class = "bg-warning text-dark"
+                    l_cnt += 1
+                    late_mins += att.late_minutes
+                    late_ded += att.deduction_amount
+                elif status == "Absent":
+                    badge = "A"
+                    badge_class = "bg-danger"
+                    a_cnt += 1
+                    absent_ded += att.deduction_amount
+                elif status == "Half Day":
+                    badge = "HD"
+                    badge_class = "bg-info text-dark"
+                    hd_cnt += 1
+                    absent_ded += att.deduction_amount
+                elif status == "Leave":
+                    badge = "LV"
+                    badge_class = "bg-secondary"
+                    lv_cnt += 1
+                elif status == "Holiday":
+                    badge = "H"
+                    badge_class = "bg-light text-muted border"
+                else:
+                    p_cnt += 1
+
+                bonuses += att.bonus_amount
+                day_cells.append({
+                    "day": d,
+                    "record": att,
+                    "badge": badge,
+                    "badge_class": badge_class,
+                    "status": status,
+                    "in_time": att.check_in.strftime("%H:%M") if att.check_in else "",
+                    "deduction": att.deduction_amount,
+                })
+            else:
+                if is_sun:
+                    day_cells.append({
+                        "day": d,
+                        "record": None,
+                        "badge": "Off",
+                        "badge_class": "bg-light text-muted border",
+                        "status": "Sunday",
+                    })
+                else:
+                    day_cells.append({
+                        "day": d,
+                        "record": None,
+                        "badge": "-",
+                        "badge_class": "text-muted",
+                        "status": "Unmarked",
+                    })
+
+        total_ded = late_ded + absent_ded
+        net_estimated = max(Decimal("0.00"), gross + bonuses - total_ded)
+
+        grand_totals["present"] += p_cnt
+        grand_totals["late"] += l_cnt
+        grand_totals["absent"] += a_cnt
+        grand_totals["half_day"] += hd_cnt
+        grand_totals["leave"] += lv_cnt
+        grand_totals["late_mins"] += late_mins
+        grand_totals["late_deductions"] += late_ded
+        grand_totals["absent_deductions"] += absent_ded
+        grand_totals["total_deductions"] += total_ded
+        grand_totals["bonuses"] += bonuses
+        grand_totals["gross_salary"] += gross
+        grand_totals["net_salary"] += net_estimated
+
+        sheet_rows.append({
+            "teacher": t,
+            "day_cells": day_cells,
+            "present_count": p_cnt,
+            "late_count": l_cnt,
+            "absent_count": a_cnt,
+            "half_day_count": hd_cnt,
+            "leave_count": lv_cnt,
+            "late_mins": late_mins,
+            "late_hours": round(late_mins / 60, 1),
+            "late_deductions": late_ded,
+            "absent_deductions": absent_ded,
+            "total_deductions": total_ded,
+            "bonuses": bonuses,
+            "gross_salary": gross,
+            "net_salary": net_estimated,
+        })
+
+    month_name = calendar.month_name[month]
+    months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+
+    context = {
+        "month": month,
+        "year": year,
+        "month_name": month_name,
+        "months": months,
+        "years": range(2024, 2031),
+        "days_range": days_range,
+        "day_headers": day_headers,
+        "sheet_rows": sheet_rows,
+        "grand_totals": grand_totals,
+        "setting": setting,
+        "school_setting": SchoolSetting.objects.first(),
+    }
+
+    if request.GET.get("print") == "1":
+        return render(request, "teachers/monthly_attendance_print.html", context)
+
+    return render(request, "teachers/monthly_attendance_sheet.html", context)
+
+
+@login_required
+def monthly_attendance_print(request):
+    """
+    Printable / PDF Monthly Faculty Attendance Sheet for Principal, Vice Principal & Office.
+    """
+    req_copy = request.GET.copy()
+    req_copy["print"] = "1"
+    request.GET = req_copy
+    return monthly_attendance_sheet(request)
+
+
+@login_required
+def export_monthly_attendance_excel(request):
+    """
+    Export complete monthly teacher attendance and salary sheet to Excel.
+    """
+    today = timezone.localtime(timezone.now()).date()
+    month = int(request.GET.get("month", today.month))
+    year = int(request.GET.get("year", today.year))
+
+    num_days = calendar.monthrange(year, month)[1]
+    days_range = list(range(1, num_days + 1))
+
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+    attendances = TeacherAttendance.objects.filter(date__year=year, date__month=month)
+
+    att_map = {}
+    for a in attendances:
+        att_map[(a.teacher_id, a.date.day)] = a
+
+    headers = ["Staff ID", "Teacher Name", "Designation", "Base Pay (PKR)"]
+    for d in days_range:
+        headers.append(f"Day {d}")
+
+    headers.extend([
+        "Present Days",
+        "Late Days",
+        "Absent Days",
+        "Half Days",
+        "Late Hours",
+        "Late Cuts (PKR)",
+        "Absent Cuts (PKR)",
+        "Total Cuts (PKR)",
+        "Bonus (PKR)",
+        "Net Payable (PKR)",
+    ])
+
+    rows = []
+    for t in teachers:
+        base_pay = t.salary_scale.basic_pay if (t.salary_scale and t.salary_scale.basic_pay) else Decimal("0.00")
+        allowances = t.salary_scale.total_allowances if t.salary_scale else Decimal("0.00")
+        gross = base_pay + allowances
+
+        row = [t.teacher_id, t.full_name, t.designation, float(base_pay)]
+
+        p_cnt = 0
+        l_cnt = 0
+        a_cnt = 0
+        hd_cnt = 0
+        late_mins = 0
+        late_ded = Decimal("0.00")
+        absent_ded = Decimal("0.00")
+        bonuses = Decimal("0.00")
+
+        for d in days_range:
+            att = att_map.get((t.pk, d))
+            if att:
+                status = att.status
+                if status == "Late":
+                    row.append(f"L ({att.check_in.strftime('%H:%M') if att.check_in else ''})")
+                    l_cnt += 1
+                    late_mins += att.late_minutes
+                    late_ded += att.deduction_amount
+                elif status == "Absent":
+                    row.append("A")
+                    a_cnt += 1
+                    absent_ded += att.deduction_amount
+                elif status == "Half Day":
+                    row.append("HD")
+                    hd_cnt += 1
+                    absent_ded += att.deduction_amount
+                elif status == "Leave":
+                    row.append("LV")
+                elif status == "Holiday":
+                    row.append("H")
+                else:
+                    row.append("P")
+                    p_cnt += 1
+                bonuses += att.bonus_amount
+            else:
+                cur_d = date(year, month, d)
+                row.append("Off" if cur_d.weekday() == 6 else "-")
+
+        total_ded = late_ded + absent_ded
+        net_payable = max(Decimal("0.00"), gross + bonuses - total_ded)
+
+        row.extend([
+            p_cnt,
+            l_cnt,
+            a_cnt,
+            hd_cnt,
+            round(late_mins / 60, 2),
+            float(late_ded),
+            float(absent_ded),
+            float(total_ded),
+            float(bonuses),
+            float(net_payable),
+        ])
+        rows.append(row)
+
+    month_name = calendar.month_name[month]
+    buffer = create_styled_workbook(f"Attendance {month_name} {year}", headers, rows)
+    return excel_download_response(buffer, f"KMS_Teacher_Attendance_{month_name}_{year}.xlsx")
+
+
+@login_required
+def yearly_attendance_sheet(request):
+    """
+    Full 12-Month Yearly Teacher Attendance & Salary Cutting Sheet (Image B requirement).
+    """
+    today = timezone.localtime(timezone.now()).date()
+    year = int(request.GET.get("year", today.year))
+    setting = TeacherAttendanceSetting.get_settings()
+
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+    attendances = TeacherAttendance.objects.filter(date__year=year)
+
+    # Group by (teacher_id, month)
+    att_by_month = {}
+    for a in attendances:
+        key = (a.teacher_id, a.date.month)
+        if key not in att_by_month:
+            att_by_month[key] = {
+                "present": 0, "late": 0, "absent": 0, "half_day": 0,
+                "late_ded": Decimal("0.00"), "absent_ded": Decimal("0.00"), "bonus": Decimal("0.00"),
+            }
+        rec = att_by_month[key]
+        if a.status == "Present":
+            rec["present"] += 1
+        elif a.status == "Late":
+            rec["late"] += 1
+            rec["late_ded"] += a.deduction_amount
+        elif a.status == "Absent":
+            rec["absent"] += 1
+            rec["absent_ded"] += a.deduction_amount
+        elif a.status == "Half Day":
+            rec["half_day"] += 1
+            rec["absent_ded"] += a.deduction_amount
+        rec["bonus"] += a.bonus_amount
+
+    months_info = [(m, calendar.month_abbr[m]) for m in range(1, 13)]
+
+    sheet_rows = []
+    for t in teachers:
+        month_data = []
+        tot_p = 0
+        tot_l = 0
+        tot_a = 0
+        tot_late_ded = Decimal("0.00")
+        tot_abs_ded = Decimal("0.00")
+        tot_bonus = Decimal("0.00")
+
+        base_pay = t.salary_scale.basic_pay if (t.salary_scale and t.salary_scale.basic_pay) else Decimal("0.00")
+        allowances = t.salary_scale.total_allowances if t.salary_scale else Decimal("0.00")
+        monthly_gross = base_pay + allowances
+
+        for m_num, m_name in months_info:
+            data = att_by_month.get((t.pk, m_num), {
+                "present": 0, "late": 0, "absent": 0, "half_day": 0,
+                "late_ded": Decimal("0.00"), "absent_ded": Decimal("0.00"), "bonus": Decimal("0.00"),
+            })
+            m_total_ded = data["late_ded"] + data["absent_ded"]
+            month_data.append({
+                "month_num": m_num,
+                "present": data["present"],
+                "late": data["late"],
+                "absent": data["absent"],
+                "half_day": data["half_day"],
+                "deductions": m_total_ded,
+                "bonus": data["bonus"],
+            })
+            tot_p += data["present"]
+            tot_l += data["late"]
+            tot_a += data["absent"]
+            tot_late_ded += data["late_ded"]
+            tot_abs_ded += data["absent_ded"]
+            tot_bonus += data["bonus"]
+
+        tot_ded = tot_late_ded + tot_abs_ded
+        annual_gross = monthly_gross * 12
+        annual_net = max(Decimal("0.00"), annual_gross + tot_bonus - tot_ded)
+
+        sheet_rows.append({
+            "teacher": t,
+            "months": month_data,
+            "tot_present": tot_p,
+            "tot_late": tot_l,
+            "tot_absent": tot_a,
+            "tot_late_ded": tot_late_ded,
+            "tot_abs_ded": tot_abs_ded,
+            "tot_ded": tot_ded,
+            "tot_bonus": tot_bonus,
+            "annual_gross": annual_gross,
+            "annual_net": annual_net,
+        })
+
+    context = {
+        "year": year,
+        "years": range(2024, 2031),
+        "months_info": months_info,
+        "sheet_rows": sheet_rows,
+        "setting": setting,
+    }
+    return render(request, "teachers/yearly_attendance_sheet.html", context)
+
+
+@login_required
+def export_yearly_attendance_excel(request):
+    """
+    Export yearly teacher attendance and salary cutting sheet to Excel.
+    """
+    today = timezone.localtime(timezone.now()).date()
+    year = int(request.GET.get("year", today.year))
+
+    teachers = Teacher.objects.filter(status="Active").select_related("salary_scale").order_by("teacher_id")
+    attendances = TeacherAttendance.objects.filter(date__year=year)
+
+    att_by_month = {}
+    for a in attendances:
+        key = (a.teacher_id, a.date.month)
+        if key not in att_by_month:
+            att_by_month[key] = {
+                "present": 0, "late": 0, "absent": 0,
+                "late_ded": Decimal("0.00"), "absent_ded": Decimal("0.00"), "bonus": Decimal("0.00"),
+            }
+        rec = att_by_month[key]
+        if a.status == "Present":
+            rec["present"] += 1
+        elif a.status == "Late":
+            rec["late"] += 1
+            rec["late_ded"] += a.deduction_amount
+        elif a.status == "Absent":
+            rec["absent"] += 1
+            rec["absent_ded"] += a.deduction_amount
+        elif a.status == "Half Day":
+            rec["absent_ded"] += a.deduction_amount
+        rec["bonus"] += a.bonus_amount
+
+    headers = ["Staff ID", "Teacher Name", "Designation", "Base Pay (PKR)"]
+    for m in range(1, 13):
+        headers.append(f"{calendar.month_abbr[m]} (P/L/A)")
+
+    headers.extend([
+        "Annual Present",
+        "Annual Late",
+        "Annual Absent",
+        "Annual Late Cuts (PKR)",
+        "Annual Absent Cuts (PKR)",
+        "Total Annual Cuts (PKR)",
+        "Annual Bonuses (PKR)",
+        "Annual Estimated Net (PKR)",
+    ])
+
+    rows = []
+    for t in teachers:
+        base_pay = t.salary_scale.basic_pay if (t.salary_scale and t.salary_scale.basic_pay) else Decimal("0.00")
+        allowances = t.salary_scale.total_allowances if t.salary_scale else Decimal("0.00")
+        monthly_gross = base_pay + allowances
+
+        row = [t.teacher_id, t.full_name, t.designation, float(base_pay)]
+
+        tot_p = 0
+        tot_l = 0
+        tot_a = 0
+        tot_late_ded = Decimal("0.00")
+        tot_abs_ded = Decimal("0.00")
+        tot_bonus = Decimal("0.00")
+
+        for m in range(1, 13):
+            data = att_by_month.get((t.pk, m), {"present": 0, "late": 0, "absent": 0, "late_ded": Decimal("0.00"), "absent_ded": Decimal("0.00"), "bonus": Decimal("0.00")})
+            row.append(f"{data['present']}/{data['late']}/{data['absent']}")
+            tot_p += data["present"]
+            tot_l += data["late"]
+            tot_a += data["absent"]
+            tot_late_ded += data["late_ded"]
+            tot_abs_ded += data["absent_ded"]
+            tot_bonus += data["bonus"]
+
+        tot_ded = tot_late_ded + tot_abs_ded
+        annual_gross = monthly_gross * 12
+        annual_net = max(Decimal("0.00"), annual_gross + tot_bonus - tot_ded)
+
+        row.extend([
+            tot_p,
+            tot_l,
+            tot_a,
+            float(tot_late_ded),
+            float(tot_abs_ded),
+            float(tot_ded),
+            float(tot_bonus),
+            float(annual_net),
+        ])
+        rows.append(row)
+
+    buffer = create_styled_workbook(f"Yearly Sheet {year}", headers, rows)
+    return excel_download_response(buffer, f"KMS_Yearly_Teacher_Attendance_{year}.xlsx")
+
+
+@login_required
+def attendance_settings_view(request):
+    """
+    Configure Shift Timing (e.g. 08:00 AM to 12:30 PM), Grace Period,
+    and Hourly / Daily Salary Cutting policies.
+    """
+    setting = TeacherAttendanceSetting.get_settings()
+    if request.method == "POST":
+        form = TeacherAttendanceSettingForm(request.POST, instance=setting)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Teacher attendance & salary cutting settings updated successfully.")
+            return redirect("attendance_settings")
+    else:
+        form = TeacherAttendanceSettingForm(instance=setting)
+
+    return render(request, "teachers/attendance_settings.html", {"form": form, "setting": setting})
+
+
+@login_required
+def all_staff_qr_cards(request):
+    """
+    Printable batch sheet of Staff QR Badges / Attendance Cards for scanning terminal.
+    """
+    teachers = Teacher.objects.filter(status="Active").order_by("teacher_id")
+    school_setting = SchoolSetting.objects.first()
+    return render(
+        request,
+        "teachers/staff_qr_cards_bulk.html",
+        {"teachers": teachers, "school_setting": school_setting},
+    )
+
+
+@login_required
+def sync_salary_bill_attendance_view(request, pk):
+    """
+    One-click re-sync of an individual MonthlySalaryBill from TeacherAttendance records.
+    """
+    bill = get_object_or_404(MonthlySalaryBill, pk=pk)
+    if bill.sync_from_attendance():
+        messages.success(
+            request,
+            f"Salary bill for {bill.teacher.full_name} ({bill.month_name} {bill.year}) was successfully re-calculated from attendance records.",
+        )
+    else:
+        messages.warning(
+            request,
+            f"No attendance records found for {bill.teacher.full_name} in {bill.month_name} {bill.year}.",
+        )
+    return redirect("salary_bill_detail", pk=bill.pk)
+
 

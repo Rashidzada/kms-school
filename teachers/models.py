@@ -1,7 +1,9 @@
+from datetime import datetime, time
 from decimal import Decimal
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+
 
 
 class SalaryScale(models.Model):
@@ -77,6 +79,240 @@ class Teacher(models.Model):
     def get_absolute_url(self):
         return reverse("teacher_detail", kwargs={"pk": self.pk})
 
+    def get_qr_code_base64(self):
+        """
+        Generate base64-encoded crisp pure black/white PNG QR Code for fast scanning.
+        """
+        try:
+            import qrcode
+            import io
+            import base64
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=10,
+                border=3,
+            )
+            qr.add_data(str(self.teacher_id))
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            return base64.b64encode(buffer.getvalue()).decode()
+        except Exception:
+            return ""
+
+
+
+def _parse_time_val(val, default_val=None):
+    from datetime import time as dt_time, datetime as dt_datetime
+    if isinstance(val, dt_time):
+        return val
+    if isinstance(val, str) and val.strip():
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+            try:
+                return dt_datetime.strptime(val.strip(), fmt).time()
+            except ValueError:
+                pass
+    return default_val
+
+
+class TeacherAttendanceSetting(models.Model):
+    shift_start_time = models.TimeField(
+        default=time(8, 0),
+        help_text="Official shift start time (e.g. 08:00 AM)",
+    )
+    shift_end_time = models.TimeField(
+        default=time(12, 30),
+        help_text="Official shift end time (e.g. 12:30 PM)",
+    )
+    grace_period_minutes = models.IntegerField(
+        default=15,
+        help_text="Grace minutes allowed after shift start before marked Late",
+    )
+    working_hours_per_day = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=Decimal("4.50"),
+        help_text="Standard daily working hours (e.g. 4.50 hrs from 8am to 12:30pm)",
+    )
+    working_days_per_month = models.IntegerField(
+        default=30,
+        help_text="Standard working days per month for daily rate calculation (typically 30)",
+    )
+    late_deduction_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("hourly", "Hourly Pro-rata (Based on hourly salary rate)"),
+            ("per_minute", "Per-minute Pro-rata (Based on minute rate)"),
+            ("fixed", "Fixed Penalty per Late Arrival"),
+            ("none", "No Automatic Late Deduction"),
+        ],
+        default="hourly",
+        help_text="Late arrival deduction calculation policy",
+    )
+    late_fixed_penalty = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Fixed penalty amount if deduction type is Fixed",
+    )
+    half_day_threshold_minutes = models.IntegerField(
+        default=120,
+        help_text="Arrival delay exceeding this (in minutes) counts as Half Day",
+    )
+
+    class Meta:
+        verbose_name = "Teacher Attendance Setting"
+        verbose_name_plural = "Teacher Attendance Settings"
+
+    def __str__(self):
+        st = _parse_time_val(self.shift_start_time, time(8, 0))
+        et = _parse_time_val(self.shift_end_time, time(12, 30))
+        return f"Shift: {st.strftime('%I:%M %p')} - {et.strftime('%I:%M %p')}"
+
+    @classmethod
+    def get_settings(cls):
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create()
+        return obj
+
+
+class TeacherAttendance(models.Model):
+    STATUS_CHOICES = [
+        ("Present", "Present"),
+        ("Late", "Late Comer"),
+        ("Half Day", "Half Day"),
+        ("Absent", "Absent"),
+        ("Leave", "Approved Leave (PTO)"),
+        ("Holiday", "Holiday / Off Day"),
+    ]
+
+    METHOD_CHOICES = [
+        ("QR Code", "QR Code Scan"),
+        ("Manual", "Manual Register"),
+        ("Fingerprint", "Fingerprint / Biometric"),
+    ]
+
+    teacher = models.ForeignKey(
+        Teacher, on_delete=models.CASCADE, related_name="attendances"
+    )
+    date = models.DateField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Present")
+    check_in = models.TimeField(null=True, blank=True)
+    check_out = models.TimeField(null=True, blank=True)
+    attendance_method = models.CharField(
+        max_length=20, choices=METHOD_CHOICES, default="QR Code"
+    )
+    late_minutes = models.IntegerField(default=0)
+    early_leave_minutes = models.IntegerField(default=0)
+    working_hours = models.DecimalField(
+        max_digits=4, decimal_places=2, default=Decimal("0.00")
+    )
+    deduction_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Salary cut amount for this day (PKR)",
+    )
+    bonus_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Daily bonus / incentive reward (PKR)",
+    )
+    remarks = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("teacher", "date")
+        ordering = ["-date", "teacher__teacher_id"]
+        verbose_name = "Teacher Attendance"
+        verbose_name_plural = "Teacher Attendances"
+
+    def __str__(self):
+        return f"{self.teacher.full_name} - {self.date} ({self.status})"
+
+    def calculate_and_apply_deduction(self, setting=None):
+        """
+        Calculate daily rate, hourly rate, late penalty or absent cutting according
+        to Kohisar Model School policy.
+        """
+        if not setting:
+            setting = TeacherAttendanceSetting.get_settings()
+
+        base_pay = Decimal("0.00")
+        if self.teacher.salary_scale and self.teacher.salary_scale.basic_pay:
+            base_pay = self.teacher.salary_scale.basic_pay
+
+        working_days = Decimal(str(setting.working_days_per_month or 30))
+        daily_rate = (base_pay / working_days).quantize(Decimal("0.01")) if base_pay > 0 else Decimal("0.00")
+
+        working_hrs = Decimal(str(setting.working_hours_per_day or 4.5))
+        if working_hrs <= 0:
+            working_hrs = Decimal("4.5")
+        hourly_rate = (daily_rate / working_hrs).quantize(Decimal("0.01")) if daily_rate > 0 else Decimal("0.00")
+        minute_rate = (hourly_rate / Decimal("60.0")).quantize(Decimal("0.0001")) if hourly_rate > 0 else Decimal("0.00")
+
+        if self.status == "Absent":
+            self.deduction_amount = daily_rate
+            self.late_minutes = 0
+            return
+
+        if self.status in ("Leave", "Holiday"):
+            self.deduction_amount = Decimal("0.00")
+            self.late_minutes = 0
+            return
+
+        shift_start = _parse_time_val(setting.shift_start_time, time(8, 0))
+        shift_end = _parse_time_val(setting.shift_end_time, time(12, 30))
+        in_t = _parse_time_val(self.check_in)
+        out_t = _parse_time_val(self.check_out)
+
+        if in_t and shift_start:
+            in_m = in_t.hour * 60 + in_t.minute
+            shift_m = shift_start.hour * 60 + shift_start.minute
+            diff = in_m - shift_m
+            if diff > setting.grace_period_minutes:
+                self.late_minutes = diff
+                if diff >= setting.half_day_threshold_minutes:
+                    self.status = "Half Day"
+                else:
+                    self.status = "Late"
+            else:
+                self.late_minutes = 0
+                if self.status not in ("Half Day",):
+                    self.status = "Present"
+
+        if in_t and out_t:
+            in_m = in_t.hour * 60 + in_t.minute
+            out_m = out_t.hour * 60 + out_t.minute
+            total_m = max(0, out_m - in_m)
+            self.working_hours = (Decimal(str(total_m)) / Decimal("60.0")).quantize(Decimal("0.01"))
+
+            shift_end_m = shift_end.hour * 60 + shift_end.minute
+            if out_m < shift_end_m:
+                self.early_leave_minutes = max(0, shift_end_m - out_m)
+            else:
+                self.early_leave_minutes = 0
+
+        if self.status == "Half Day":
+            self.deduction_amount = (daily_rate / Decimal("2.0")).quantize(Decimal("0.01"))
+        elif self.status == "Late":
+            if setting.late_deduction_type == "hourly":
+                hours_late = Decimal(str(self.late_minutes)) / Decimal("60.0")
+                self.deduction_amount = (hours_late * hourly_rate).quantize(Decimal("0.01"))
+            elif setting.late_deduction_type == "per_minute":
+                self.deduction_amount = (Decimal(str(self.late_minutes)) * minute_rate).quantize(Decimal("0.01"))
+            elif setting.late_deduction_type == "fixed":
+                self.deduction_amount = setting.late_fixed_penalty
+            else:
+                self.deduction_amount = Decimal("0.00")
+        elif self.status == "Present":
+            self.deduction_amount = Decimal("0.00")
+
 
 class MonthlySalaryBill(models.Model):
     teacher = models.ForeignKey(
@@ -87,6 +323,13 @@ class MonthlySalaryBill(models.Model):
     base_pay = models.DecimalField(max_digits=10, decimal_places=2)
     days_present = models.IntegerField(default=30)
     allowances = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    late_deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    absent_deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    days_late = models.IntegerField(default=0)
+    days_absent = models.IntegerField(default=0)
+    days_half_day = models.IntegerField(default=0)
+    days_leave = models.IntegerField(default=0)
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_paid = models.BooleanField(default=False)
@@ -124,10 +367,12 @@ class MonthlySalaryBill(models.Model):
 
     @property
     def gross_pay(self):
-        return (self.base_pay or Decimal("0.00")) + (self.allowances or Decimal("0.00"))
+        return (self.base_pay or Decimal("0.00")) + (self.allowances or Decimal("0.00")) + (self.bonus or Decimal("0.00"))
 
     @property
     def absent_days(self):
+        if self.days_absent > 0:
+            return self.days_absent
         return max(0, 30 - int(self.days_present or 30))
 
     @property
@@ -138,6 +383,8 @@ class MonthlySalaryBill(models.Model):
 
     @property
     def auto_absent_deduction(self):
+        if self.absent_deductions and self.absent_deductions > 0:
+            return self.absent_deductions
         if self.base_pay and self.base_pay > 0 and self.absent_days > 0:
             daily_rate = self.base_pay / Decimal("30.0")
             return (Decimal(str(self.absent_days)) * daily_rate).quantize(Decimal("0.01"))
@@ -145,7 +392,8 @@ class MonthlySalaryBill(models.Model):
 
     @property
     def other_deductions(self):
-        return max(Decimal("0.00"), (self.deductions or Decimal("0.00")) - self.auto_absent_deduction)
+        calculated = (self.absent_deductions or self.auto_absent_deduction) + (self.late_deductions or Decimal("0.00"))
+        return max(Decimal("0.00"), (self.deductions or Decimal("0.00")) - calculated)
 
     @property
     def net_payable(self):
@@ -170,6 +418,43 @@ class MonthlySalaryBill(models.Model):
         elif self.actual_paid > 0:
             return "Partial"
         return "Pending"
+
+    def sync_from_attendance(self):
+        """
+        Sync attendance counts, late deductions, absent cuts, and bonuses
+        from TeacherAttendance for this month and year.
+        """
+        records = TeacherAttendance.objects.filter(
+            teacher=self.teacher,
+            date__year=self.year,
+            date__month=self.month,
+        )
+        if not records.exists():
+            return False
+
+        p_count = records.filter(status="Present").count()
+        l_count = records.filter(status="Late").count()
+        hd_count = records.filter(status="Half Day").count()
+        a_count = records.filter(status="Absent").count()
+        lv_count = records.filter(status="Leave").count()
+
+        total_present = p_count + l_count + lv_count + (hd_count * Decimal("0.5"))
+        self.days_present = int(round(total_present))
+        self.days_late = l_count
+        self.days_absent = a_count
+        self.days_half_day = hd_count
+        self.days_leave = lv_count
+
+        total_late_ded = sum(r.deduction_amount for r in records if r.status == "Late")
+        total_absent_ded = sum(r.deduction_amount for r in records if r.status in ("Absent", "Half Day"))
+        total_bonus = sum(r.bonus_amount for r in records)
+
+        self.late_deductions = total_late_ded
+        self.absent_deductions = total_absent_ded
+        self.bonus = total_bonus
+        self.deductions = total_late_ded + total_absent_ded
+        self.save()
+        return True
 
     def save(self, *args, **kwargs):
         if self.is_paid and (not self.paid_amount or self.paid_amount == 0):

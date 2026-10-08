@@ -3,144 +3,510 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Staff ID Card | {{ teacher.full_name }}</title>
+  <title>Faculty ID Card | {{ teacher.full_name }} | {{ school_setting.name }}</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
   <style>
+    :root {
+      --primary-navy: #0f2b5c;
+      --secondary-blue: #1e4b8f;
+      --accent-blue: #2563eb;
+      --accent-gold: #f59e0b;
+      --card-bg: #ffffff;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+    }
+
     body {
       background: #e2e8f0;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      padding: 40px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 24px 12px 60px;
+      color: var(--text-dark);
+      min-height: 100vh;
     }
-    .id-card {
-      width: 340px;
-      height: 520px;
+
+    /* Print & Action Controls Bar */
+    .action-toolbar {
+      max-width: 680px;
+      margin: 0 auto 24px;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Card Wrapper & Standard Portrait PVC Proportions */
+    .id-card-wrapper {
+      max-width: 360px;
       margin: 0 auto;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      perspective: 1000px;
+    }
+
+    .id-card {
+      width: 345px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: 0 12px 35px rgba(15, 43, 92, 0.16);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       text-align: center;
-      border: 1px solid #cbd5e0;
+      border: 1.5px solid #cbd5e1;
       position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+
+    .id-card:hover {
+      box-shadow: 0 16px 42px rgba(15, 43, 92, 0.22);
+    }
+
+    /* Lanyard Slot Punch Guide (Standard ID card punch guide) */
+    .lanyard-slot-guide {
+      width: 44px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px dashed rgba(255, 255, 255, 0.8);
+      border-radius: 6px;
+      margin: 8px auto 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    /* Header with Deep Royal Navy Gradient */
     .id-card-header {
-      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
-      color: #fff;
-      padding: 20px 15px;
+      background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-blue) 100%);
+      color: #ffffff;
+      padding: 6px 14px 22px;
+      position: relative;
+      border-bottom: 3px solid var(--accent-gold);
     }
-    .id-card-header img {
-      width: 55px;
-      height: 55px;
+
+    .school-logo-badge {
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
-      background: #fff;
-      padding: 3px;
-      margin-bottom: 8px;
+      background: #ffffff;
+      padding: 2px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      object-fit: cover;
+      margin: 6px auto 6px;
+      display: block;
     }
+
+    .school-name-title {
+      font-size: 11.5pt;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      line-height: 1.25;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      margin-bottom: 2px;
+    }
+
+    .card-badge-subtitle {
+      font-size: 7.2pt;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: #fde68a;
+      text-transform: uppercase;
+      opacity: 0.95;
+    }
+
+    /* Body & Photo Section */
     .id-card-body {
-      padding: 20px 15px;
+      padding: 0 16px 14px;
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: radial-gradient(circle at 50% 10%, #f8fafc 0%, #ffffff 80%);
     }
-    .staff-photo {
-      width: 100px;
-      height: 100px;
+
+    /* High-Definition Staff Portrait */
+    .photo-frame {
+      position: relative;
+      margin-top: -36px;
+      z-index: 4;
+    }
+
+    .staff-photo-img {
+      width: 106px;
+      height: 106px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid #2b6cb0;
-      margin-top: -50px;
-      background: #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      aspect-ratio: 1/1;
+      background: #ffffff;
+      border: 4px solid #ffffff;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
+      outline: 2.5px solid var(--secondary-blue);
+      image-rendering: -webkit-optimize-contrast;
     }
-    .id-card-footer {
-      background: #f7fafc;
-      padding: 10px;
-      border-top: 1px solid #edf2f7;
+
+    .staff-photo-fallback {
+      width: 106px;
+      height: 106px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-navy) 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      border: 4px solid #ffffff;
+      outline: 2.5px solid var(--secondary-blue);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
+    }
+
+    /* Typography */
+    .staff-full-name {
+      font-size: 14pt;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-top: 10px;
+      margin-bottom: 2px;
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+
+    .staff-designation-badge {
+      display: inline-block;
+      background: #1d4ed8;
+      color: #ffffff;
       font-size: 8pt;
-      color: #718096;
+      font-weight: 700;
+      padding: 3px 16px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.3);
     }
+
+    /* Clean Staff Meta Table */
+    .meta-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 4px;
+      font-size: 8.5pt;
+      margin-bottom: 10px;
+    }
+
+    .meta-table tr {
+      background: #f8fafc;
+      border-radius: 6px;
+    }
+
+    .meta-table th {
+      padding: 4px 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 38%;
+      text-align: left;
+      border-radius: 6px 0 0 6px;
+      border-left: 3px solid #cbd5e1;
+    }
+
+    .meta-table td {
+      padding: 4px 10px;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-align: left;
+      border-radius: 0 6px 6px 0;
+      font-family: inherit;
+    }
+
+    .meta-table tr.highlight-row th {
+      border-left-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+    .meta-table tr.highlight-row td {
+      color: var(--primary-navy);
+      font-size: 9.5pt;
+    }
+
+    /* Large High-Contrast Attendance QR Section */
+    .qr-badge-section {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .qr-code-box {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 10px;
+      border: 2px solid #cbd5e1;
+      display: inline-block;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
+
+    .qr-code-img {
+      width: 112px;
+      height: 112px;
+      display: block;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    .qr-caption {
+      font-size: 7.2pt;
+      font-weight: 800;
+      color: var(--primary-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 5px;
+    }
+
+    .qr-subtext {
+      font-size: 6.8pt;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-top: 1px;
+    }
+
+    /* Signatures & Verification Area */
+    .auth-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 10px 4px 4px;
+      margin-top: 4px;
+    }
+
+    .auth-block {
+      text-align: center;
+      flex: 1;
+    }
+
+    .auth-line {
+      border-top: 1px solid #94a3b8;
+      width: 85%;
+      margin: 0 auto 3px;
+    }
+
+    .auth-label {
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Card Footer */
+    .id-card-footer {
+      background: #f8fafc;
+      border-top: 1.5px solid #edf2f7;
+      padding: 8px 12px;
+      font-size: 7pt;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .footer-address {
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .footer-contact {
+      color: var(--accent-blue);
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    /* Print Optimization Rules */
     @page {
       size: A4 portrait;
-      margin: 10mm;
+      margin: 8mm;
     }
+
     @media print {
       html, body {
-        background: #fff !important;
+        background: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
-        height: 100% !important;
-        overflow: hidden !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
+
       .no-print {
         display: none !important;
       }
-      .id-card {
-        box-shadow: none !important;
-        margin: 30px auto !important;
+
+      .id-card-wrapper {
+        margin: 10mm auto !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-        page-break-before: avoid !important;
-        page-break-after: avoid !important;
+      }
+
+      .id-card {
+        box-shadow: none !important;
+        border: 1px solid #94a3b8 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .lanyard-slot-guide {
+        border-color: #cbd5e1 !important;
       }
     }
   </style>
 </head>
 <body>
-  <div class="text-center mb-4 no-print">
-    <button onclick="window.print()" class="btn btn-primary px-4 font-weight-bold">
-      <i class="fas fa-print me-2"></i> Print Staff ID Card
-    </button>
-  </div>
 
-  <div class="id-card">
-    <div class="id-card-header">
-      {% if school_setting.logo %}
-        <img src="{{ school_setting.logo.url }}" alt="Logo">
-      {% else %}
-        <img src="{% static 'dist/img/logo.png' %}" alt="Logo">
-      {% endif %}
-      <div style="font-size: 11pt; font-weight: bold; line-height: 1.2;">{{ school_setting.name }}</div>
-      <div style="font-size: 7.5pt; opacity: 0.85;">FACULTY / STAFF IDENTITY CARD</div>
+  <!-- Top Action Toolbar (Hidden during print) -->
+  <div class="action-toolbar no-print">
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'teacher_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Staff List
+      </a>
+      <span class="fw-bold text-dark small">Staff ID Card:</span>
+      <span class="badge bg-primary">{{ teacher.teacher_id }}</span>
     </div>
 
-    <div class="id-card-body">
-      {% if teacher.profile_picture %}
-        <img src="{{ teacher.profile_picture.url }}" alt="{{ teacher.full_name }}" class="staff-photo">
-      {% else %}
-        <div class="staff-photo bg-success text-white d-flex align-items-center justify-content-center mx-auto" style="font-size: 2rem; font-weight: bold;">
-          {{ teacher.full_name|slice:":1" }}
+    <!-- Quick Switch Teacher Dropdown -->
+    {% if all_teachers %}
+    <div class="d-flex align-items-center gap-2">
+      <select class="form-select form-select-sm" onchange="if(this.value) window.location.href=this.value;">
+        <option value="">-- Switch Teacher Card --</option>
+        {% for t in all_teachers %}
+          <option value="{% url 'staff_id_card' t.pk %}" {% if t.pk == teacher.pk %}selected{% endif %}>
+            {{ t.teacher_id }} - {{ t.full_name }} ({{ t.designation }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'all_staff_id_cards' %}" class="btn btn-outline-dark btn-sm fw-bold" title="Print all teacher cards on A4 sheets">
+        <i class="fas fa-id-card me-1"></i> Print All Staff Cards
+      </a>
+      <button onclick="window.print()" class="btn btn-success btn-sm fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print Card (Ctrl+P)
+      </button>
+    </div>
+  </div>
+
+  <!-- The High-Definition Identity Card -->
+  <div class="id-card-wrapper">
+    <div class="id-card" id="printable-card">
+      
+      <!-- Card Header -->
+      <div class="id-card-header">
+        <div class="lanyard-slot-guide" title="Lanyard Punch Guide"></div>
+
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="School Logo" class="school-logo-badge">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="School Logo" class="school-logo-badge">
+        {% endif %}
+
+        <div class="school-name-title">
+          {{ school_setting.name|default:"Kohisar Model School & College" }}
         </div>
-      {% endif %}
+        <div class="card-badge-subtitle">
+          FACULTY / STAFF IDENTITY CARD
+        </div>
+      </div>
 
-      <h5 class="fw-bold mt-3 mb-1 text-dark">{{ teacher.full_name }}</h5>
-      <span class="badge bg-primary text-uppercase px-3 py-1 mb-3">{{ teacher.designation }}</span>
+      <!-- Card Body -->
+      <div class="id-card-body">
+        
+        <!-- High-Resolution Staff Portrait -->
+        <div class="photo-frame">
+          {% if teacher.profile_picture %}
+            <img 
+              src="{{ teacher.profile_picture.url }}" 
+              alt="{{ teacher.full_name }}" 
+              class="staff-photo-img"
+            >
+          {% else %}
+            <div class="staff-photo-fallback">
+              {{ teacher.full_name|slice:":1"|upper }}
+            </div>
+          {% endif %}
+        </div>
 
-      <table class="table table-sm table-borderless text-start small mt-2 mb-0">
-        <tr>
-          <th class="text-muted" style="width: 40%;">Staff ID:</th>
-          <td class="fw-bold text-dark">{{ teacher.teacher_id }}</td>
-        </tr>
-        <tr>
-          <th class="text-muted">CNIC:</th>
-          <td>{{ teacher.cnic|default:"-" }}</td>
-        </tr>
-        <tr>
-          <th class="text-muted">Contact:</th>
-          <td>{{ teacher.contact_number }}</td>
-        </tr>
-        <tr>
-          <th class="text-muted">Joining:</th>
-          <td>{{ teacher.joining_date|date:"d M Y" }}</td>
-        </tr>
-      </table>
-    </div>
+        <!-- Teacher Full Name & Designation -->
+        <h4 class="staff-full-name">{{ teacher.full_name }}</h4>
+        <span class="staff-designation-badge">{{ teacher.designation }}</span>
 
-    <div class="id-card-footer">
-      <div>If found, please return to {{ school_setting.name }}</div>
-      <div>{{ school_setting.address }} | {{ school_setting.contact }}</div>
+        <!-- Staff Metadata Table -->
+        <table class="meta-table">
+          <tr class="highlight-row">
+            <th><i class="fas fa-id-badge me-1"></i>Staff ID:</th>
+            <td><strong>{{ teacher.teacher_id }}</strong></td>
+          </tr>
+          <tr>
+            <th><i class="fas fa-address-card me-1"></i>CNIC:</th>
+            <td>{{ teacher.cnic|default:"-" }}</td>
+          </tr>
+          <tr>
+            <th><i class="fas fa-phone-alt me-1"></i>Contact:</th>
+            <td>{{ teacher.contact_number|default:"-" }}</td>
+          </tr>
+          <tr>
+            <th><i class="fas fa-calendar-check me-1"></i>Joining:</th>
+            <td>{{ teacher.joining_date|date:"d M Y" }}</td>
+          </tr>
+        </table>
+
+        <!-- Crisp High-Contrast Attendance QR Code Section (112px x 112px) -->
+        <div class="qr-badge-section">
+          <div class="qr-code-box">
+            <img 
+              src="{% url 'teacher_qr_image' teacher.pk %}?v=5" 
+              alt="KMS Attendance QR Code for {{ teacher.full_name }}" 
+              class="qr-code-img"
+            >
+          </div>
+          <div class="qr-caption">
+            <i class="fas fa-qrcode me-1 text-primary"></i> Scan for KMS Attendance
+          </div>
+          <div class="qr-subtext">
+            Staff ID: {{ teacher.teacher_id }}
+          </div>
+        </div>
+
+        <!-- Signature Authorization Area -->
+        <div class="auth-row">
+          <div class="auth-block">
+            <div class="auth-line"></div>
+            <div class="auth-label">Card Holder</div>
+          </div>
+          <div class="auth-block">
+            <div class="auth-line"></div>
+            <div class="auth-label">Authorized Principal</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Card Footer -->
+      <div class="id-card-footer">
+        <div class="footer-address">
+          {{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }}
+        </div>
+        <div class="footer-contact">
+          <i class="fas fa-phone-alt me-1"></i> {{ school_setting.contact|default:"+92 344 9631323" }}
+        </div>
+      </div>
+
     </div>
   </div>
+
 </body>
 </html>

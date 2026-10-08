@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Daily Teacher Attendance Register | KMS V4{% endblock %}
+
+{% block extra_css %}
+<style>
+  .status-select {
+    font-weight: 700 !important;
+    border-width: 2px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    min-width: 175px !important;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  .table-roster th {
+    font-size: 0.76rem;
+    letter-spacing: 0.3px;
+  }
+  .mobile-qr-card {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-clipboard-check text-primary me-2"></i>Daily Teacher Attendance Register
+      </h3>
+      <p class="text-muted small mb-0">
+        Mark daily faculty attendance, review check-in/out times, and automatically calculate late or absent salary cuts.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+      <a href="{% url 'daily_attendance_print' %}?date={{ target_date|date:'Y-m-d' }}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">
+        <i class="fas fa-print me-1"></i> Print Daily PDF Sheet
+      </a>
+      <button type="button" class="btn btn-outline-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#mobileGateModal">
+        <i class="fas fa-mobile-alt me-1"></i> Mobile Gate Scanner
+      </button>
+      <a href="{% url 'qr_attendance_scan' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-qrcode me-1"></i> QR Scanner
+      </a>
+      <a href="{% url 'monthly_attendance_sheet' %}" class="btn btn-outline-info btn-sm">
+        <i class="fas fa-calendar-alt me-1"></i> Monthly Sheet
+      </a>
+      <a href="{% url 'attendance_settings' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-sliders-h me-1"></i> Shift Settings
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter & Action Controls Card -->
+  <div class="card shadow-sm border-0 mb-3 bg-light">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-center justify-content-between">
+        <div class="col-md-5">
+          <form method="get" class="d-flex gap-2 align-items-center">
+            <label class="fw-bold small text-muted text-nowrap">Select Date:</label>
+            <input 
+              type="date" 
+              name="date" 
+              class="form-control form-control-sm font-monospace fw-bold" 
+              value="{{ target_date|date:'Y-m-d' }}" 
+              onchange="this.form.submit()"
+            >
+            <button type="submit" class="btn btn-sm btn-primary text-nowrap">
+              <i class="fas fa-filter me-1"></i> Load Date
+            </button>
+          </form>
+        </div>
+        <div class="col-md-7 text-md-end d-flex flex-wrap align-items-center justify-content-md-end gap-2">
+          <span class="badge bg-white text-dark border p-2 small">
+            <i class="fas fa-clock text-primary me-1"></i> Shift: <strong>{{ setting.shift_start_time|time:"h:i A" }} - {{ setting.shift_end_time|time:"h:i A" }}</strong> (Grace: {{ setting.grace_period_minutes }}m)
+          </span>
+          <button type="button" class="btn btn-sm btn-outline-success fw-bold" id="btn-mark-all-present">
+            <i class="fas fa-check-double me-1"></i> Mark All Present (Full)
+          </button>
+          <a href="{% url 'daily_attendance_print' %}?date={{ target_date|date:'Y-m-d' }}" target="_blank" class="btn btn-sm btn-dark fw-bold">
+            <i class="fas fa-file-pdf me-1"></i> PDF Sheet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Roster Form -->
+  <form method="post" id="attendance-register-form">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ target_date|date:'Y-m-d' }}">
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="fw-bold text-dark mb-0">
+          Faculty Roster for {{ target_date|date:"l, d F Y" }}
+        </h5>
+        <div class="d-flex gap-2">
+          <button type="submit" name="action" value="auto_calculate_all" class="btn btn-outline-warning btn-sm fw-bold">
+            <i class="fas fa-calculator me-1"></i> Auto-Calculate Cuts
+          </button>
+          <button type="submit" name="action" value="save" class="btn btn-success btn-sm px-4 fw-bold">
+            <i class="fas fa-save me-1"></i> Save Changes
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 text-nowrap table-roster">
+            <thead class="table-light">
+              <tr class="small text-uppercase">
+                <th style="width: 35px;">#</th>
+                <th>Staff Member</th>
+                <th style="width: 110px;">Scale (Base)</th>
+                <th style="width: 185px; min-width: 175px;">Attendance Status</th>
+                <th style="width: 115px;">Check In</th>
+                <th style="width: 115px;">Check Out</th>
+                <th style="width: 125px;">Deduction (PKR)</th>
+                <th style="width: 110px;">Bonus (PKR)</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in attendance_rows %}
+              <tr>
+                <td class="text-muted small text-center">{{ forloop.counter }}</td>
+                <td>
+                  <div class="fw-bold text-dark">{{ row.teacher.full_name }}</div>
+                  <small class="text-muted font-monospace">{{ row.teacher.teacher_id }} &bull; {{ row.teacher.designation }}</small>
+                </td>
+                <td>
+                  {% if row.teacher.salary_scale %}
+                    <span class="badge bg-light text-dark border font-monospace">
+                      PKR {{ row.teacher.salary_scale.basic_pay|floatformat:0|intcomma }}
+                    </span>
+                  {% else %}
+                    <span class="text-muted small">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <!-- Full-width Status Selector with Color-Coding -->
+                  <select 
+                    name="teacher_{{ row.teacher.pk }}_status" 
+                    class="form-select form-select-sm status-select"
+                    data-teacher-id="{{ row.teacher.pk }}"
+                    data-status="{{ row.status }}"
+                  >
+                    {% for val, label in status_choices %}
+                      <option value="{{ val }}" {% if row.status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input 
+                    type="time" 
+                    name="teacher_{{ row.teacher.pk }}_check_in" 
+                    value="{{ row.check_in }}" 
+                    class="form-control form-control-sm font-monospace"
+                  >
+                </td>
+                <td>
+                  <input 
+                    type="time" 
+                    name="teacher_{{ row.teacher.pk }}_check_out" 
+                    value="{{ row.check_out }}" 
+                    class="form-control form-control-sm font-monospace"
+                  >
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    name="teacher_{{ row.teacher.pk }}_deduction" 
+                    value="{{ row.deduction|floatformat:2 }}" 
+                    class="form-control form-control-sm font-monospace text-danger fw-bold"
+                  >
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    name="teacher_{{ row.teacher.pk }}_bonus" 
+                    value="{{ row.bonus|floatformat:2 }}" 
+                    class="form-control form-control-sm font-monospace text-success fw-bold"
+                  >
+                </td>
+                <td>
+                  <input 
+                    type="text" 
+                    name="teacher_{{ row.teacher.pk }}_remarks" 
+                    value="{{ row.remarks }}" 
+                    placeholder="Optional note" 
+                    class="form-control form-control-sm"
+                  >
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="9" class="text-center text-muted py-4">No active faculty members found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-light py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span class="small text-muted">
+          <i class="fas fa-info-circle me-1"></i> Late cuts calculated pro-rata per minute past grace period. Absent cut is 1 daily rate.
+        </span>
+        <div class="d-flex gap-2">
+          <a href="{% url 'daily_attendance_print' %}?date={{ target_date|date:'Y-m-d' }}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">
+            <i class="fas fa-print me-1"></i> Print PDF Sheet
+          </a>
+          <button type="submit" name="action" value="save" class="btn btn-success fw-bold px-4">
+            <i class="fas fa-save me-1"></i> Save Attendance & Salary Cuts
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Mobile Gate Scanner Access Modal -->
+<div class="modal fade" id="mobileGateModal" tabindex="-1" aria-labelledby="mobileGateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white py-3">
+        <h5 class="modal-title fw-bold" id="mobileGateModalLabel">
+          <i class="fas fa-mobile-alt text-success me-2"></i>Mobile Gate Scanner Access
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <p class="text-muted small mb-3">
+          The <strong>Principal</strong> or <strong>Vice Principal</strong> can open this URL on their smartphone to scan teachers' QR cards directly at the school gate!
+        </p>
+
+        <div class="mobile-qr-card mb-3">
+          <!-- Direct QR code pointing to laptop LAN IP -->
+          <img 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=http%3A%2F%2F192.168.100.7%3A8000%2Fteachers%2Fattendance%2Fscan%2F" 
+            alt="Scan with mobile" 
+            class="img-fluid rounded mb-2 border p-1 bg-white"
+            style="width: 170px; height: 170px;"
+          >
+          <div class="small fw-bold text-dark mt-1">Scan QR with Mobile Camera to Open</div>
+          <div class="badge bg-primary font-monospace mt-1 px-3 py-1 fs-6">
+            http://192.168.100.7:8000/teachers/attendance/scan/
+          </div>
+        </div>
+
+        <div class="text-start small text-secondary bg-light p-3 rounded">
+          <div class="fw-bold text-dark mb-1"><i class="fas fa-wifi text-primary me-1"></i>Quick Steps:</div>
+          <ol class="mb-0 ps-3">
+            <li>Ensure the mobile phone is connected to the same Wi-Fi or Hotspot as this laptop.</li>
+            <li>Scan the QR code above or type the link in Google Chrome on your phone.</li>
+            <li>Log in with admin / principal credentials.</li>
+            <li>Point the phone's back camera at teacher badges at the gate — attendance will be recorded instantly with sound!</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2">
+        <a href="http://192.168.100.7:8000/teachers/attendance/scan/" target="_blank" class="btn btn-sm btn-primary fw-bold">
+          <i class="fas fa-external-link-alt me-1"></i> Test Link Now
+        </a>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const btnMarkAll = document.getElementById('btn-mark-all-present');
+
+  // Dynamic Status Colorizer
+  function applyStatusStyle(sel) {
+    const val = sel.value;
+    sel.setAttribute('data-status', val);
+    if (val === 'Present') {
+      sel.style.borderColor = '#10b981';
+      sel.style.backgroundColor = '#ecfdf5';
+      sel.style.color = '#065f46';
+    } else if (val === 'Late') {
+      sel.style.borderColor = '#f59e0b';
+      sel.style.backgroundColor = '#fffbeb';
+      sel.style.color = '#92400e';
+    } else if (val === 'Absent') {
+      sel.style.borderColor = '#ef4444';
+      sel.style.backgroundColor = '#fef2f2';
+      sel.style.color = '#991b1b';
+    } else if (val === 'Half Day') {
+      sel.style.borderColor = '#f97316';
+      sel.style.backgroundColor = '#fff7ed';
+      sel.style.color = '#9a3412';
+    } else if (val === 'Leave') {
+      sel.style.borderColor = '#3b82f6';
+      sel.style.backgroundColor = '#eff6ff';
+      sel.style.color = '#1e40af';
+    } else {
+      sel.style.borderColor = '#cbd5e1';
+      sel.style.backgroundColor = '#f8fafc';
+      sel.style.color = '#334155';
+    }
+  }
+
+  // Initialize all dropdowns with color
+  document.querySelectorAll('.status-select').forEach(sel => {
+    applyStatusStyle(sel);
+    sel.addEventListener('change', function() {
+      applyStatusStyle(this);
+    });
+  });
+
+  // Mark all present handler
+  if (btnMarkAll) {
+    btnMarkAll.addEventListener('click', function() {
+      document.querySelectorAll('.status-select').forEach(sel => {
+        sel.value = 'Present';
+        applyStatusStyle(sel);
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

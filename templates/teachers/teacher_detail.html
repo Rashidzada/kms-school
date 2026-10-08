@@ -81,8 +81,13 @@
           <li class="list-group-item d-flex justify-content-between bg-light">
             <span class="text-muted">Assigned Salary Scale:</span>
             <strong class="text-success">{{ teacher.salary_scale.name|default:"None" }}</strong>
-          </li>
         </ul>
+
+        <div class="mt-3 p-3 bg-light rounded border text-center">
+          <div class="fw-bold text-dark small mb-2"><i class="fas fa-qrcode text-primary me-1"></i> Attendance QR Code</div>
+          <img src="{% url 'teacher_qr_image' teacher.pk %}" alt="Staff QR" style="width: 130px; height: 130px; border: 1px solid #cbd5e0; border-radius: 8px; padding: 4px; background: #fff;">
+          <div class="small text-muted mt-2" style="font-size: 0.75rem;">Scan badge at school scanner for check-in / out</div>
+        </div>
       </div>
     </div>
   </div>

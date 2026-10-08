@@ -44,17 +44,29 @@
           {% csrf_token %}
           
           <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
               {{ form.days_present|as_crispy_field }}
+            </div>
+            <div class="col-md-4">
+              {{ form.days_late|as_crispy_field }}
+            </div>
+            <div class="col-md-4">
+              {{ form.days_absent|as_crispy_field }}
             </div>
             <div class="col-md-6">
               {{ form.allowances|as_crispy_field }}
             </div>
             <div class="col-md-6">
+              {{ form.bonus|as_crispy_field }}
+            </div>
+            <div class="col-md-4">
+              {{ form.late_deductions|as_crispy_field }}
+            </div>
+            <div class="col-md-4">
+              {{ form.absent_deductions|as_crispy_field }}
+            </div>
+            <div class="col-md-4">
               {{ form.deductions|as_crispy_field }}
-              <div class="form-text small" id="deductionHelp">
-                <i class="fas fa-info-circle text-info"></i> Auto absent deduction: <span class="fw-bold text-danger" id="auto_absent_display">PKR 0.00</span> (<span id="absent_days_count">0</span> absent days).
-              </div>
             </div>
             <div class="col-md-6">
               {{ form.paid_amount|as_crispy_field }}
@@ -68,7 +80,7 @@
             <div class="col-md-6">
               {{ form.voucher_no|as_crispy_field }}
             </div>
-            <div class="col-12">
+            <div class="col-md-6 pt-md-4">
               {{ form.is_paid|as_crispy_field }}
             </div>
           </div>

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Import Biometric / Fingerprint Attendance | KMS V4{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-fingerprint text-primary me-2"></i>Biometric & Fingerprint Machine Import
+      </h3>
+      <p class="text-muted small mb-0">
+        Import faculty punch logs from electronic biometric / fingerprint attendance machines (ZKTeco, Realtime, Anviz, BioStar).
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+      <a href="{% url 'qr_attendance_scan' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-qrcode me-1"></i> QR Scanner
+      </a>
+      <a href="{% url 'daily_attendance_register' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-clipboard-list me-1"></i> Daily Register
+      </a>
+      <a href="{% url 'monthly_attendance_sheet' %}" class="btn btn-outline-info btn-sm">
+        <i class="fas fa-calendar-alt me-1"></i> Monthly Sheet
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Form Card -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold text-dark mb-0">
+            <i class="fas fa-upload text-primary me-2"></i>Upload Machine File or Paste Punch Logs
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-muted">Attendance Date (Optional Override)</label>
+              {{ form.attendance_date }}
+              <div class="form-text small text-muted">If your biometric file doesn't have a date column, this date will be used for all records.</div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold small text-muted">Upload Biometric CSV / Excel File</label>
+              {{ form.import_file }}
+              <div class="form-text small text-muted">Supported formats: <code>.csv</code>, <code>.xlsx</code>, <code>.xls</code>, <code>.txt</code></div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold small text-muted">Or Paste Raw Device Punch Logs</label>
+              {{ form.paste_data }}
+              <div class="form-text small text-muted">Copy directly from machine software or USB stick log files. Comma, tab, or space delimited.</div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 border-top pt-3">
+              <a href="{% url 'qr_attendance_scan' %}" class="btn btn-light">Cancel</a>
+              <button type="submit" class="btn btn-primary px-4 fw-bold">
+                <i class="fas fa-file-import me-1"></i> Process Biometric Attendance
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions / Format Helper Card -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+          <h6 class="fw-bold text-dark mb-3">
+            <i class="fas fa-info-circle text-primary me-1"></i> Accepted Machine Formats
+          </h6>
+          <p class="small text-muted mb-2">
+            The importer automatically recognizes Staff ID numbers and check-in / check-out times, calculating late arrival penalties according to your shift policy.
+          </p>
+
+          <h6 class="fw-bold small text-secondary mt-3 mb-1">Format A: ID, Date, In Time, Out Time</h6>
+          <pre class="bg-dark text-white p-2 rounded small font-monospace mb-2">10001, 2026-10-08, 08:05, 12:35
+T-001, 2026-10-08, 08:25, 12:30
+T-002, 2026-10-08, 08:00, 12:30</pre>
+
+          <h6 class="fw-bold small text-secondary mt-3 mb-1">Format B: ID with Single Punch Time (with selected date)</h6>
+          <pre class="bg-dark text-white p-2 rounded small font-monospace mb-2">10001, 08:10
+T-001, 08:35</pre>
+
+          <div class="alert alert-info py-2 px-3 small mt-3 mb-0">
+            <i class="fas fa-cogs me-1"></i>
+            Current School Shift: <strong>{{ setting.shift_start_time|time:"h:i A" }} to {{ setting.shift_end_time|time:"h:i A" }}</strong>.
+            Grace period: <strong>{{ setting.grace_period_minutes }} minutes</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

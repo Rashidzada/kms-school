@@ -395,7 +395,42 @@
         </li>
         <li class="nav-item">
           <a href="{% url 'teacher_create' %}" class="nav-link">
-            <i class="fas fa-user-tie"></i> Add Teacher
+            <i class="fas fa-user-plus"></i> Add Teacher
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'qr_attendance_scan' %}" class="nav-link">
+            <i class="fas fa-qrcode text-warning"></i> QR Attendance Scanner
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'daily_attendance_register' %}" class="nav-link">
+            <i class="fas fa-clipboard-check"></i> Daily Attendance Register
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'biometric_fingerprint_import' %}" class="nav-link">
+            <i class="fas fa-fingerprint"></i> Biometric Machine Import
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'monthly_attendance_sheet' %}" class="nav-link">
+            <i class="fas fa-calendar-check"></i> Monthly Attendance Sheet
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'yearly_attendance_sheet' %}" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> Yearly Attendance Sheet
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'all_staff_qr_cards' %}" target="_blank" class="nav-link">
+            <i class="fas fa-id-badge"></i> Print Staff QR Badges
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'attendance_settings' %}" class="nav-link">
+            <i class="fas fa-sliders-h"></i> Shift & Cutting Setup
           </a>
         </li>
         <li class="nav-item">
@@ -508,7 +543,14 @@
           </div>
         </div>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+          <!-- Easy Visual 1-Click Teacher Attendance Scan Button -->
+          <a href="{% url 'qr_attendance_scan' %}" class="btn btn-sm fw-bold d-flex align-items-center shadow-sm px-3 py-1 text-white border-0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px;" title="Open Teacher QR Attendance Scanner">
+            <i class="fas fa-qrcode fa-lg me-2"></i>
+            <span class="d-none d-sm-inline">Scan Teacher Attendance</span>
+            <span class="d-inline d-sm-none">Scan QR</span>
+          </a>
+
           <div class="dropdown">
             <button class="btn btn-sm btn-light dropdown-toggle d-flex align-items-center gap-2 border" type="button" data-bs-toggle="dropdown">
               <i class="fas fa-user-circle fa-lg text-primary"></i>

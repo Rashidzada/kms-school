@@ -1,0 +1,430 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Daily Faculty Attendance Sheet | {{ target_date|date:"d M Y" }} | {{ school_setting.name }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    :root {
+      --primary-navy: #0f2b5c;
+      --secondary-blue: #1e4b8f;
+    }
+
+    body {
+      background: #f1f5f9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      padding: 20px 10px 50px;
+      margin: 0;
+    }
+
+    /* Action Toolbar (Hidden when printing) */
+    .print-toolbar {
+      max-width: 1100px;
+      margin: 0 auto 20px;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Print Paper Container */
+    .report-paper {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid #cbd5e1;
+    }
+
+    /* Official Letterhead */
+    .letterhead {
+      border-bottom: 2.5px solid var(--primary-navy);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .school-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      padding: 2px;
+    }
+
+    .school-title {
+      font-size: 18pt;
+      font-weight: 800;
+      color: var(--primary-navy);
+      text-transform: uppercase;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+
+    .doc-subtitle {
+      font-size: 11pt;
+      font-weight: 700;
+      color: var(--secondary-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+    }
+
+    .school-meta {
+      font-size: 8.5pt;
+      color: #64748b;
+    }
+
+    /* KPI Summary Tiles */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .kpi-box {
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      text-align: center;
+    }
+
+    .kpi-box .num {
+      font-size: 15pt;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .kpi-box .lbl {
+      font-size: 7.2pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* Roster Table */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin-bottom: 24px;
+    }
+
+    .report-table th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 700;
+      padding: 7px 6px;
+      border: 1px solid #cbd5e1;
+      text-transform: uppercase;
+      font-size: 7.5pt;
+      text-align: center;
+    }
+
+    .report-table td {
+      padding: 6px;
+      border: 1px solid #cbd5e1;
+      vertical-align: middle;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-present { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .badge-late { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-absent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .badge-half-day { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+    .badge-leave { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .badge-holiday { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    /* Sign-off Blocks */
+    .sign-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding-top: 10px;
+      page-break-inside: avoid;
+    }
+
+    .sign-box {
+      text-align: center;
+      width: 28%;
+    }
+
+    .sign-line {
+      border-top: 1.5px solid #64748b;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .sign-title {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #1e293b;
+      text-transform: uppercase;
+    }
+
+    .sign-sub {
+      font-size: 7.2pt;
+      color: #64748b;
+    }
+
+    /* Print Setup */
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .report-paper {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .report-table th {
+        background: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .badge-status {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .report-table tr {
+        page-break-inside: avoid !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Toolbar -->
+  <div class="print-toolbar no-print">
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'daily_attendance_register' %}?date={{ target_date|date:'Y-m-d' }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Edit Register
+      </a>
+      <a href="{% url 'qr_attendance_scan' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-qrcode me-1"></i> Scanner Terminal
+      </a>
+      <span class="badge bg-dark">{{ target_date|date:"l, d F Y" }}</span>
+    </div>
+
+    <!-- Date Switcher -->
+    <form method="get" class="d-flex align-items-center gap-2">
+      <input type="date" name="date" value="{{ target_date|date:'Y-m-d' }}" class="form-control form-control-sm" onchange="this.form.submit()">
+      <button type="submit" class="btn btn-sm btn-outline-secondary">Load</button>
+    </form>
+
+    <div class="d-flex align-items-center gap-2">
+      <button onclick="window.print()" class="btn btn-success btn-sm fw-bold px-4">
+        <i class="fas fa-print me-1"></i> Print / Save PDF (Ctrl+P)
+      </button>
+    </div>
+  </div>
+
+  <!-- Printable Paper Document -->
+  <div class="report-paper">
+    
+    <!-- Letterhead -->
+    <div class="letterhead">
+      <div class="d-flex align-items-center gap-3">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" class="school-logo">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="school-logo">
+        {% endif %}
+        <div>
+          <div class="school-title">{{ school_setting.name|default:"Kohisar Model School & College" }}</div>
+          <div class="doc-subtitle">Daily Faculty Attendance & Salary Cut Sheet</div>
+          <div class="school-meta">
+            {{ school_setting.address }} &bull; Phone: {{ school_setting.contact }}
+          </div>
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="fw-bold text-dark fs-6">{{ target_date|date:"l" }}</div>
+        <div class="badge bg-primary fs-6 px-3 py-1">{{ target_date|date:"d F Y" }}</div>
+        <div class="small text-muted mt-1">Shift: {{ setting.shift_start_time|time:"h:i A" }} - {{ setting.shift_end_time|time:"h:i A" }} ({{ setting.working_hours_per_day }}h)</div>
+      </div>
+    </div>
+
+    <!-- KPI Summary Tiles -->
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="num text-dark">{{ total_staff }}</div>
+        <div class="lbl">Total Faculty</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num text-success">{{ present_count }}</div>
+        <div class="lbl">Present (On Time)</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num text-warning">{{ late_count }}</div>
+        <div class="lbl">Late Comers</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num text-danger">{{ absent_count }}</div>
+        <div class="lbl">Absent</div>
+      </div>
+      <div class="kpi-box">
+        <div class="num text-secondary">{{ half_day_count|add:leave_count }}</div>
+        <div class="lbl">Half Day / Leave</div>
+      </div>
+      <div class="kpi-box" style="background: #fef2f2; border-color: #fecaca;">
+        <div class="num text-danger">PKR {{ total_deductions|floatformat:0|intcomma }}</div>
+        <div class="lbl">Total Cut (PKR)</div>
+      </div>
+    </div>
+
+    <!-- Faculty Attendance Table -->
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;">#</th>
+          <th style="width: 70px;">Staff ID</th>
+          <th style="text-align: left;">Teacher Name & Designation</th>
+          <th style="width: 85px;">Base Pay</th>
+          <th style="width: 100px;">Status</th>
+          <th style="width: 75px;">Check In</th>
+          <th style="width: 75px;">Check Out</th>
+          <th style="width: 65px;">Late Mins</th>
+          <th style="width: 90px;">Deduction</th>
+          <th style="width: 80px;">Bonus</th>
+          <th>Remarks</th>
+          <th style="width: 95px;">Signature</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in attendance_rows %}
+        <tr>
+          <td class="text-center text-muted">{{ forloop.counter }}</td>
+          <td class="text-center font-monospace fw-bold">{{ row.teacher.teacher_id }}</td>
+          <td>
+            <div class="fw-bold text-dark">{{ row.teacher.full_name }}</div>
+            <small class="text-muted" style="font-size: 7pt;">{{ row.teacher.designation }}</small>
+          </td>
+          <td class="text-center font-monospace small">
+            {% if row.teacher.salary_scale %}
+              PKR {{ row.teacher.salary_scale.basic_pay|floatformat:0|intcomma }}
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if row.status == "Present" %}
+              <span class="badge-status badge-present">Present</span>
+            {% elif row.status == "Late" %}
+              <span class="badge-status badge-late">Late (+{{ row.late_minutes }}m)</span>
+            {% elif row.status == "Absent" %}
+              <span class="badge-status badge-absent">Absent</span>
+            {% elif row.status == "Half Day" %}
+              <span class="badge-status badge-half-day">Half Day</span>
+            {% elif row.status == "Leave" %}
+              <span class="badge-status badge-leave">Leave</span>
+            {% elif row.status == "Holiday" %}
+              <span class="badge-status badge-holiday">Holiday</span>
+            {% else %}
+              <span class="badge-status badge-holiday">{{ row.status }}</span>
+            {% endif %}
+          </td>
+          <td class="text-center font-monospace">{{ row.check_in }}</td>
+          <td class="text-center font-monospace">{{ row.check_out }}</td>
+          <td class="text-center font-monospace">
+            {% if row.late_minutes > 0 %}
+              <span class="text-danger fw-bold">+{{ row.late_minutes }}m</span>
+            {% else %}
+              <span class="text-muted">0m</span>
+            {% endif %}
+          </td>
+          <td class="text-center font-monospace">
+            {% if row.deduction > 0 %}
+              <span class="text-danger fw-bold">-{{ row.deduction|floatformat:2|intcomma }}</span>
+            {% else %}
+              <span class="text-muted">0.00</span>
+            {% endif %}
+          </td>
+          <td class="text-center font-monospace text-success">
+            {% if row.bonus > 0 %}
+              +{{ row.bonus|floatformat:2|intcomma }}
+            {% else %}
+              <span class="text-muted">0.00</span>
+            {% endif %}
+          </td>
+          <td class="small text-muted">{{ row.remarks|default:"-" }}</td>
+          <td class="text-center" style="border-bottom: 1px dotted #94a3b8;"></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="12" class="text-center py-4 text-muted">No faculty records found for this date.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background: #f8fafc; font-weight: 800;">
+          <td colspan="4" class="text-end">Total Daily Deductions:</td>
+          <td colspan="4" class="text-center text-muted small">Shift Basis: 30 Days &bull; 4.5h/day</td>
+          <td class="text-center text-danger font-monospace">
+            PKR {{ total_deductions|floatformat:2|intcomma }}
+          </td>
+          <td class="text-center text-success font-monospace">
+            PKR {{ total_bonuses|floatformat:2|intcomma }}
+          </td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Official Authorization Sign-offs -->
+    <div class="sign-row">
+      <div class="sign-box">
+        <div class="sign-line"></div>
+        <div class="sign-title">Attendance Incharge</div>
+        <div class="sign-sub">Recorded & Verified</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-line"></div>
+        <div class="sign-title">Vice Principal</div>
+        <div class="sign-sub">Review & Endorsement</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-line"></div>
+        <div class="sign-title">Principal</div>
+        <div class="sign-sub">Final Approval & Seal</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

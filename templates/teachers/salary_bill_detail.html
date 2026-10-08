@@ -351,6 +351,9 @@
         <a href="{% url 'salary_bill_list' %}" class="btn btn-outline-secondary btn-sm">
           <i class="fas fa-arrow-left me-1"></i> Back to Salary Bills
         </a>
+        <a href="{% url 'sync_salary_bill_attendance' bill.pk %}" class="btn btn-outline-primary btn-sm fw-bold" title="Re-calculate attendance, late cuts, and bonuses from daily logs">
+          <i class="fas fa-sync-alt me-1"></i> Sync from Attendance
+        </a>
         <button onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-3">
           <i class="fas fa-print me-1"></i> Print Salary Statement (A4)
         </button>
@@ -589,8 +592,12 @@
     <div class="leaves-strip">
       <div><strong>Leaves / Attendance:</strong></div>
       <div><strong>Month Total:</strong> 30 Days</div>
-      <div><strong>Days Present:</strong> {{ bill.days_present }}</div>
-      <div><strong>Absent Days:</strong> {{ bill.absent_days }}</div>
+      <div><strong>Present:</strong> {{ bill.days_present }} Days</div>
+      <div><strong>Late:</strong> {{ bill.days_late }} Days (Cut: PKR {{ bill.late_deductions|floatformat:2|intcomma }})</div>
+      <div><strong>Absent:</strong> {{ bill.absent_days }} Days (Cut: PKR {{ bill.auto_absent_deduction|floatformat:2|intcomma }})</div>
+      {% if bill.bonus > 0 %}
+        <div><strong>Bonus:</strong> +PKR {{ bill.bonus|floatformat:2|intcomma }}</div>
+      {% endif %}
       <div><strong>Net Earned:</strong> {{ bill.days_present }} Days</div>
     </div>
 

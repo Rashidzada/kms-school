@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Monthly Teacher Attendance & Salary Cutting Sheet | KMS V4{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sheet-table th, .sheet-table td {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.8rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .sheet-day-cell {
+    min-width: 28px;
+    font-weight: bold;
+    font-size: 0.75rem;
+  }
+  .sheet-teacher-col {
+    min-width: 170px;
+    text-align: start !important;
+  }
+  .badge-p { background-color: #28a745; color: #fff; }
+  .badge-l { background-color: #ffc107; color: #000; }
+  .badge-a { background-color: #dc3545; color: #fff; }
+  .badge-hd { background-color: #17a2b8; color: #fff; }
+  .badge-lv { background-color: #6c757d; color: #fff; }
+  .badge-off { background-color: #f8f9fa; color: #adb5bd; }
+
+  @media print {
+    body { background: #fff !important; font-size: 8pt !important; }
+    .no-print, nav, #sidebar, .topbar { display: none !important; }
+    .container-fluid { width: 100% !important; padding: 0 !important; }
+    .card { border: none !important; box-shadow: none !important; }
+    .table-responsive { overflow: visible !important; }
+    .sheet-table th, .sheet-table td { padding: 2px !important; font-size: 7.5pt !important; }
+    @page { size: landscape; margin: 5mm; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom no-print">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-calendar-check text-primary me-2"></i>Monthly Faculty Attendance & Salary Cutting Sheet
+      </h3>
+      <p class="text-muted small mb-0">
+        Complete month matrix with daily codes, late arrival hours, absent deductions, daily salary cutting, and bonuses.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+      <a href="{% url 'yearly_attendance_sheet' %}?year={{ year }}" class="btn btn-outline-info btn-sm">
+        <i class="fas fa-calendar-alt me-1"></i> Full Yearly Sheet
+      </a>
+      <a href="{% url 'export_monthly_attendance_excel' %}?month={{ month }}&year={{ year }}" class="btn btn-outline-success btn-sm">
+        <i class="fas fa-file-excel me-1"></i> Export to Excel
+      </a>
+      <a href="{% url 'monthly_attendance_print' %}?month={{ month }}&year={{ year }}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">
+        <i class="fas fa-print me-1"></i> Print / Save PDF
+      </a>
+      <a href="{% url 'generate_salary_bills' %}" class="btn btn-primary btn-sm">
+        <i class="fas fa-file-invoice-dollar me-1"></i> Generate Salary Bills
+      </a>
+    </div>
+  </div>
+
+  <!-- Month & Year Filter Form -->
+  <div class="card shadow-sm border-0 mb-3 bg-light no-print">
+    <div class="card-body p-3">
+      <form method="get" class="row g-2 align-items-center">
+        <div class="col-auto">
+          <label class="fw-bold small text-muted">Month:</label>
+        </div>
+        <div class="col-auto">
+          <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for m_num, m_str in months %}
+              <option value="{{ m_num }}" {% if m_num == month %}selected{% endif %}>{{ m_str }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto ms-2">
+          <label class="fw-bold small text-muted">Year:</label>
+        </div>
+        <div class="col-auto">
+          <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for y in years %}
+              <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto ms-auto">
+          <span class="small text-muted">
+            <span class="badge badge-p">P</span> Present &bull; 
+            <span class="badge badge-l">L</span> Late &bull; 
+            <span class="badge badge-a">A</span> Absent &bull; 
+            <span class="badge badge-hd">HD</span> Half Day &bull; 
+            <span class="badge badge-lv">LV</span> Leave
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Monthly Sheet Table Card -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+      <span class="fw-bold text-dark fs-6">
+        <i class="fas fa-table text-primary me-2"></i>{{ month_name }} {{ year }} - Faculty Attendance & Salary Cutting Sheet
+      </span>
+      <span class="badge bg-light text-dark border">
+        Total Staff: {{ sheet_rows|length }}
+      </span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover sheet-table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th rowspan="2" class="sheet-teacher-col">Faculty / Staff Member</th>
+              <th rowspan="2" style="min-width: 85px;">Base Pay</th>
+              <th colspan="{{ days_range|length }}" class="text-center bg-light">Days of Month ({{ month_name }})</th>
+              <th colspan="5" class="text-center bg-light">Attendance Totals</th>
+              <th colspan="4" class="text-center bg-light">Salary Cuts & Net</th>
+            </tr>
+            <tr>
+              {% for h in day_headers %}
+                <th class="sheet-day-cell {% if h.is_sunday %}bg-light text-danger{% endif %}">
+                  <div>{{ h.day }}</div>
+                  <div style="font-size: 0.65rem; font-weight: normal;">{{ h.weekday|slice:":1" }}</div>
+                </th>
+              {% endfor %}
+              <!-- Attendance Totals -->
+              <th title="Present Days" class="bg-success text-white">P</th>
+              <th title="Late Days" class="bg-warning text-dark">L</th>
+              <th title="Absent Days" class="bg-danger text-white">A</th>
+              <th title="Half Days" class="bg-info text-white">HD</th>
+              <th title="Leave Days" class="bg-secondary text-white">LV</th>
+              <!-- Cutting Totals -->
+              <th title="Late Salary Cuts" class="text-danger">Late Cut</th>
+              <th title="Absent Salary Cuts" class="text-danger">Abs Cut</th>
+              <th title="Bonus Amount" class="text-success">Bonus</th>
+              <th title="Net Estimated Salary" class="bg-primary text-white">Net Pay</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in sheet_rows %}
+            <tr>
+              <td class="sheet-teacher-col">
+                <div class="fw-bold text-dark text-truncate" style="max-width: 170px;">
+                  {{ row.teacher.full_name }}
+                </div>
+                <div class="text-muted" style="font-size: 0.7rem;">
+                  {{ row.teacher.teacher_id }} &bull; {{ row.teacher.designation }}
+                </div>
+              </td>
+              <td class="font-monospace text-nowrap">
+                PKR {{ row.teacher.salary_scale.basic_pay|default:0|floatformat:0|intcomma }}
+              </td>
+
+              <!-- 1..31 Day Cells -->
+              {% for c in row.day_cells %}
+                <td class="sheet-day-cell p-0">
+                  {% if c.record %}
+                    {% if c.badge == "P" %}
+                      <span class="badge badge-p w-100 py-1" title="Present {{ c.in_time }}">P</span>
+                    {% elif c.badge == "L" %}
+                      <span class="badge badge-l w-100 py-1" title="Late: {{ c.in_time }} (-{{ c.deduction }})">L</span>
+                    {% elif c.badge == "A" %}
+                      <span class="badge badge-a w-100 py-1" title="Absent (-{{ c.deduction }})">A</span>
+                    {% elif c.badge == "HD" %}
+                      <span class="badge badge-hd w-100 py-1" title="Half Day (-{{ c.deduction }})">HD</span>
+                    {% elif c.badge == "LV" %}
+                      <span class="badge badge-lv w-100 py-1" title="Leave">LV</span>
+                    {% else %}
+                      <span class="badge bg-light text-muted w-100 py-1">{{ c.badge }}</span>
+                    {% endif %}
+                  {% else %}
+                    {% if c.badge == "Off" %}
+                      <span class="text-muted small opacity-50">off</span>
+                    {% else %}
+                      <span class="text-muted small opacity-25">-</span>
+                    {% endif %}
+                  {% endif %}
+                </td>
+              {% endfor %}
+
+              <!-- Summary Totals -->
+              <td class="fw-bold text-success">{{ row.present_count }}</td>
+              <td class="fw-bold text-warning">{{ row.late_count }}</td>
+              <td class="fw-bold text-danger">{{ row.absent_count }}</td>
+              <td class="fw-bold text-info">{{ row.half_day_count }}</td>
+              <td class="fw-bold text-secondary">{{ row.leave_count }}</td>
+
+              <!-- Cuts and Net -->
+              <td class="font-monospace text-danger fw-bold">
+                {% if row.late_deductions > 0 %}-{{ row.late_deductions|floatformat:0 }}{% else %}0{% endif %}
+              </td>
+              <td class="font-monospace text-danger fw-bold">
+                {% if row.absent_deductions > 0 %}-{{ row.absent_deductions|floatformat:0 }}{% else %}0{% endif %}
+              </td>
+              <td class="font-monospace text-success fw-bold">
+                {% if row.bonuses > 0 %}+{{ row.bonuses|floatformat:0 }}{% else %}0{% endif %}
+              </td>
+              <td class="font-monospace fw-bold text-dark bg-light text-nowrap">
+                PKR {{ row.net_salary|floatformat:0|intcomma }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="45" class="text-center text-muted py-5">
+                No active faculty members found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <th colspan="2" class="text-end">Grand Totals:</th>
+              <th colspan="{{ days_range|length }}" class="text-center text-muted small">
+                {{ sheet_rows|length }} Teachers Enrolled
+              </th>
+              <th class="text-success">{{ grand_totals.present }}</th>
+              <th class="text-warning">{{ grand_totals.late }}</th>
+              <th class="text-danger">{{ grand_totals.absent }}</th>
+              <th class="text-info">{{ grand_totals.half_day }}</th>
+              <th class="text-secondary">{{ grand_totals.leave }}</th>
+              <th class="text-danger font-monospace">PKR {{ grand_totals.late_deductions|floatformat:0|intcomma }}</th>
+              <th class="text-danger font-monospace">PKR {{ grand_totals.absent_deductions|floatformat:0|intcomma }}</th>
+              <th class="text-success font-monospace">PKR {{ grand_totals.bonuses|floatformat:0|intcomma }}</th>
+              <th class="bg-primary text-white font-monospace text-nowrap">PKR {{ grand_totals.net_salary|floatformat:0|intcomma }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

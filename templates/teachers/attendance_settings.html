@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Teacher Attendance & Salary Cutting Settings | KMS V4{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-sliders-h text-primary me-2"></i>Shift Timing & Salary Cutting Setup
+      </h3>
+      <p class="text-muted small mb-0">
+        Configure school faculty shift hours (e.g. 8:00 AM - 12:30 PM), grace arrival window, hourly pro-rata rates, and cutting rules.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+      <a href="{% url 'qr_attendance_scan' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-qrcode me-1"></i> QR Scanner Terminal
+      </a>
+      <a href="{% url 'monthly_attendance_sheet' %}" class="btn btn-outline-info btn-sm">
+        <i class="fas fa-calendar-check me-1"></i> Monthly Sheet
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+          <h5 class="fw-bold text-dark mb-0">
+            <i class="fas fa-clock text-primary me-2"></i>Shift Hours & Salary Cutting Rules
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="post">
+            {% csrf_token %}
+
+            <h6 class="fw-bold text-secondary text-uppercase small mb-3 border-bottom pb-2">
+              <i class="fas fa-hourglass-start me-1"></i> 1. School Shift Hours & Grace Windows
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Morning Shift Start Time</label>
+                {{ form.shift_start_time }}
+                <div class="form-text small text-muted">Example: <code>08:00 AM</code> (Official reporting time)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Shift End / Closing Time</label>
+                {{ form.shift_end_time }}
+                <div class="form-text small text-muted">Example: <code>12:30 PM</code> (Official departure time)</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Arrival Grace Period (Minutes)</label>
+                {{ form.grace_period_minutes }}
+                <div class="form-text small text-muted">Staff arriving within grace window are marked <strong>Present</strong> with 0 cut.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Half-Day Threshold (Minutes Late)</label>
+                {{ form.half_day_threshold_minutes }}
+                <div class="form-text small text-muted">Lateness exceeding this counts as <strong>Half Day</strong> (typically 120 mins).</div>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-secondary text-uppercase small mb-3 border-bottom pb-2">
+              <i class="fas fa-coins me-1"></i> 2. Salary Rate & Late Deduction Formulas
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Daily Working Hours</label>
+                {{ form.working_hours_per_day }}
+                <div class="form-text small text-muted">Hours per day used to calculate <strong>Hourly Rate = Daily Rate / Hours</strong> (e.g. 4.5 hrs).</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Monthly Working Days Basis</label>
+                {{ form.working_days_per_month }}
+                <div class="form-text small text-muted">Days used to calculate <strong>Daily Rate = Basic Pay / Days</strong> (typically 30).</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Late Comers Cutting Policy</label>
+                {{ form.late_deduction_type }}
+                <div class="form-text small text-muted">Choose between hourly pro-rata cut, per-minute, or fixed fine.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-muted">Fixed Late Fine Amount (PKR)</label>
+                {{ form.late_fixed_penalty }}
+                <div class="form-text small text-muted">Applies only if Fixed Penalty policy is chosen above.</div>
+              </div>
+            </div>
+
+            <div class="alert alert-info py-3 px-3 small mb-4">
+              <div class="fw-bold mb-1"><i class="fas fa-calculator me-1"></i> Formula Preview:</div>
+              <div>&bull; <strong>Daily Rate:</strong> <code>Base Salary &divide; {{ setting.working_days_per_month }} days</code></div>
+              <div>&bull; <strong>Hourly Rate:</strong> <code>Daily Rate &divide; {{ setting.working_hours_per_day }} hours</code></div>
+              <div>&bull; <strong>Late Comer Cut:</strong> <code>(Minutes Late &divide; 60) &times; Hourly Rate</code></div>
+              <div>&bull; <strong>Full Absent Cut:</strong> <code>1 &times; Daily Rate</code></div>
+              <div>&bull; <strong>Half Day Cut:</strong> <code>0.5 &times; Daily Rate</code></div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 border-top pt-3">
+              <a href="{% url 'qr_attendance_scan' %}" class="btn btn-light">Back to Scanner</a>
+              <button type="submit" class="btn btn-primary px-4 fw-bold">
+                <i class="fas fa-save me-1"></i> Save Shift & Cutting Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

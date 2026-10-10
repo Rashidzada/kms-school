@@ -44,6 +44,9 @@ class TeacherForm(forms.ModelForm):
         }
 
 
+from .models import MonthlySalaryBill, SalaryScale, Teacher, TeacherLoan, TeacherLoanRepayment
+
+
 class MonthlySalaryBillForm(forms.ModelForm):
     class Meta:
         model = MonthlySalaryBill
@@ -55,6 +58,9 @@ class MonthlySalaryBillForm(forms.ModelForm):
             "bonus",
             "late_deductions",
             "absent_deductions",
+            "previous_unpaid_dues",
+            "deduct_loan",
+            "loan_deduction_amount",
             "deductions",
             "paid_amount",
             "is_paid",
@@ -62,16 +68,21 @@ class MonthlySalaryBillForm(forms.ModelForm):
             "voucher_no",
         ]
         widgets = {
-            "payment_date": forms.DateInput(attrs={"type": "date"}),
-            "days_present": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_present"}),
-            "days_late": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_late"}),
-            "days_absent": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_absent"}),
-            "allowances": forms.NumberInput(attrs={"step": "0.01", "id": "id_allowances"}),
-            "bonus": forms.NumberInput(attrs={"step": "0.01", "id": "id_bonus"}),
-            "late_deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_late_deductions"}),
-            "absent_deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_absent_deductions"}),
-            "deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_deductions"}),
-            "paid_amount": forms.NumberInput(attrs={"step": "0.01", "id": "id_paid_amount"}),
+            "payment_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "days_present": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_present", "class": "form-control"}),
+            "days_late": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_late", "class": "form-control"}),
+            "days_absent": forms.NumberInput(attrs={"min": 0, "max": 31, "id": "id_days_absent", "class": "form-control"}),
+            "allowances": forms.NumberInput(attrs={"step": "0.01", "id": "id_allowances", "class": "form-control"}),
+            "bonus": forms.NumberInput(attrs={"step": "0.01", "id": "id_bonus", "class": "form-control"}),
+            "late_deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_late_deductions", "class": "form-control"}),
+            "absent_deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_absent_deductions", "class": "form-control"}),
+            "previous_unpaid_dues": forms.NumberInput(attrs={"step": "0.01", "id": "id_previous_unpaid_dues", "class": "form-control"}),
+            "deduct_loan": forms.CheckboxInput(attrs={"id": "id_deduct_loan", "class": "form-check-input"}),
+            "loan_deduction_amount": forms.NumberInput(attrs={"step": "0.01", "id": "id_loan_deduction_amount", "class": "form-control"}),
+            "deductions": forms.NumberInput(attrs={"step": "0.01", "id": "id_deductions", "class": "form-control"}),
+            "paid_amount": forms.NumberInput(attrs={"step": "0.01", "id": "id_paid_amount", "class": "form-control"}),
+            "is_paid": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "voucher_no": forms.TextInput(attrs={"class": "form-control"}),
         }
         labels = {
             "days_present": "Days Present in Month",
@@ -81,9 +92,60 @@ class MonthlySalaryBillForm(forms.ModelForm):
             "bonus": "Special Bonus / Incentive (PKR)",
             "late_deductions": "Late Arrival Deductions (PKR)",
             "absent_deductions": "Absent Deductions (PKR)",
-            "deductions": "Total Deductions / Final Cuts (PKR)",
+            "previous_unpaid_dues": "Old Unpaid Dues / Prior Months Carried Forward (PKR)",
+            "deduct_loan": "Cut Loan Installment from this salary? (Custom option)",
+            "loan_deduction_amount": "Loan Installment Amount to Cut (PKR)",
+            "deductions": "Attendance Deductions / Fine Cuts (PKR)",
             "paid_amount": "Amount Paid / Disbursed (PKR)",
             "is_paid": "Mark Fully Paid (Cleared)",
+            "voucher_no": "Voucher / Receipt Reference #",
+            "payment_date": "Payment Date",
+        }
+
+
+class TeacherLoanForm(forms.ModelForm):
+    class Meta:
+        model = TeacherLoan
+        fields = [
+            "teacher",
+            "loan_title",
+            "loan_date",
+            "principal_amount",
+            "monthly_installment",
+            "remarks",
+        ]
+        widgets = {
+            "teacher": forms.Select(attrs={"class": "form-select"}),
+            "loan_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Advance Salary / Emergency Loan"}),
+            "loan_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "principal_amount": forms.NumberInput(attrs={"step": "0.01", "class": "form-control", "placeholder": "e.g. 50000"}),
+            "monthly_installment": forms.NumberInput(attrs={"step": "0.01", "class": "form-control", "placeholder": "e.g. 5000"}),
+            "remarks": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
+        }
+        labels = {
+            "teacher": "Select Teacher / Staff Member",
+            "loan_title": "Loan / Advance Purpose or Title",
+            "loan_date": "Loan Approval Date",
+            "principal_amount": "Total Loan / Advance Amount (PKR)",
+            "monthly_installment": "Suggested Monthly Installment Cut (PKR)",
+            "remarks": "Additional Notes / Authorization",
+        }
+
+
+class TeacherLoanRepaymentForm(forms.ModelForm):
+    class Meta:
+        model = TeacherLoanRepayment
+        fields = [
+            "amount",
+            "payment_date",
+            "payment_method",
+            "notes",
+        ]
+        widgets = {
+            "amount": forms.NumberInput(attrs={"step": "0.01", "class": "form-control"}),
+            "payment_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "payment_method": forms.Select(attrs={"class": "form-select"}),
+            "notes": forms.TextInput(attrs={"class": "form-control"}),
         }
 
 

@@ -89,6 +89,58 @@ class Student(models.Model):
     def get_absolute_url(self):
         return reverse("student_detail", kwargs={"pk": self.pk})
 
+    @property
+    def age_years(self):
+        if not self.dob:
+            return None
+        today = timezone.now().date()
+        years = today.year - self.dob.year
+        if (today.month, today.day) < (self.dob.month, self.dob.day):
+            years -= 1
+        return max(0, years)
+
+    @property
+    def age_display(self):
+        if not self.dob:
+            return "N/A"
+        today = timezone.now().date()
+        years = today.year - self.dob.year
+        months = today.month - self.dob.month
+        if today.day < self.dob.day:
+            months -= 1
+        if months < 0:
+            years -= 1
+            months += 12
+        if years <= 0:
+            return f"{max(0, months)} Mos"
+        if months == 0:
+            return f"{years} Yrs"
+        return f"{years} Yrs {months} M"
+
+    def get_qr_code_base64(self):
+        """
+        Generate base64-encoded crisp pure black/white PNG QR Code for fast student scanning.
+        """
+        try:
+            import qrcode
+            import io
+            import base64
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=10,
+                border=3,
+            )
+            # Use admission_no for quick lookup
+            qr.add_data(str(self.admission_no or self.id))
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            return base64.b64encode(buffer.getvalue()).decode()
+        except Exception:
+            return ""
+
     def save(self, *args, **kwargs):
         if not self.admission_no:
             # Auto-numbering: highest existing numeric admission_no + 1, starting at 1001
@@ -99,6 +151,44 @@ class Student(models.Model):
             next_num = max(existing_numbers) + 1 if existing_numbers else 1001
             self.admission_no = str(next_num)
         super().save(*args, **kwargs)
+
+
+class StudentAttendance(models.Model):
+    STATUS_CHOICES = [
+        ("Present", "Present"),
+        ("Late", "Late Comer"),
+        ("Absent", "Absent"),
+        ("Leave", "Approved Leave"),
+        ("Holiday", "Holiday / School Off"),
+    ]
+
+    METHOD_CHOICES = [
+        ("QR Code", "QR Code Scan"),
+        ("Manual", "Manual Register"),
+        ("Biometric", "Biometric / RFID"),
+    ]
+
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name="attendances"
+    )
+    date = models.DateField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Present")
+    check_in = models.TimeField(null=True, blank=True)
+    attendance_method = models.CharField(
+        max_length=20, choices=METHOD_CHOICES, default="QR Code"
+    )
+    remarks = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("student", "date")
+        ordering = ["-date", "student__admission_no"]
+        verbose_name = "Student Attendance"
+        verbose_name_plural = "Student Attendances"
+
+    def __str__(self):
+        return f"{self.student.admission_no} - {self.student.full_name} ({self.date}): {self.status}"
 
 
 class PromotionHistory(models.Model):

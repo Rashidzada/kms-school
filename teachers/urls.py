@@ -36,5 +36,11 @@ urlpatterns = [
     path("salary-bills/<int:pk>/edit/", views.salary_bill_update, name="salary_bill_update"),
     path("salary-bills/<int:pk>/sync-attendance/", views.sync_salary_bill_attendance_view, name="sync_salary_bill_attendance"),
     path("salary-bills/generate/", views.generate_salary_bills, name="generate_salary_bills"),
+
+    # Teacher Loans & Advances
+    path("loans/", views.teacher_loan_list, name="teacher_loan_list"),
+    path("loans/add/", views.teacher_loan_create, name="teacher_loan_create"),
+    path("loans/<int:pk>/", views.teacher_loan_detail, name="teacher_loan_detail"),
+    path("loans/<int:pk>/delete/", views.teacher_loan_delete, name="teacher_loan_delete"),
 ]
 

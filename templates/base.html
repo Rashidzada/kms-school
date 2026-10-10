@@ -337,6 +337,35 @@
         </li>
       </ul>
 
+      <div class="sidebar-section-title">Student Attendance & QR</div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a href="{% url 'student_qr_attendance_scan' %}" class="nav-link">
+            <i class="fas fa-qrcode text-warning"></i> Student QR Scanner
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'student_daily_attendance' %}" class="nav-link">
+            <i class="fas fa-calendar-check text-info"></i> Daily Class Attendance
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'student_monthly_attendance_sheet' %}" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> Monthly Attendance (31-Day)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'student_yearly_attendance_sheet' %}" class="nav-link">
+            <i class="fas fa-chart-line"></i> Yearly Annual Sums
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'all_student_id_cards' %}" class="nav-link">
+            <i class="fas fa-id-card text-success"></i> Print Student QR Cards
+          </a>
+        </li>
+      </ul>
+
       <div class="sidebar-section-title">Examinations & Results</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
@@ -441,6 +470,11 @@
         <li class="nav-item">
           <a href="{% url 'salary_bill_list' %}" class="nav-link">
             <i class="fas fa-file-invoice-dollar"></i> Monthly Salary Bills
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'teacher_loan_list' %}" class="nav-link">
+            <i class="fas fa-hand-holding-usd text-warning"></i> Staff Loans & Advances
           </a>
         </li>
         <li class="nav-item">

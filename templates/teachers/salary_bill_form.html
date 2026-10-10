@@ -6,12 +6,12 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-8">
+  <div class="col-lg-9">
     <div class="card shadow-sm border-success">
       <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <div>
           <h5 class="fw-bold mb-0 text-success">
-            <i class="fas fa-file-invoice-dollar me-2"></i> Monthly Salary Bill: {{ bill.teacher.full_name }}
+            <i class="fas fa-file-invoice-dollar me-2"></i> Monthly Salary Bill & Balance Sheet: {{ bill.teacher.full_name }}
           </h5>
           <span class="text-muted small">Period: <strong>{{ bill.month_name }} {{ bill.year }}</strong> | Staff ID: <strong>{{ bill.teacher.teacher_id }}</strong></span>
         </div>
@@ -22,20 +22,25 @@
         <!-- Faculty Salary Benchmark Strip -->
         <div class="p-3 bg-light rounded border mb-4">
           <div class="row g-3 text-center">
-            <div class="col-md-4">
-              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.75rem;">Base Basic Pay</small>
+            <div class="col-md-3">
+              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.72rem;">Base Basic Pay</small>
               <h5 class="fw-bold mb-0 text-primary" id="base_pay_display">PKR {{ bill.base_pay|floatformat:2|intcomma }}</h5>
-              <small class="text-muted" style="font-size: 0.75rem;">Daily Rate: PKR <span id="daily_rate_display">0.00</span> / day</small>
+              <small class="text-muted" style="font-size: 0.72rem;">Daily Rate: PKR <span id="daily_rate_display">0.00</span> / day</small>
             </div>
-            <div class="col-md-4">
-              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.75rem;">Scale Allowances</small>
+            <div class="col-md-3">
+              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.72rem;">Scale Allowances</small>
               <h5 class="fw-bold mb-0 text-dark">PKR {{ bill.allowances|floatformat:2|intcomma }}</h5>
-              <small class="text-muted" style="font-size: 0.75rem;">Medical / Conveyance / Other</small>
+              <small class="text-muted" style="font-size: 0.72rem;">Medical / Conveyance / Other</small>
             </div>
-            <div class="col-md-4">
-              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.75rem;">Salary Scale</small>
-              <h5 class="fw-bold mb-0 text-dark">{{ bill.teacher.salary_scale.name|default:"Standard Scale" }}</h5>
-              <small class="text-muted" style="font-size: 0.75rem;">Assigned Grade</small>
+            <div class="col-md-3">
+              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.72rem;">Prior Months Dues</small>
+              <h5 class="fw-bold mb-0 text-danger">PKR {{ suggested_dues|floatformat:2|intcomma }}</h5>
+              <small class="text-muted" style="font-size: 0.72rem;">{{ unpaid_bills|length }} Unpaid Previous Month(s)</small>
+            </div>
+            <div class="col-md-3">
+              <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.72rem;">Active Loan Balance</small>
+              <h5 class="fw-bold mb-0 text-info">PKR {{ bill.total_outstanding_loan|floatformat:2|intcomma }}</h5>
+              <small class="text-muted" style="font-size: 0.72rem;">School Staff Advance</small>
             </div>
           </div>
         </div>
@@ -43,78 +48,211 @@
         <form method="post" id="salaryForm">
           {% csrf_token %}
           
-          <div class="row g-3">
-            <div class="col-md-4">
-              {{ form.days_present|as_crispy_field }}
+          <!-- Section 1: Attendance & Work Days -->
+          <div class="card mb-3 border-light shadow-sm">
+            <div class="card-header bg-light py-2">
+              <strong class="text-dark small"><i class="fas fa-calendar-check me-1 text-primary"></i> 1. Attendance & Work Days (30-Day Basis)</strong>
             </div>
-            <div class="col-md-4">
-              {{ form.days_late|as_crispy_field }}
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  {{ form.days_present|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ form.days_late|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ form.days_absent|as_crispy_field }}
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              {{ form.days_absent|as_crispy_field }}
+          </div>
+
+          <!-- Section 2: Allowances & Regular Cuts -->
+          <div class="card mb-3 border-light shadow-sm">
+            <div class="card-header bg-light py-2">
+              <strong class="text-dark small"><i class="fas fa-coins me-1 text-success"></i> 2. Pay Allowances & Attendance Deductions</strong>
             </div>
-            <div class="col-md-6">
-              {{ form.allowances|as_crispy_field }}
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  {{ form.allowances|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                  {{ form.bonus|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ form.late_deductions|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ form.absent_deductions|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ form.deductions|as_crispy_field }}
+                </div>
+              </div>
             </div>
-            <div class="col-md-6">
-              {{ form.bonus|as_crispy_field }}
+          </div>
+
+          <!-- Section 3: Previous Unpaid Salary Months Dues Carry-Over -->
+          <div class="card mb-3 border-light shadow-sm">
+            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+              <strong class="text-dark small"><i class="fas fa-history me-1 text-danger"></i> 3. Old Dues / Previous Unpaid Months (e.g. Jan + Feb Not Taken)</strong>
+              {% if suggested_dues > 0 %}
+                <button type="button" class="btn btn-xs btn-outline-danger py-0 px-2 small" id="btnAutoLoadDues">
+                  <i class="fas fa-sync-alt me-1"></i> Auto-Load Unpaid Dues (PKR {{ suggested_dues|floatformat:2|intcomma }})
+                </button>
+              {% endif %}
             </div>
-            <div class="col-md-4">
-              {{ form.late_deductions|as_crispy_field }}
+            <div class="card-body">
+              {% if unpaid_bills %}
+                <div class="alert alert-warning py-2 mb-3">
+                  <strong class="small d-block mb-1"><i class="fas fa-exclamation-circle me-1"></i> Outstanding Prior Unpaid Months Found for {{ bill.teacher.full_name }}:</strong>
+                  <ul class="mb-0 small ps-3">
+                    {% for ub in unpaid_bills %}
+                      <li>
+                        <strong>{{ ub.period }}</strong>: Net Payable PKR {{ ub.net_payable|floatformat:2|intcomma }} | Paid: PKR {{ ub.paid_amount|floatformat:2|intcomma }} | <span class="text-danger fw-bold">Unpaid Dues: PKR {{ ub.unpaid_amount|floatformat:2|intcomma }}</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% else %}
+                <div class="alert alert-secondary py-1 small mb-3">
+                  <i class="fas fa-check-circle text-success me-1"></i> No prior unpaid salary months detected. Teacher is up-to-date.
+                </div>
+              {% endif %}
+              <div class="row g-3">
+                <div class="col-md-12">
+                  {{ form.previous_unpaid_dues|as_crispy_field }}
+                  <small class="text-muted">Enter total previous unpaid salary dues to add to this salary slip balance sheet.</small>
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              {{ form.absent_deductions|as_crispy_field }}
+          </div>
+
+          <!-- Section 4: Teacher Loan / Advance & Custom Deduction Option -->
+          <div class="card mb-3 border-light shadow-sm">
+            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+              <strong class="text-dark small"><i class="fas fa-hand-holding-usd me-1 text-info"></i> 4. Teacher Loan & Custom Cutting Option</strong>
+              {% if bill.total_outstanding_loan > 0 %}
+                <span class="badge bg-warning text-dark">Loan Outstanding: PKR {{ bill.total_outstanding_loan|floatformat:2|intcomma }}</span>
+              {% else %}
+                <span class="badge bg-success">No Active Loan</span>
+              {% endif %}
             </div>
-            <div class="col-md-4">
-              {{ form.deductions|as_crispy_field }}
+            <div class="card-body">
+              {% if active_loans %}
+                <div class="table-responsive mb-3">
+                  <table class="table table-sm table-bordered mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Loan Title</th>
+                        <th>Approved Date</th>
+                        <th class="text-end">Principal</th>
+                        <th class="text-end">Total Repaid</th>
+                        <th class="text-end">Balance Remaining</th>
+                        <th class="text-end">Standard Installment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for loan in active_loans %}
+                        <tr>
+                          <td><strong>{{ loan.loan_title }}</strong></td>
+                          <td>{{ loan.loan_date|date:"d-M-Y" }}</td>
+                          <td class="text-end">PKR {{ loan.principal_amount|floatformat:2|intcomma }}</td>
+                          <td class="text-end text-success">PKR {{ loan.total_repaid|floatformat:2|intcomma }}</td>
+                          <td class="text-end text-danger fw-bold">PKR {{ loan.remaining_balance|floatformat:2|intcomma }}</td>
+                          <td class="text-end">PKR {{ loan.monthly_installment|floatformat:2|intcomma }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+
+              <div class="row g-3 align-items-center p-2 rounded bg-light border">
+                <div class="col-md-6">
+                  <div class="form-check form-switch fs-6">
+                    {{ form.deduct_loan }}
+                    <label class="form-check-label fw-bold text-dark ms-2" for="id_deduct_loan">
+                      Cut Loan Installment from this salary?
+                    </label>
+                  </div>
+                  <small class="text-muted d-block ms-4">If unchecked, teacher will receive full salary without any loan cuts.</small>
+                </div>
+                <div class="col-md-6" id="loan_amount_box">
+                  {{ form.loan_deduction_amount|as_crispy_field }}
+                  <small class="text-muted">Custom amount or installment to deduct in this slip.</small>
+                </div>
+              </div>
             </div>
-            <div class="col-md-6">
-              {{ form.paid_amount|as_crispy_field }}
-              <button type="button" class="btn btn-sm btn-outline-success mt-1 py-0 px-2" id="btnPayFull">
-                <i class="fas fa-check-double me-1"></i> Pay Full Net Amount
-              </button>
+          </div>
+
+          <!-- Section 5: Payment Disbursement & Voucher -->
+          <div class="card mb-3 border-light shadow-sm">
+            <div class="card-header bg-light py-2">
+              <strong class="text-dark small"><i class="fas fa-money-check-alt me-1 text-primary"></i> 5. Payment Disbursement & Voucher</strong>
             </div>
-            <div class="col-md-6">
-              {{ form.payment_date|as_crispy_field }}
-            </div>
-            <div class="col-md-6">
-              {{ form.voucher_no|as_crispy_field }}
-            </div>
-            <div class="col-md-6 pt-md-4">
-              {{ form.is_paid|as_crispy_field }}
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  {{ form.paid_amount|as_crispy_field }}
+                  <button type="button" class="btn btn-sm btn-outline-success mt-1 py-0 px-2" id="btnPayFull">
+                    <i class="fas fa-check-double me-1"></i> Pay Full Final Net Amount
+                  </button>
+                </div>
+                <div class="col-md-6">
+                  {{ form.payment_date|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                  {{ form.voucher_no|as_crispy_field }}
+                </div>
+                <div class="col-md-6 pt-md-4">
+                  {{ form.is_paid|as_crispy_field }}
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Real-Time Financial Balance Live Summary -->
-          <div class="card border-0 shadow-sm mt-4 text-white" style="background: linear-gradient(135deg, #1a365d, #2b6cb0);">
+          <div class="card border-0 shadow-sm mt-4 text-white" style="background: linear-gradient(135deg, #0f172a, #1e3a8a);">
             <div class="card-body p-3">
               <div class="row g-3 text-center align-items-center">
-                <div class="col-md-3 col-6">
-                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.72rem;">Gross Pay</span>
-                  <h5 class="fw-bold mb-0" id="live_gross">PKR 0.00</h5>
+                <div class="col-md-2 col-6">
+                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.70rem;">Current Gross</span>
+                  <h6 class="fw-bold mb-0" id="live_gross">PKR 0.00</h6>
+                </div>
+                <div class="col-md-2 col-6">
+                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.70rem;">Old Dues Added</span>
+                  <h6 class="fw-bold mb-0 text-info" id="live_old_dues">+PKR 0.00</h6>
+                </div>
+                <div class="col-md-2 col-6">
+                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.70rem;">Total Cuts</span>
+                  <h6 class="fw-bold mb-0 text-warning" id="live_deductions">-PKR 0.00</h6>
                 </div>
                 <div class="col-md-3 col-6">
-                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.72rem;">Total Cuts / Deduc.</span>
-                  <h5 class="fw-bold mb-0 text-warning" id="live_deductions">PKR 0.00</h5>
-                </div>
-                <div class="col-md-3 col-6">
-                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.72rem;">Net Payable</span>
+                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.70rem;">Final Net Payable</span>
                   <h4 class="fw-bold mb-0 text-white" id="live_net">PKR 0.00</h4>
                 </div>
                 <div class="col-md-3 col-6">
-                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.72rem;">Balance Left for Staff</span>
-                  <h4 class="fw-bold mb-0" id="live_balance">PKR 0.00</h4>
+                  <span class="text-white-50 small text-uppercase fw-bold" style="font-size: 0.70rem;">Balance Remaining</span>
+                  <h4 class="fw-bold mb-0 text-white" id="live_balance">PKR 0.00</h4>
                   <span class="badge bg-light text-dark mt-1" id="live_status">Pending</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-            <a href="{% url 'salary_bill_list' %}" class="btn btn-light border">Cancel</a>
-            <button type="submit" class="btn btn-success fw-bold px-4">
-              <i class="fas fa-save me-1"></i> Save Salary Bill & Balance
-            </button>
+          <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+            <a href="{% url 'salary_bill_detail' bill.pk %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left me-1"></i> Back to Salary Slip
+            </a>
+            <div class="d-flex gap-2">
+              <a href="{% url 'salary_bill_list' %}" class="btn btn-light border">Cancel</a>
+              <button type="submit" class="btn btn-success fw-bold px-4">
+                <i class="fas fa-save me-1"></i> Save Salary Bill & Balance Sheet
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -127,31 +265,46 @@ document.addEventListener('DOMContentLoaded', function() {
   const basePay = parseFloat("{{ bill.base_pay }}") || 0.0;
   const daysPresentInput = document.getElementById('id_days_present');
   const allowancesInput = document.getElementById('id_allowances');
+  const bonusInput = document.getElementById('id_bonus');
   const deductionsInput = document.getElementById('id_deductions');
+  const oldDuesInput = document.getElementById('id_previous_unpaid_dues');
+  const deductLoanCheckbox = document.getElementById('id_deduct_loan');
+  const loanCutInput = document.getElementById('id_loan_deduction_amount');
   const paidAmountInput = document.getElementById('id_paid_amount');
   const isPaidCheckbox = document.getElementById('id_is_paid');
 
   const dailyRate = basePay / 30.0;
   document.getElementById('daily_rate_display').textContent = dailyRate.toFixed(2);
 
+  // Auto load dues button
+  const btnAutoLoadDues = document.getElementById('btnAutoLoadDues');
+  if (btnAutoLoadDues) {
+    btnAutoLoadDues.addEventListener('click', function() {
+      const sug = parseFloat("{{ suggested_dues }}") || 0.0;
+      oldDuesInput.value = sug.toFixed(2);
+      calculatePayroll();
+    });
+  }
+
   function calculatePayroll() {
-    const daysPresent = parseFloat(daysPresentInput.value) || 0;
-    const allowances = parseFloat(allowancesInput.value) || 0;
-    let deductions = parseFloat(deductionsInput.value) || 0;
-    let paidAmount = parseFloat(paidAmountInput.value) || 0;
+    const daysPresent = parseFloat(daysPresentInput ? daysPresentInput.value : 30) || 0;
+    const allowances = parseFloat(allowancesInput ? allowancesInput.value : 0) || 0;
+    const bonus = parseFloat(bonusInput ? bonusInput.value : 0) || 0;
+    let attendanceDeductions = parseFloat(deductionsInput ? deductionsInput.value : 0) || 0;
+    let oldDues = parseFloat(oldDuesInput ? oldDuesInput.value : 0) || 0;
+    let isLoanDeduct = deductLoanCheckbox ? deductLoanCheckbox.checked : false;
+    let loanCut = isLoanDeduct ? (parseFloat(loanCutInput ? loanCutInput.value : 0) || 0) : 0;
+    let paidAmount = parseFloat(paidAmountInput ? paidAmountInput.value : 0) || 0;
 
-    const absentDays = Math.max(0, 30 - daysPresent);
-    const autoAbsentCut = absentDays * dailyRate;
-
-    document.getElementById('absent_days_count').textContent = absentDays;
-    document.getElementById('auto_absent_display').textContent = "PKR " + autoAbsentCut.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-
-    const gross = basePay + allowances;
-    const net = Math.max(0, gross - deductions);
+    const currentGross = basePay + allowances + bonus;
+    const totalGrossPayable = currentGross + oldDues;
+    const totalCuts = attendanceDeductions + loanCut;
+    const net = Math.max(0, totalGrossPayable - totalCuts);
     const balanceLeft = Math.max(0, net - paidAmount);
 
-    document.getElementById('live_gross').textContent = "PKR " + gross.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('live_deductions').textContent = "PKR " + deductions.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('live_gross').textContent = "PKR " + currentGross.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('live_old_dues').textContent = "+PKR " + oldDues.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('live_deductions').textContent = "-PKR " + totalCuts.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('live_net').textContent = "PKR " + net.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
     const balanceElem = document.getElementById('live_balance');
@@ -176,26 +329,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Auto-fill absent cut if user changes days present and deductions was zero/unchanged
-  let lastDaysPresent = parseFloat(daysPresentInput.value) || 30;
-  daysPresentInput.addEventListener('input', function() {
-    const newDays = parseFloat(this.value) || 0;
-    const absentDays = Math.max(0, 30 - newDays);
-    const autoCut = Math.round(absentDays * dailyRate * 100) / 100;
-    deductionsInput.value = autoCut.toFixed(2);
-    calculatePayroll();
-  });
-
-  allowancesInput.addEventListener('input', calculatePayroll);
-  deductionsInput.addEventListener('input', calculatePayroll);
-  paidAmountInput.addEventListener('input', calculatePayroll);
+  if (deductLoanCheckbox) {
+    deductLoanCheckbox.addEventListener('change', calculatePayroll);
+  }
+  if (loanCutInput) loanCutInput.addEventListener('input', calculatePayroll);
+  if (oldDuesInput) oldDuesInput.addEventListener('input', calculatePayroll);
+  if (allowancesInput) allowancesInput.addEventListener('input', calculatePayroll);
+  if (bonusInput) bonusInput.addEventListener('input', calculatePayroll);
+  if (deductionsInput) deductionsInput.addEventListener('input', calculatePayroll);
+  if (paidAmountInput) paidAmountInput.addEventListener('input', calculatePayroll);
 
   document.getElementById('btnPayFull').addEventListener('click', function() {
-    const daysPresent = parseFloat(daysPresentInput.value) || 0;
-    const allowances = parseFloat(allowancesInput.value) || 0;
-    const deductions = parseFloat(deductionsInput.value) || 0;
-    const gross = basePay + allowances;
-    const net = Math.max(0, gross - deductions);
+    const allowances = parseFloat(allowancesInput ? allowancesInput.value : 0) || 0;
+    const bonus = parseFloat(bonusInput ? bonusInput.value : 0) || 0;
+    const attendanceDeductions = parseFloat(deductionsInput ? deductionsInput.value : 0) || 0;
+    const oldDues = parseFloat(oldDuesInput ? oldDuesInput.value : 0) || 0;
+    const isLoanDeduct = deductLoanCheckbox ? deductLoanCheckbox.checked : false;
+    const loanCut = isLoanDeduct ? (parseFloat(loanCutInput ? loanCutInput.value : 0) || 0) : 0;
+
+    const currentGross = basePay + allowances + bonus;
+    const totalGrossPayable = currentGross + oldDues;
+    const totalCuts = attendanceDeductions + loanCut;
+    const net = Math.max(0, totalGrossPayable - totalCuts);
+
     paidAmountInput.value = net.toFixed(2);
     if (isPaidCheckbox) isPaidCheckbox.checked = true;
     calculatePayroll();
@@ -205,4 +361,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-

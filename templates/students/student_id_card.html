@@ -1,0 +1,308 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Student ID Badge - {{ student.full_name }} ({{ student.admission_no }}) | {{ school_setting.name }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    :root {
+      --primary-navy: #0f2b5c;
+      --secondary-blue: #1e4b8f;
+      --accent-gold: #f59e0b;
+      --text-dark: #0f172a;
+    }
+    body {
+      background: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 30px 10px 50px;
+      margin: 0;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card-toolbar {
+      width: 440px;
+      max-width: 95vw;
+      background: #ffffff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .id-card-unit {
+      width: 440px;
+      max-width: 95vw;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1.5px solid #94a3b8;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      position: relative;
+    }
+    .id-card-header {
+      background: linear-gradient(135deg, #0f2b5c 0%, #1e4b8f 100%);
+      color: #ffffff;
+      padding: 10px 14px 20px;
+      border-bottom: 3px solid var(--accent-gold);
+    }
+    .school-logo-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #ffffff;
+      padding: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      object-fit: cover;
+      margin: 2px auto 6px;
+      display: block;
+    }
+    .school-name-title {
+      font-size: 11pt;
+      font-weight: 800;
+      line-height: 1.2;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .card-badge-subtitle {
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fde68a;
+      text-transform: uppercase;
+    }
+    .id-card-body {
+      padding: 0 18px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+    }
+    .photo-frame {
+      position: relative;
+      margin-top: -30px;
+      z-index: 4;
+    }
+    .student-photo-img {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffffff;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+      outline: 2.5px solid #1e4b8f;
+    }
+    .student-photo-fallback {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e4b8f 0%, #0f2b5c 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+      border: 3.5px solid #ffffff;
+      outline: 2.5px solid #1e4b8f;
+    }
+    .student-full-name {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-top: 8px;
+      margin-bottom: 3px;
+      line-height: 1.2;
+    }
+    .class-badge {
+      display: inline-block;
+      background: #0f766e;
+      color: #ffffff;
+      font-size: 8.5pt;
+      font-weight: 700;
+      padding: 3px 16px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .meta-table td {
+      padding: 3.5px 6px;
+      vertical-align: middle;
+      border-bottom: 1px dotted #e2e8f0;
+    }
+    .meta-table td.lbl {
+      width: 38%;
+      color: #475569;
+      font-weight: 600;
+    }
+    .meta-table td.val {
+      width: 62%;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .qr-card-strip {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+    .qr-img-box {
+      width: 76px;
+      height: 76px;
+      background: #ffffff;
+      padding: 2px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+    }
+    .qr-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .id-card-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 6px 12px;
+      font-size: 7.5pt;
+      color: #475569;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .id-card-unit {
+        box-shadow: none !important;
+        border: 1.5px solid #000 !important;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Toolbar -->
+  <div class="card-toolbar no-print">
+    <a href="{% url 'student_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back to Directory
+    </a>
+    <div class="d-flex gap-2">
+      <a href="{% url 'all_student_id_cards' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-th me-1"></i> Bulk ID Cards
+      </a>
+      <button type="button" onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print Badge
+      </button>
+    </div>
+  </div>
+
+  <!-- Single ID Card Container -->
+  <div class="id-card-unit">
+    <!-- Header -->
+    <div class="id-card-header">
+      {% if school_setting.logo %}
+        <img src="{{ school_setting.logo.url }}" alt="School Crest" class="school-logo-badge">
+      {% else %}
+        <img src="{% static 'dist/img/logo.png' %}" alt="School Crest" class="school-logo-badge">
+      {% endif %}
+      <div class="school-name-title">{{ school_setting.name|default:"Kohisar Model School & College" }}</div>
+      <div class="card-badge-subtitle">Official Student Identity Card</div>
+    </div>
+
+    <!-- Body -->
+    <div class="id-card-body">
+      <div class="photo-frame">
+        {% if student.profile_picture %}
+          <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}" class="student-photo-img">
+        {% else %}
+          <div class="student-photo-fallback">
+            {{ student.full_name|slice:":1"|upper }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="student-full-name">{{ student.full_name|upper }}</div>
+      <div class="class-badge">
+        {{ student.current_class.name }} - Section {{ student.current_section.name }}
+      </div>
+
+      <table class="meta-table">
+        <tr>
+          <td class="lbl">Admission No:</td>
+          <td class="val"><span class="badge bg-dark text-white">{{ student.admission_no }}</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Father's Name:</td>
+          <td class="val">{{ student.father_name|default:"---"|upper }}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Gender:</td>
+          <td class="val">{{ student.gender }}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Date of Birth / Age:</td>
+          <td class="val">{{ student.dob|date:"d.m.Y"|default:"---" }} ({{ student.age_display }})</td>
+        </tr>
+        <tr>
+          <td class="lbl">Emergency Contact:</td>
+          <td class="val">{{ student.contact_number|default:school_setting.contact }}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Residence / Address:</td>
+          <td class="val">{{ student.residence|default:"Swat, KPK"|truncatechars:32 }}</td>
+        </tr>
+      </table>
+
+      <!-- Bottom QR Code Strip -->
+      <div class="qr-card-strip">
+        <div class="text-start" style="font-size: 7.5pt; line-height: 1.4;">
+          <div><strong class="text-dark">KMS Quick QR Badge</strong></div>
+          <div class="text-muted">Hold before attendance scanner</div>
+          <div class="text-muted mt-1">Session: <strong>2025-2026</strong></div>
+        </div>
+        <div class="qr-img-box">
+          {% if student.get_qr_code_base64 %}
+            <img src="data:image/png;base64,{{ student.get_qr_code_base64 }}" alt="QR Code">
+          {% else %}
+            <img src="{% url 'student_qr_image' student.pk %}" alt="QR Code">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="id-card-footer">
+      <span>{{ school_setting.address|default:"Qalagay, Kabal, Swat"|truncatechars:26 }}</span>
+      <span style="border-top: 1px solid #000; padding-top: 1px; font-weight: bold;">Principal Signature</span>
+    </div>
+  </div>
+
+</body>
+</html>

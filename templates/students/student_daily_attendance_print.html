@@ -1,0 +1,175 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Daily Attendance Register - {{ selected_class.name }} ({{ att_date|date:"d-M-Y" }})</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #000;
+      background: #fff;
+      margin: 0;
+      padding: 10px;
+    }
+    .print-header {
+      text-align: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .logo {
+      position: absolute;
+      top: 0;
+      left: 10px;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+    .inst-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .inst-sub {
+      font-size: 11px;
+      margin: 2px 0;
+      font-weight: 600;
+    }
+    .sheet-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: underline;
+      margin-top: 4px;
+    }
+    .meta-table {
+      width: 100%;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+    .meta-table td {
+      padding: 3px 0;
+    }
+    .reg-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-bottom: 20px;
+    }
+    .reg-table th, .reg-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .reg-table th {
+      background-color: #f0f0f0;
+      font-weight: 800;
+      text-align: center;
+    }
+    .text-center { text-align: center !important; }
+    .sig-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      padding: 0 30px;
+    }
+    .sig-col {
+      text-align: center;
+      width: 200px;
+      border-top: 1px solid #000;
+      padding-top: 4px;
+      font-weight: 700;
+    }
+    @media print {
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+    <button onclick="window.print()" style="padding: 6px 16px; font-weight: bold; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 4px;">
+      Print Sheet (A4)
+    </button>
+  </div>
+
+  <div class="print-header">
+    {% if school_setting.logo %}
+      <img src="{{ school_setting.logo.url }}" alt="" class="logo">
+    {% else %}
+      <img src="{% static 'dist/img/logo.png' %}" alt="" class="logo">
+    {% endif %}
+    <div class="inst-title">{{ school_setting.name|default:"KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT" }}</div>
+    <div class="inst-sub">Tehsil Kabal, District Swat, Khyber Pakhtunkhwa</div>
+    <div class="sheet-title">DAILY CLASS ATTENDANCE REGISTER</div>
+  </div>
+
+  <table class="meta-table">
+    <tr>
+      <td style="width: 35%;"><strong>CLASS:</strong> {{ selected_class.name|upper }}</td>
+      <td style="width: 35%;"><strong>SECTION:</strong> {{ selected_section.name|default:"ALL SECTIONS"|upper }}</td>
+      <td style="width: 30%; text-align: right;"><strong>DATE:</strong> {{ att_date|date:"d-F-Y" }} ({{ att_date|date:"l" }})</td>
+    </tr>
+  </table>
+
+  <table class="reg-table">
+    <thead>
+      <tr>
+        <th style="width: 40px;">S#</th>
+        <th style="width: 80px;">Adm #</th>
+        <th>STUDENT NAME</th>
+        <th>FATHER NAME</th>
+        <th style="width: 70px;">GENDER</th>
+        <th style="width: 100px;">STATUS</th>
+        <th style="width: 120px;">REMARKS / TIME</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+        <tr>
+          <td class="text-center">{{ forloop.counter }}</td>
+          <td class="text-center"><strong>{{ s.admission_no }}</strong></td>
+          <td><strong>{{ s.full_name|upper }}</strong></td>
+          <td>{{ s.father_name|upper }}</td>
+          <td class="text-center">{{ s.gender }}</td>
+          <td class="text-center" style="font-weight: 800;">
+            {% if s.current_status == 'Present' %}
+              <span style="color: green;">PRESENT</span>
+            {% elif s.current_status == 'Absent' %}
+              <span style="color: red;">ABSENT</span>
+            {% elif s.current_status == 'Late' %}
+              <span>LATE</span>
+            {% elif s.current_status == 'Leave' %}
+              <span style="color: blue;">LEAVE</span>
+            {% else %}
+              {{ s.current_status|upper }}
+            {% endif %}
+          </td>
+          <td>
+            {% if s.daily_record and s.daily_record.check_in %}
+              In: {{ s.daily_record.check_in|time:"h:i A" }}
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">No students registered in this class.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="sig-row">
+    <div class="sig-col">Class Teacher Signature</div>
+    <div class="sig-col">Incharge Attendance</div>
+    <div class="sig-col">Principal / Headmaster</div>
+  </div>
+</body>
+</html>

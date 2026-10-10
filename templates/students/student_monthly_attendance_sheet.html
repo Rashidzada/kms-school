@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Monthly Student Attendance Sheet ({{ month_name }} {{ year }}) | Kohisar Model School{% endblock %}
+
+{% block extra_css %}
+<style>
+  .att-grid th, .att-grid td {
+    padding: 3px 4px;
+    font-size: 10.5px;
+    vertical-align: middle;
+  }
+  .att-day-cell {
+    width: 26px;
+    min-width: 26px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .cell-p { background-color: #dcfce7; color: #15803d; }
+  .cell-a { background-color: #fee2e2; color: #b91c1c; font-weight: 800; }
+  .cell-l { background-color: #fef9c3; color: #854d0e; }
+  .cell-lv { background-color: #e0f2fe; color: #0369a1; }
+  .cell-none { background-color: #f8fafc; color: #cbd5e1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Header Bar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-calendar-alt text-info me-2"></i>Monthly Student Attendance Sheet
+      </h3>
+      <p class="text-muted small mb-0">
+        Class & Section 31-day attendance matrix with daily presence, absence, and percentage rates.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
+      <a href="{% url 'export_student_monthly_attendance_excel' %}?class_id={{ selected_class_id }}&section_id={{ selected_section_id }}&month={{ month }}&year={{ year }}" class="btn btn-outline-success btn-sm fw-bold">
+        <i class="fas fa-file-excel me-1"></i> Export Excel
+      </a>
+      <a href="{% url 'student_monthly_attendance_print' %}?class_id={{ selected_class_id }}&section_id={{ selected_section_id }}&month={{ month }}&year={{ year }}" target="_blank" class="btn btn-dark btn-sm fw-bold">
+        <i class="fas fa-print me-1"></i> Print Monthly Matrix
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+      <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <label class="form-label small fw-bold mb-1">Class Level</label>
+          <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for c in classes %}
+              <option value="{{ c.id }}" {% if selected_class_id == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-bold mb-1">Section</label>
+          <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">All Sections</option>
+            {% for s in sections %}
+              <option value="{{ s.id }}" {% if selected_section_id == s.id|stringformat:"s" %}selected{% endif %}>
+                Section {{ s.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-bold mb-1">Month</label>
+          <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
+            <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
+            <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
+            <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
+            <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
+            <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
+            <option value="7" {% if month == 7 %}selected{% endif %}>July</option>
+            <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
+            <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
+            <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
+            <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
+            <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-bold mb-1">Year</label>
+          <input type="number" name="year" class="form-control form-control-sm" value="{{ year }}" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-2 d-flex align-items-end pt-3">
+          <button type="submit" class="btn btn-sm btn-primary w-100 fw-bold">
+            <i class="fas fa-filter me-1"></i> Apply
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Matrix Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+      <h6 class="fw-bold mb-0 text-dark">
+        {{ selected_class.name }} {% if selected_section %}- Section {{ selected_section.name }}{% endif %}
+        &bull; {{ month_name }} {{ year }}
+      </h6>
+      <div class="d-flex gap-2">
+        <span class="badge bg-success-subtle text-success border">P = Present</span>
+        <span class="badge bg-danger-subtle text-danger border">A = Absent</span>
+        <span class="badge bg-warning-subtle text-warning border">L = Late</span>
+        <span class="badge bg-info-subtle text-info border">Lv = Leave</span>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0 att-grid">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 35px; text-align: center;">S#</th>
+            <th style="width: 60px; text-align: center;">Adm#</th>
+            <th style="min-width: 140px;">Student Name</th>
+            <th style="min-width: 110px;">Father Name</th>
+            <th style="width: 45px; text-align: center;">Gen</th>
+            {% for d in days_range %}
+              <th class="att-day-cell">{{ d }}</th>
+            {% endfor %}
+            <th style="width: 45px; text-align: center; background-color: #dcfce7;">P</th>
+            <th style="width: 45px; text-align: center; background-color: #fee2e2;">A</th>
+            <th style="width: 45px; text-align: center; background-color: #e0f2fe;">Lv</th>
+            <th style="width: 55px; text-align: center; background-color: #f1f5f9;">Att %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in student_rows %}
+            <tr>
+              <td class="text-center text-muted">{{ r.serial }}</td>
+              <td class="text-center font-monospace"><strong>{{ r.student.admission_no }}</strong></td>
+              <td class="fw-bold text-dark">{{ r.student.full_name }}</td>
+              <td class="text-muted">{{ r.student.father_name }}</td>
+              <td class="text-center">
+                {% if r.student.gender == "Male" %}
+                  <span class="text-primary fw-bold">M</span>
+                {% else %}
+                  <span class="text-danger fw-bold">F</span>
+                {% endif %}
+              </td>
+              {% for cell in r.day_cells %}
+                <td class="att-day-cell {{ cell.css }}">
+                  {{ cell.badge }}
+                </td>
+              {% endfor %}
+              <td class="text-center fw-bold text-success" style="background-color: #f0fdf4;">{{ r.present_count }}</td>
+              <td class="text-center fw-bold text-danger" style="background-color: #fef2f2;">{{ r.absent_count }}</td>
+              <td class="text-center fw-bold text-info" style="background-color: #f0f9ff;">{{ r.leave_count }}</td>
+              <td class="text-center fw-bold" style="background-color: #f8fafc;">{{ r.percentage }}%</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="{{ days_range|length|add:'9' }}" class="text-center py-4 text-muted">
+                No students enrolled in this class.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        {% if student_rows %}
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td colspan="5" class="text-end">Daily Present Total:</td>
+              {% for tot in daily_totals_list %}
+                <td class="att-day-cell text-success">{{ tot.present }}</td>
+              {% endfor %}
+              <td colspan="4"></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end">Daily Absent Total:</td>
+              {% for tot in daily_totals_list %}
+                <td class="att-day-cell text-danger">{{ tot.absent }}</td>
+              {% endfor %}
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

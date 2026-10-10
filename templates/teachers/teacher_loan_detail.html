@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}Loan Ledger | {{ loan.teacher.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1 text-dark">
+        <i class="fas fa-hand-holding-usd text-warning me-2"></i> Loan Ledger: {{ loan.teacher.full_name }}
+      </h3>
+      <span class="text-muted small">Staff ID: <strong>{{ loan.teacher.teacher_id }}</strong> | {{ loan.loan_title }}</span>
+    </div>
+    <a href="{% url 'teacher_loan_list' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Back to Loans List
+    </a>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Loan Info Card -->
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+          <h6 class="fw-bold mb-0 text-dark">Loan Overview & Balance</h6>
+        </div>
+        <div class="card-body p-4">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Staff Member:</span>
+              <strong class="text-dark">{{ loan.teacher.full_name }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Loan Title / Purpose:</span>
+              <strong>{{ loan.loan_title }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Approval Date:</span>
+              <span>{{ loan.loan_date|date:"d-M-Y" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Principal Disbursed:</span>
+              <strong class="text-primary">PKR {{ loan.principal_amount|floatformat:2|intcomma }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Monthly Installment Cut:</span>
+              <span>PKR {{ loan.monthly_installment|floatformat:2|intcomma }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2">
+              <span class="text-muted">Total Recovered:</span>
+              <strong class="text-success">PKR {{ loan.total_repaid|floatformat:2|intcomma }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 py-2 bg-light rounded mt-2">
+              <span class="fw-bold text-dark">Outstanding Balance:</span>
+              <strong class="{% if loan.remaining_balance > 0 %}text-danger{% else %}text-success{% endif %} fs-5">
+                PKR {{ loan.remaining_balance|floatformat:2|intcomma }}
+              </strong>
+            </li>
+          </ul>
+
+          {% if loan.remarks %}
+            <div class="mt-3 p-2 bg-light rounded border small">
+              <strong>Notes:</strong> {{ loan.remarks }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Add Manual Repayment Form Card -->
+      {% if not loan.is_cleared %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+          <h6 class="fw-bold mb-0 text-success"><i class="fas fa-plus-circle me-1"></i> Record Direct Cash/Bank Repayment</h6>
+        </div>
+        <div class="card-body p-3">
+          <form method="post">
+            {% csrf_token %}
+            {{ repay_form|crispy }}
+            <button type="submit" class="btn btn-success btn-sm w-100 fw-bold mt-2">
+              <i class="fas fa-check me-1"></i> Submit Payment
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Repayment History Table -->
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0 text-dark">Repayment & Salary Deduction History</h6>
+          <span class="badge bg-light text-dark border">{{ repayments|length }} Payment(s)</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Method</th>
+                <th>Salary Bill Ref</th>
+                <th class="text-end">Amount Paid</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rep in repayments %}
+                <tr>
+                  <td>{{ rep.payment_date|date:"d-M-Y" }}</td>
+                  <td>
+                    {% if rep.payment_method == "Salary Deduction" %}
+                      <span class="badge bg-info text-dark">Salary Cut</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ rep.payment_method }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if rep.salary_bill %}
+                      <a href="{% url 'salary_bill_detail' rep.salary_bill.pk %}" class="fw-bold text-decoration-none">
+                        {{ rep.salary_bill.month_name }} {{ rep.salary_bill.year }} Slip
+                      </a>
+                    {% else %}
+                      <span class="text-muted">Direct</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end text-success fw-bold">PKR {{ rep.amount|floatformat:2|intcomma }}</td>
+                  <td class="small text-muted">{{ rep.notes|default:"---" }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    No repayments or salary deductions recorded yet for this loan.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

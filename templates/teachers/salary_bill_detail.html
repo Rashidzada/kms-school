@@ -494,7 +494,7 @@
     </table>
 
     <!-- 5. Deductions - General (4-Column Matrix, Private School: No GPF) -->
-    <div class="section-title-bar">Deductions - General</div>
+    <div class="section-title-bar">Deductions - Attendance & Fines</div>
     <table class="salary-matrix-table">
       <thead>
         <tr>
@@ -532,53 +532,161 @@
       </tbody>
     </table>
 
-    <!-- 6. Deductions - Loans and Advances -->
-    <div class="section-title-bar">Deductions - Loans and Advances</div>
+    <!-- 6. Prior Months Unpaid Salary Dues / Arrears (e.g. Jan + Feb if not taken) -->
+    <div class="section-title-bar">Previous Months Unpaid Dues & Arrears Carried Forward</div>
     <table class="salary-matrix-table">
       <thead>
         <tr>
-          <th style="width: 25%;">Loan</th>
-          <th style="width: 35%;">Description</th>
-          <th style="text-align: right; width: 14%;">Principal amount</th>
-          <th style="text-align: right; width: 13%;">Deduction</th>
-          <th style="text-align: right; width: 13%;">Balance</th>
+          <th style="width: 25%;">Period / Month</th>
+          <th style="width: 35%;">Bill Reference & Description</th>
+          <th style="text-align: right; width: 14%;">Net Payable</th>
+          <th style="text-align: right; width: 13%;">Paid Amount</th>
+          <th style="text-align: right; width: 13%;">Unpaid Due (PKR)</th>
         </tr>
       </thead>
       <tbody>
-        {% if bill.other_deductions > 0 %}
-        <tr>
-          <td><strong>Salary Advance / Loan</strong></td>
-          <td>Monthly salary advance deduction for {{ bill.month_name }} {{ bill.year }}</td>
-          <td class="td-amt">{{ bill.other_deductions|floatformat:2|intcomma }}</td>
-          <td class="td-amt">-{{ bill.other_deductions|floatformat:2|intcomma }}</td>
-          <td class="td-amt">0.00</td>
-        </tr>
+        {% if unpaid_previous_bills %}
+          {% for upb in unpaid_previous_bills %}
+          <tr>
+            <td><strong>{{ upb.period }}</strong></td>
+            <td>Unpaid / deferred salary bill for {{ upb.period }}</td>
+            <td class="td-amt">{{ upb.net_payable|floatformat:2|intcomma }}</td>
+            <td class="td-amt">{{ upb.paid_amount|floatformat:2|intcomma }}</td>
+            <td class="td-amt" style="color: #b91c1c; font-weight: 800;">+{{ upb.unpaid_amount|floatformat:2|intcomma }}</td>
+          </tr>
+          {% endfor %}
+          <tr style="background-color: #f8fafc; font-weight: 800;">
+            <td colspan="4" style="text-align: right;">Total Previous Unpaid Dues Auto-Added:</td>
+            <td class="td-amt" style="color: #b91c1c;">+{{ calculated_previous_dues|floatformat:2|intcomma }}</td>
+          </tr>
+        {% elif effective_previous_dues > 0 %}
+          <tr>
+            <td><strong>Prior Months Carried Over</strong></td>
+            <td>Accumulated unpaid salary dues from previous months</td>
+            <td class="td-amt">{{ effective_previous_dues|floatformat:2|intcomma }}</td>
+            <td class="td-amt">0.00</td>
+            <td class="td-amt" style="color: #b91c1c; font-weight: 800;">+{{ effective_previous_dues|floatformat:2|intcomma }}</td>
+          </tr>
         {% else %}
-        <tr>
-          <td>---</td>
-          <td>No outstanding staff advance / loan deduction for this period</td>
-          <td class="td-amt">0.00</td>
-          <td class="td-amt">0.00</td>
-          <td class="td-amt">0.00</td>
-        </tr>
+          <tr>
+            <td>---</td>
+            <td>No previous unpaid salary dues for this teacher. Previous months cleared.</td>
+            <td class="td-amt">0.00</td>
+            <td class="td-amt">0.00</td>
+            <td class="td-amt">0.00</td>
+          </tr>
         {% endif %}
       </tbody>
     </table>
 
-    <!-- 7. Deductions - Income Tax / Institutional Dues Summary -->
-    <div class="section-title-bar">Deductions - Institutional Accounts Summary</div>
-    <div class="d-flex justify-content-between font-monospace" style="font-size: 10.5px; margin-bottom: 6px;">
-      <div><strong>Payable (Gross):</strong> {{ bill.gross_pay|floatformat:2|intcomma }}</div>
-      <div><strong>Recovered / Paid till {{ bill.month_abbr|upper }}-{{ bill.year }}:</strong> {{ bill.actual_paid|floatformat:2|intcomma }}</div>
-      <div><strong>Exempted / Waiver:</strong> 0.00</div>
-      <div><strong>Recoverable / Remaining:</strong> {{ bill.balance_left|floatformat:2|intcomma }}</div>
+    <!-- 7. Deductions - Loans and Advances (From School) -->
+    <div class="section-title-bar d-flex justify-content-between align-items-center">
+      <span>Staff Loans & Advances from School</span>
+      <span style="font-size: 10px; font-weight: normal;">
+        {% if bill.deduct_loan and effective_loan_deduction > 0 %}
+          <span class="badge bg-danger text-white">Cut Applied This Slip: PKR {{ effective_loan_deduction|floatformat:2|intcomma }}</span>
+        {% else %}
+          <span class="badge bg-success text-white">Full Salary: No Loan Cut Applied</span>
+        {% endif %}
+      </span>
     </div>
+    <table class="salary-matrix-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Loan Title</th>
+          <th style="width: 30%;">Approval Date & Status</th>
+          <th style="text-align: right; width: 15%;">Principal Amount</th>
+          <th style="text-align: right; width: 15%;">Total Repaid</th>
+          <th style="text-align: right; width: 15%;">Remaining Loan Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if active_loans %}
+          {% for loan in active_loans %}
+          <tr>
+            <td><strong>{{ loan.loan_title }}</strong></td>
+            <td>Approved: {{ loan.loan_date|date:"d.m.Y" }} | Status: {{ loan.status }}</td>
+            <td class="td-amt">{{ loan.principal_amount|floatformat:2|intcomma }}</td>
+            <td class="td-amt" style="color: #15803d;">{{ loan.total_repaid|floatformat:2|intcomma }}</td>
+            <td class="td-amt" style="color: #b91c1c; font-weight: 800;">{{ loan.remaining_balance|floatformat:2|intcomma }}</td>
+          </tr>
+          {% endfor %}
+          <tr style="background-color: #f8fafc;">
+            <td colspan="4" style="text-align: right; font-weight: 700;">
+              {% if bill.deduct_loan and effective_loan_deduction > 0 %}
+                Installment Deducted from Current Salary:
+              {% else %}
+                Loan Cutting Option: (Skipped / Not Cut — Full Salary):
+              {% endif %}
+            </td>
+            <td class="td-amt" style="font-weight: 800; color: {% if bill.deduct_loan %}#b91c1c{% else %}#15803d{% endif %};">
+              {% if bill.deduct_loan and effective_loan_deduction > 0 %}
+                -{{ effective_loan_deduction|floatformat:2|intcomma }}
+              {% else %}
+                0.00
+              {% endif %}
+            </td>
+          </tr>
+        {% elif bill.other_deductions > 0 %}
+          <tr>
+            <td><strong>Salary Advance / Loan</strong></td>
+            <td>Staff loan advance installment</td>
+            <td class="td-amt">{{ bill.other_deductions|floatformat:2|intcomma }}</td>
+            <td class="td-amt">{{ bill.other_deductions|floatformat:2|intcomma }}</td>
+            <td class="td-amt">0.00</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td>---</td>
+            <td>No active loan or advance outstanding with the school for this teacher.</td>
+            <td class="td-amt">0.00</td>
+            <td class="td-amt">0.00</td>
+            <td class="td-amt">0.00</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
 
-    <!-- 8. Highlighted Totals Summary Strip matching Image -->
+    <!-- 8. Complete Balance Sheet Statement Strip -->
+    <div class="section-title-bar">Comprehensive Salary Balance Sheet Statement</div>
+    <table class="salary-matrix-table" style="background-color: #fcfcfc;">
+      <thead>
+        <tr style="background-color: #f1f5f9;">
+          <th style="width: 20%; text-align: center;">1. Current Gross</th>
+          <th style="width: 20%; text-align: center;">2. Old Dues Added</th>
+          <th style="width: 20%; text-align: center;">3. Attendance Cuts</th>
+          <th style="width: 20%; text-align: center;">4. Loan Cut</th>
+          <th style="width: 20%; text-align: center; background-color: #e2e8f0;">5. Final Net Payable</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="text-align: center; font-weight: 700;">
+          <td style="text-align: center;">PKR {{ bill.gross_pay|floatformat:2|intcomma }}</td>
+          <td style="text-align: center; color: #b91c1c;">+PKR {{ effective_previous_dues|floatformat:2|intcomma }}</td>
+          <td style="text-align: center; color: #b91c1c;">-PKR {{ bill.deductions|floatformat:2|intcomma }}</td>
+          <td style="text-align: center; color: #b91c1c;">
+            {% if bill.deduct_loan and effective_loan_deduction > 0 %}
+              -PKR {{ effective_loan_deduction|floatformat:2|intcomma }}
+            {% else %}
+              PKR 0.00
+            {% endif %}
+          </td>
+          <td style="text-align: center; font-size: 13px; font-weight: 900; background-color: #f8fafc; color: #000000;">
+            PKR {{ final_net_payable|floatformat:2|intcomma }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 9. Highlighted Disbursement Totals Summary Strip -->
     <div class="totals-summary-strip">
-      <div>Gross Pay (Rs.): &nbsp;&nbsp;{{ bill.gross_pay|floatformat:2|intcomma }}</div>
-      <div>Deductions: (Rs.): &nbsp;&nbsp;{% if bill.deductions > 0 %}-{{ bill.deductions|floatformat:2|intcomma }}{% else %}0.00{% endif %}</div>
-      <div>Net Pay: (Rs.): &nbsp;&nbsp;{{ bill.net_payable|floatformat:2|intcomma }}</div>
+      <div>Total Payable (Gross+Dues): &nbsp;&nbsp;PKR {{ total_gross_payable|floatformat:2|intcomma }}</div>
+      <div>Total Deductions: &nbsp;&nbsp;{% if bill.total_all_deductions > 0 %}-PKR {{ bill.total_all_deductions|floatformat:2|intcomma }}{% else %}PKR 0.00{% endif %}</div>
+      <div>Final Net Payable: &nbsp;&nbsp;PKR {{ final_net_payable|floatformat:2|intcomma }}</div>
+      <div>Disbursed / Paid: &nbsp;&nbsp;PKR {{ bill.actual_paid|floatformat:2|intcomma }}</div>
+      <div style="color: {% if final_balance_left > 0 %}#b91c1c{% else %}#15803d{% endif %};">
+        Balance Remaining: &nbsp;&nbsp;PKR {{ final_balance_left|floatformat:2|intcomma }}
+      </div>
     </div>
 
     <!-- 9. Payee Name & Bank / Voucher Details -->

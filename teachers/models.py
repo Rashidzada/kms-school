@@ -314,6 +314,94 @@ class TeacherAttendance(models.Model):
             self.deduction_amount = Decimal("0.00")
 
 
+class TeacherLoan(models.Model):
+    STATUS_CHOICES = [
+        ("Active", "Active / Ongoing"),
+        ("Cleared", "Fully Repaid / Cleared"),
+    ]
+
+    teacher = models.ForeignKey(
+        Teacher, on_delete=models.CASCADE, related_name="loans"
+    )
+    loan_title = models.CharField(
+        max_length=200, default="Staff Personal Loan / Advance"
+    )
+    loan_date = models.DateField(default=timezone.now)
+    principal_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, help_text="Total loan/advance amount approved (PKR)"
+    )
+    monthly_installment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Standard monthly installment to deduct from salary (PKR)",
+    )
+    total_repaid = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Active")
+    is_cleared = models.BooleanField(default=False)
+    remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-loan_date", "-id"]
+        verbose_name = "Teacher Loan / Advance"
+        verbose_name_plural = "Teacher Loans & Advances"
+
+    def __str__(self):
+        return f"{self.teacher.full_name} - {self.loan_title} (Bal: PKR {self.remaining_balance:,.2f})"
+
+    @property
+    def remaining_balance(self):
+        bal = (self.principal_amount or Decimal("0.00")) - (self.total_repaid or Decimal("0.00"))
+        return max(Decimal("0.00"), bal)
+
+    def save(self, *args, **kwargs):
+        if self.remaining_balance <= 0 and (self.principal_amount or Decimal("0.00")) > 0:
+            self.is_cleared = True
+            self.status = "Cleared"
+        else:
+            self.is_cleared = False
+            self.status = "Active"
+        super().save(*args, **kwargs)
+
+
+class TeacherLoanRepayment(models.Model):
+    loan = models.ForeignKey(
+        TeacherLoan, on_delete=models.CASCADE, related_name="repayments"
+    )
+    salary_bill = models.ForeignKey(
+        "MonthlySalaryBill",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="loan_repayments",
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateField(default=timezone.now)
+    payment_method = models.CharField(
+        max_length=50,
+        choices=[
+            ("Salary Deduction", "Salary Deduction"),
+            ("Cash", "Direct Cash"),
+            ("Bank Transfer", "Bank Transfer"),
+        ],
+        default="Salary Deduction",
+    )
+    notes = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-payment_date", "-id"]
+        verbose_name = "Loan Repayment"
+        verbose_name_plural = "Loan Repayments"
+
+    def __str__(self):
+        return f"Repayment PKR {self.amount} for {self.loan.teacher.full_name} ({self.payment_date})"
+
+
 class MonthlySalaryBill(models.Model):
     teacher = models.ForeignKey(
         Teacher, on_delete=models.CASCADE, related_name="salary_bills"
@@ -336,6 +424,24 @@ class MonthlySalaryBill(models.Model):
     payment_date = models.DateField(null=True, blank=True)
     voucher_no = models.CharField(max_length=50, blank=True)
 
+    # KMS Teacher Loan & Previous Month Dues Carry-over Features
+    deduct_loan = models.BooleanField(
+        default=False,
+        help_text="Custom option: Deduct loan/advance installment from this salary?",
+    )
+    loan_deduction_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Specific loan installment amount deducted in this slip",
+    )
+    previous_unpaid_dues = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Old unpaid salary dues carried over from prior months (e.g. Jan + Feb unpaid)",
+    )
+
     class Meta:
         unique_together = ("teacher", "month", "year")
         ordering = ["-year", "-month"]
@@ -343,7 +449,7 @@ class MonthlySalaryBill(models.Model):
         verbose_name_plural = "Monthly Salary Bills"
 
     def __str__(self):
-        return f"{self.teacher.full_name} - {self.month_name} {self.year} (Net: {self.net_payable})"
+        return f"{self.teacher.full_name} - {self.month_name} {self.year} (Final Net: {self.final_net_payable})"
 
     @property
     def month_name(self):
@@ -396,28 +502,112 @@ class MonthlySalaryBill(models.Model):
         return max(Decimal("0.00"), (self.deductions or Decimal("0.00")) - calculated)
 
     @property
-    def net_payable(self):
+    def current_month_net_payable(self):
+        """Current month net salary before adding old dues or deducting loans."""
         return max(Decimal("0.00"), self.gross_pay - (self.deductions or Decimal("0.00")))
+
+    @property
+    def net_payable(self):
+        """Legacy property pointing to final_net_payable."""
+        return self.final_net_payable
 
     @property
     def actual_paid(self):
         if self.paid_amount and self.paid_amount > 0:
             return self.paid_amount
         if self.is_paid:
-            return self.net_payable
+            return self.final_net_payable
         return Decimal("0.00")
 
     @property
     def balance_left(self):
-        return max(Decimal("0.00"), self.net_payable - self.actual_paid)
+        return max(Decimal("0.00"), self.final_net_payable - self.actual_paid)
 
     @property
     def payment_status(self):
-        if self.actual_paid >= self.net_payable and self.net_payable > 0:
+        if self.actual_paid >= self.final_net_payable and self.final_net_payable > 0:
             return "Cleared"
         elif self.actual_paid > 0:
             return "Partial"
         return "Pending"
+
+    def get_unpaid_previous_bills(self):
+        """
+        Retrieves all previous months' salary bills for this teacher that were either
+        unpaid or partially paid (e.g. Jan + Feb if he/she didn't take salary).
+        """
+        from django.db.models import Q
+        prior_bills = MonthlySalaryBill.objects.filter(
+            teacher=self.teacher
+        ).filter(
+            Q(year__lt=self.year) | Q(year=self.year, month__lt=self.month)
+        ).order_by("year", "month")
+
+        unpaid_list = []
+        for pb in prior_bills:
+            curr_net = max(Decimal("0.00"), pb.gross_pay - (pb.deductions or Decimal("0.00")))
+            unpaid_bal = max(Decimal("0.00"), curr_net - (pb.paid_amount or Decimal("0.00")))
+            if unpaid_bal > Decimal("0.00") and not pb.is_paid:
+                unpaid_list.append({
+                    "bill": pb,
+                    "month": pb.month,
+                    "year": pb.year,
+                    "period": pb.period_display,
+                    "gross_pay": pb.gross_pay,
+                    "deductions": pb.deductions,
+                    "net_payable": curr_net,
+                    "paid_amount": pb.paid_amount or Decimal("0.00"),
+                    "unpaid_amount": unpaid_bal,
+                })
+        return unpaid_list
+
+    @property
+    def calculated_previous_dues(self):
+        """Sum of unpaid balances across all prior months."""
+        unpaid_bills = self.get_unpaid_previous_bills()
+        return sum(item["unpaid_amount"] for item in unpaid_bills)
+
+    @property
+    def effective_previous_dues(self):
+        """Returns explicitly set previous_unpaid_dues or auto-calculated unpaid months dues."""
+        if self.previous_unpaid_dues > 0:
+            return self.previous_unpaid_dues
+        return self.calculated_previous_dues
+
+    def get_active_loans(self):
+        """Active loans from school for this teacher."""
+        return TeacherLoan.objects.filter(teacher=self.teacher, is_cleared=False)
+
+    @property
+    def total_outstanding_loan(self):
+        """Total remaining loan balance of the teacher from the school."""
+        return sum(loan.remaining_balance for loan in self.get_active_loans())
+
+    @property
+    def effective_loan_deduction(self):
+        """If deduct_loan custom option is ON, return loan_deduction_amount, else 0.00."""
+        if self.deduct_loan and self.loan_deduction_amount > 0:
+            return min(self.loan_deduction_amount, self.total_outstanding_loan or self.loan_deduction_amount)
+        return Decimal("0.00")
+
+    @property
+    def total_gross_payable(self):
+        """Current month gross + any previous months unpaid dues."""
+        return self.gross_pay + self.effective_previous_dues
+
+    @property
+    def total_all_deductions(self):
+        """Regular deductions (late/absent) + loan deduction installment."""
+        return (self.deductions or Decimal("0.00")) + self.effective_loan_deduction
+
+    @property
+    def final_net_payable(self):
+        """
+        Full Balance Sheet Net Payable:
+        (Current Month Gross + Old Unpaid Dues) - (Attendance Deductions + Loan Deduction)
+        """
+        total = self.total_gross_payable - self.total_all_deductions
+        return max(Decimal("0.00"), total)
 
     def sync_from_attendance(self):
         """
@@ -453,15 +643,27 @@ class MonthlySalaryBill(models.Model):
         self.absent_deductions = total_absent_ded
         self.bonus = total_bonus
         self.deductions = total_late_ded + total_absent_ded
+
+        # Auto-compute previous unpaid dues if not manually set
+        if not self.previous_unpaid_dues or self.previous_unpaid_dues == 0:
+            self.previous_unpaid_dues = self.calculated_previous_dues
+
         self.save()
         return True
 
     def save(self, *args, **kwargs):
+        # Auto-populate previous dues if zero on creation
+        if not self.id and (not self.previous_unpaid_dues or self.previous_unpaid_dues == 0):
+            try:
+                self.previous_unpaid_dues = self.calculated_previous_dues
+            except Exception:
+                pass
+
         if self.is_paid and (not self.paid_amount or self.paid_amount == 0):
-            self.paid_amount = self.net_payable
-        if self.paid_amount and self.paid_amount >= self.net_payable and self.net_payable > 0:
+            self.paid_amount = self.final_net_payable
+        if self.paid_amount and self.paid_amount >= self.final_net_payable and self.final_net_payable > 0:
             self.is_paid = True
-        elif self.paid_amount and self.paid_amount < self.net_payable:
+        elif self.paid_amount and self.paid_amount < self.final_net_payable:
             self.is_paid = False
         if self.is_paid and not self.payment_date:
             self.payment_date = timezone.now().date()

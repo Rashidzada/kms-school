@@ -1,0 +1,337 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Student ID Cards (QR Badges) | {{ school_setting.name }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    :root {
+      --primary-navy: #0f2b5c;
+      --secondary-blue: #1e4b8f;
+      --accent-gold: #f59e0b;
+      --text-dark: #0f172a;
+    }
+    body {
+      background: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 16px 10px 50px;
+      margin: 0;
+      color: #000;
+    }
+    .batch-toolbar {
+      max-width: 980px;
+      margin: 0 auto 16px;
+      background: #ffffff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    /* 2 columns on screen / print for standard 4 cards per A4 page */
+    .batch-container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px 16px;
+    }
+    .id-card-unit {
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #94a3b8;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      position: relative;
+    }
+    .id-card-header {
+      background: linear-gradient(135deg, #0f2b5c 0%, #1e4b8f 100%);
+      color: #ffffff;
+      padding: 6px 10px 16px;
+      border-bottom: 2.5px solid var(--accent-gold);
+    }
+    .school-logo-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #ffffff;
+      padding: 2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      object-fit: cover;
+      margin: 2px auto 4px;
+      display: block;
+    }
+    .school-name-title {
+      font-size: 10pt;
+      font-weight: 800;
+      line-height: 1.2;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .card-badge-subtitle {
+      font-size: 6.8pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fde68a;
+      text-transform: uppercase;
+    }
+    .id-card-body {
+      padding: 0 14px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+    }
+    .photo-frame {
+      position: relative;
+      margin-top: -26px;
+      z-index: 4;
+    }
+    .student-photo-img {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #ffffff;
+      border: 3px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.2);
+      outline: 2px solid #1e4b8f;
+    }
+    .student-photo-fallback {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e4b8f 0%, #0f2b5c 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 800;
+      border: 3px solid #ffffff;
+      outline: 2px solid #1e4b8f;
+    }
+    .student-full-name {
+      font-size: 12pt;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-top: 6px;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    .class-badge {
+      display: inline-block;
+      background: #0f766e;
+      color: #ffffff;
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 2px 14px;
+      border-radius: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .meta-table td {
+      padding: 2px 4px;
+      vertical-align: middle;
+      border-bottom: 1px dotted #e2e8f0;
+    }
+    .meta-table td.lbl {
+      width: 40%;
+      color: #475569;
+      font-weight: 600;
+    }
+    .meta-table td.val {
+      width: 60%;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .qr-card-strip {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1.5px solid #e2e8f0;
+      padding-top: 6px;
+      margin-top: 4px;
+    }
+    .qr-img-box {
+      width: 65px;
+      height: 65px;
+      background: #ffffff;
+      padding: 2px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    .qr-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .id-card-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 4px 10px;
+      font-size: 7pt;
+      color: #475569;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .batch-container {
+        max-width: 100% !important;
+        gap: 15px 12px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Toolbar -->
+  <div class="batch-toolbar no-print">
+    <div class="d-flex align-items-center gap-3">
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="fas fa-id-card text-success me-1"></i> Student ID Badges (QR Codes)
+      </h5>
+      <span class="badge bg-light text-dark border">{{ students|length }} Student Cards</span>
+    </div>
+
+    <!-- Filter by Class / Section -->
+    <form method="get" class="d-flex align-items-center gap-2">
+      <select name="class" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All Classes</option>
+        {% for c in classes %}
+          <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"s" %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+      <select name="section" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All Sections</option>
+        {% for s in sections %}
+          <option value="{{ s.id }}" {% if selected_section == s.id|stringformat:"s" %}selected{% endif %}>
+            {{ s.name }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="button" onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-3 text-nowrap">
+        <i class="fas fa-print me-1"></i> Print Cards (A4)
+      </button>
+    </form>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="batch-container">
+    {% for student in students %}
+      <div class="id-card-unit">
+        <!-- Card Header -->
+        <div class="id-card-header">
+          {% if school_setting.logo %}
+            <img src="{{ school_setting.logo.url }}" alt="School Crest" class="school-logo-badge">
+          {% else %}
+            <img src="{% static 'dist/img/logo.png' %}" alt="School Crest" class="school-logo-badge">
+          {% endif %}
+          <div class="school-name-title">{{ school_setting.name|default:"Kohisar Model School & College" }}</div>
+          <div class="card-badge-subtitle">Official Student Identity Card</div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="id-card-body">
+          <div class="photo-frame">
+            {% if student.profile_picture %}
+              <img src="{{ student.profile_picture.url }}" alt="{{ student.full_name }}" class="student-photo-img">
+            {% else %}
+              <div class="student-photo-fallback">
+                {{ student.full_name|slice:":1"|upper }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="student-full-name">{{ student.full_name|upper }}</div>
+          <div class="class-badge">
+            {{ student.current_class.name }} - Section {{ student.current_section.name }}
+          </div>
+
+          <table class="meta-table">
+            <tr>
+              <td class="lbl">Admission No:</td>
+              <td class="val"><span class="badge bg-dark text-white">{{ student.admission_no }}</span></td>
+            </tr>
+            <tr>
+              <td class="lbl">Father's Name:</td>
+              <td class="val">{{ student.father_name|default:"---"|upper }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Gender:</td>
+              <td class="val">{{ student.gender }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Date of Birth / Age:</td>
+              <td class="val">{{ student.dob|date:"d.m.Y"|default:"---" }} ({{ student.age_display }})</td>
+            </tr>
+            <tr>
+              <td class="lbl">Emergency Contact:</td>
+              <td class="val">{{ student.contact_number|default:school_setting.contact }}</td>
+            </tr>
+            <tr>
+              <td class="lbl">Residence / Address:</td>
+              <td class="val">{{ student.residence|default:"Swat, KPK"|truncatechars:28 }}</td>
+            </tr>
+          </table>
+
+          <!-- Bottom QR Code Strip -->
+          <div class="qr-card-strip">
+            <div class="text-start" style="font-size: 7pt; line-height: 1.3;">
+              <div><strong>KMS Attendance QR</strong></div>
+              <div class="text-muted">Hold badge in front of gate scanner</div>
+              <div class="text-muted mt-1">Issue Session: <strong>2025-2026</strong></div>
+            </div>
+            <div class="qr-img-box">
+              {% if student.get_qr_code_base64 %}
+                <img src="data:image/png;base64,{{ student.get_qr_code_base64 }}" alt="QR Code">
+              {% else %}
+                <img src="{% url 'student_qr_image' student.pk %}" alt="QR Code">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="id-card-footer">
+          <span>Qalagay, Kabal, Swat</span>
+          <span style="border-top: 1px solid #000; padding-top: 1px; font-weight: bold;">Principal Signature</span>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-5">
+        <h5 class="text-muted">No students found matching the selected class/section filter.</h5>
+      </div>
+    {% endfor %}
+  </div>
+
+</body>
+</html>

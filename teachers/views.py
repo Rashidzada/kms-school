@@ -27,6 +27,8 @@ from .forms import (
     SalaryScaleForm,
     TeacherAttendanceSettingForm,
     TeacherForm,
+    TeacherLoanForm,
+    TeacherLoanRepaymentForm,
 )
 from .models import (
     MonthlySalaryBill,
@@ -34,6 +36,8 @@ from .models import (
     Teacher,
     TeacherAttendance,
     TeacherAttendanceSetting,
+    TeacherLoan,
+    TeacherLoanRepayment,
 )
 from school.whatsapp_utils import build_teacher_salary_slip_msg
 
@@ -384,12 +388,27 @@ def salary_bill_detail(request, pk):
             "right": deduction_items[i + 1] if (i + 1) < len(deduction_items) else None,
         })
 
+    # 4. Previous Unpaid Months Breakdown (e.g. Jan + Feb unpaid)
+    unpaid_previous_bills = bill.get_unpaid_previous_bills()
+    active_loans = bill.get_active_loans()
+    total_loan_outstanding = bill.total_outstanding_loan
+    effective_loan_deduction = bill.effective_loan_deduction
+
     context = {
         "bill": bill,
         "today": today_date,
         "length_of_service": length_of_service,
         "allowance_pairs": allowance_pairs,
         "deduction_pairs": deduction_pairs,
+        "unpaid_previous_bills": unpaid_previous_bills,
+        "calculated_previous_dues": bill.calculated_previous_dues,
+        "effective_previous_dues": bill.effective_previous_dues,
+        "active_loans": active_loans,
+        "total_loan_outstanding": total_loan_outstanding,
+        "effective_loan_deduction": effective_loan_deduction,
+        "total_gross_payable": bill.total_gross_payable,
+        "final_net_payable": bill.final_net_payable,
+        "final_balance_left": max(Decimal("0.00"), bill.final_net_payable - bill.actual_paid),
         "principal_name": "Dr. Farman Ali",
         "principal_contact": "+92 344 9631323",
         "vp_name": "Umar Saeed",
@@ -406,26 +425,193 @@ def salary_bill_detail(request, pk):
 @login_required
 def salary_bill_update(request, pk):
     """
-    Edit individual salary bill (FR-6.6).
+    Edit individual salary bill with custom old dues and loan installment deduction options.
     """
     bill = get_object_or_404(MonthlySalaryBill, pk=pk)
+    active_loans = bill.get_active_loans()
+    unpaid_bills = bill.get_unpaid_previous_bills()
+    suggested_dues = bill.calculated_previous_dues
+    suggested_loan_cut = active_loans.first().monthly_installment if active_loans.exists() else Decimal("0.00")
+
     if request.method == "POST":
         form = MonthlySalaryBillForm(request.POST, instance=bill)
         if form.is_valid():
-            updated_bill = form.save(commit=False)
-            if updated_bill.is_paid and not updated_bill.payment_date:
-                updated_bill.payment_date = timezone.now().date()
-            updated_bill.save()
-            messages.success(request, f"Salary bill for {bill.teacher.full_name} updated.")
-            return redirect("salary_bill_list")
+            with transaction.atomic():
+                updated_bill = form.save(commit=False)
+                if updated_bill.is_paid and not updated_bill.payment_date:
+                    updated_bill.payment_date = timezone.now().date()
+                updated_bill.save()
+
+                # Process Loan Repayment if custom deduct_loan is toggled ON
+                if updated_bill.deduct_loan and updated_bill.loan_deduction_amount > 0 and active_loans.exists():
+                    target_loan = active_loans.first()
+                    repay_obj, _ = TeacherLoanRepayment.objects.get_or_create(
+                        loan=target_loan,
+                        salary_bill=updated_bill,
+                        defaults={
+                            "amount": updated_bill.loan_deduction_amount,
+                            "payment_date": updated_bill.payment_date or timezone.now().date(),
+                            "payment_method": "Salary Deduction",
+                            "notes": f"Salary deduction for {updated_bill.month_name} {updated_bill.year}",
+                        }
+                    )
+                    repay_obj.amount = updated_bill.loan_deduction_amount
+                    repay_obj.save()
+
+                    # Recalculate total_repaid on loan
+                    total_rep = sum(r.amount for r in target_loan.repayments.all())
+                    target_loan.total_repaid = total_rep
+                    target_loan.save()
+                elif not updated_bill.deduct_loan or updated_bill.loan_deduction_amount <= 0:
+                    # Remove any existing salary deduction repayment for this bill if untoggled
+                    reps = TeacherLoanRepayment.objects.filter(salary_bill=updated_bill)
+                    for r in reps:
+                        l = r.loan
+                        r.delete()
+                        l.total_repaid = sum(x.amount for x in l.repayments.all())
+                        l.save()
+
+            messages.success(request, f"Salary bill for {bill.teacher.full_name} updated successfully.")
+            return redirect("salary_bill_detail", pk=bill.pk)
     else:
-        form = MonthlySalaryBillForm(instance=bill)
+        # Pre-populate suggested dues or loan cut if not previously set
+        initial_data = {}
+        if not bill.previous_unpaid_dues and suggested_dues > 0:
+            initial_data["previous_unpaid_dues"] = suggested_dues
+        if not bill.loan_deduction_amount and suggested_loan_cut > 0:
+            initial_data["loan_deduction_amount"] = suggested_loan_cut
+        form = MonthlySalaryBillForm(instance=bill, initial=initial_data if initial_data else None)
 
     return render(
         request,
         "teachers/salary_bill_form.html",
-        {"form": form, "bill": bill},
+        {
+            "form": form,
+            "bill": bill,
+            "active_loans": active_loans,
+            "unpaid_bills": unpaid_bills,
+            "suggested_dues": suggested_dues,
+            "suggested_loan_cut": suggested_loan_cut,
+        },
     )
+
+
+# ==============================================================================
+# TEACHER ADVANCE & LOAN MANAGEMENT (KMS FINANCIAL COMPONENT)
+# ==============================================================================
+
+@login_required
+def teacher_loan_list(request):
+    """
+    Staff loans & advances overview with active balances, repayments, and teacher filtering.
+    """
+    loans_qs = TeacherLoan.objects.select_related("teacher").all()
+    teacher_id = request.GET.get("teacher_id", "")
+    status = request.GET.get("status", "")
+
+    if teacher_id:
+        loans_qs = loans_qs.filter(teacher_id=teacher_id)
+    if status:
+        loans_qs = loans_qs.filter(status=status)
+
+    loans = list(loans_qs)
+    total_principal = sum(l.principal_amount for l in loans)
+    total_repaid = sum(l.total_repaid for l in loans)
+    total_outstanding = sum(l.remaining_balance for l in loans)
+    active_count = len([l for l in loans if not l.is_cleared])
+
+    teachers = Teacher.objects.filter(status="Active").order_by("full_name")
+
+    context = {
+        "loans": loans,
+        "teachers": teachers,
+        "selected_teacher": teacher_id,
+        "selected_status": status,
+        "total_principal": total_principal,
+        "total_repaid": total_repaid,
+        "total_outstanding": total_outstanding,
+        "active_count": active_count,
+    }
+    return render(request, "teachers/teacher_loan_list.html", context)
+
+
+@login_required
+def teacher_loan_create(request):
+    """
+    Issue a new loan / advance to a teacher or staff member.
+    """
+    if request.method == "POST":
+        form = TeacherLoanForm(request.POST)
+        if form.is_valid():
+            loan = form.save()
+            messages.success(
+                request,
+                f"Loan of PKR {loan.principal_amount:,.2f} recorded for {loan.teacher.full_name}."
+            )
+            return redirect("teacher_loan_list")
+    else:
+        teacher_id = request.GET.get("teacher_id")
+        initial = {"loan_date": timezone.now().date()}
+        if teacher_id:
+            initial["teacher"] = teacher_id
+        form = TeacherLoanForm(initial=initial)
+
+    return render(
+        request,
+        "teachers/teacher_loan_form.html",
+        {"form": form, "title": "Record New Staff Loan / Advance"},
+    )
+
+
+@login_required
+def teacher_loan_detail(request, pk):
+    """
+    View loan details, repayment history, and record manual cash/bank payment.
+    """
+    loan = get_object_or_404(TeacherLoan.objects.select_related("teacher"), pk=pk)
+    repayments = loan.repayments.order_by("-payment_date", "-id")
+
+    if request.method == "POST":
+        repay_form = TeacherLoanRepaymentForm(request.POST)
+        if repay_form.is_valid():
+            with transaction.atomic():
+                rep = repay_form.save(commit=False)
+                rep.loan = loan
+                rep.save()
+                loan.total_repaid = sum(r.amount for r in loan.repayments.all())
+                loan.save()
+            messages.success(request, f"Payment of PKR {rep.amount:,.2f} recorded successfully.")
+            return redirect("teacher_loan_detail", pk=loan.pk)
+    else:
+        repay_form = TeacherLoanRepaymentForm(initial={
+            "payment_date": timezone.now().date(),
+            "amount": min(loan.monthly_installment or loan.remaining_balance, loan.remaining_balance),
+            "payment_method": "Cash",
+        })
+
+    return render(
+        request,
+        "teachers/teacher_loan_detail.html",
+        {
+            "loan": loan,
+            "repayments": repayments,
+            "repay_form": repay_form,
+        },
+    )
+
+
+@login_required
+def teacher_loan_delete(request, pk):
+    """
+    Delete a loan record.
+    """
+    loan = get_object_or_404(TeacherLoan, pk=pk)
+    teacher_name = loan.teacher.full_name
+    if request.method == "POST":
+        loan.delete()
+        messages.success(request, f"Loan record for {teacher_name} deleted.")
+        return redirect("teacher_loan_list")
+    return render(request, "teachers/teacher_loan_confirm_delete.html", {"loan": loan})
 
 
 @login_required

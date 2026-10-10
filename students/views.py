@@ -1,17 +1,23 @@
+import calendar
+import io
+import json
+from datetime import date, datetime, time
 from decimal import Decimal
+import qrcode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from finance.models import StudentFeeLedger
 from finance.utils import apply_withdrawal_stop, initialize_ledger_months, roll_over_arrears
-from school.models import AcademicSession, ClassLevel, Section
+from school.models import AcademicSession, ClassLevel, Section, SchoolSetting
 from school.whatsapp_utils import build_student_dues_reminder_msg
 from .forms import FamilyHouseholdForm, SinglePromoteForm, StudentForm, StudentWithdrawForm
-from .models import FamilyHousehold, PromotionHistory, Student
+from .models import FamilyHousehold, PromotionHistory, Student, StudentAttendance
 
 
 def compute_students_fee_ledger_map(students_list, active_session=None):
@@ -122,10 +128,11 @@ def compute_students_fee_ledger_map(students_list, active_session=None):
 @login_required
 def student_list(request):
     """
-    Searchable, filterable student list (FR-3.3) with real month dues,
-    paid months display, pending dues breakdown, and full family dues:
-    Filters: class, section, status, fee_status.
-    Free-text search: full name, admission number, father's name, residence.
+    Searchable, filterable student directory with:
+    - Demographic data (Name, Father, Address, Age, Class, Section, Gender)
+    - School-wide male & female counts and percentages
+    - Class-wise and Section-wise counts, male/female absents with percentage-wise breakdown
+    - Fee ledger status & balance
     """
     students_qs = Student.objects.select_related(
         "current_class", "current_section", "family"
@@ -134,6 +141,7 @@ def student_list(request):
     query = request.GET.get("q", "").strip()
     class_id = request.GET.get("class", "")
     section_id = request.GET.get("section", "")
+    gender = request.GET.get("gender", "")
     status = request.GET.get("status", "")
     fee_status = request.GET.get("fee_status", "")
 
@@ -149,12 +157,80 @@ def student_list(request):
         students_qs = students_qs.filter(current_class_id=class_id)
     if section_id:
         students_qs = students_qs.filter(current_section_id=section_id)
+    if gender:
+        students_qs = students_qs.filter(gender=gender)
     if status:
         students_qs = students_qs.filter(status=status)
 
     active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
     students_list = list(students_qs)
     compute_students_fee_ledger_map(students_list, active_session=active_session)
+
+    # 1. School-wide Global Demographics (across ALL active students)
+    active_all_students = Student.objects.filter(status="Active")
+    total_active_school = active_all_students.count()
+    school_male_count = active_all_students.filter(gender="Male").count()
+    school_female_count = active_all_students.filter(gender="Female").count()
+    school_male_pct = round((school_male_count / total_active_school * 100), 1) if total_active_school > 0 else 0.0
+    school_female_pct = round((school_female_count / total_active_school * 100), 1) if total_active_school > 0 else 0.0
+
+    # 2. Today's Daily Attendance & Absent Counts & Percentages
+    today_date = timezone.now().date()
+    today_att_qs = StudentAttendance.objects.filter(date=today_date, student__status="Active")
+    today_present_count = today_att_qs.filter(status__in=["Present", "Late"]).count()
+    today_absent_count = today_att_qs.filter(status="Absent").count()
+
+    today_male_present = today_att_qs.filter(student__gender="Male", status__in=["Present", "Late"]).count()
+    today_male_absent = today_att_qs.filter(student__gender="Male", status="Absent").count()
+    today_male_absent_pct = round((today_male_absent / school_male_count * 100), 1) if school_male_count > 0 else 0.0
+
+    today_female_present = today_att_qs.filter(student__gender="Female", status__in=["Present", "Late"]).count()
+    today_female_absent = today_att_qs.filter(student__gender="Female", status="Absent").count()
+    today_female_absent_pct = round((today_female_absent / school_female_count * 100), 1) if school_female_count > 0 else 0.0
+
+    today_tot_marked = today_present_count + today_absent_count
+    today_overall_att_pct = round((today_present_count / today_tot_marked * 100), 1) if today_tot_marked > 0 else 0.0
+
+    # 3. Class-wise and Section-wise Detailed Breakdown Matrix
+    class_breakdown = []
+    classes_all = ClassLevel.objects.prefetch_related("sections").all()
+    for cl in classes_all:
+        for sec in cl.sections.all():
+            sec_students = active_all_students.filter(current_class=cl, current_section=sec)
+            sec_tot = sec_students.count()
+            if sec_tot == 0:
+                continue
+            sec_m = sec_students.filter(gender="Male").count()
+            sec_f = sec_students.filter(gender="Female").count()
+
+            # Today attendances for this class/section
+            sec_att = today_att_qs.filter(student__current_class=cl, student__current_section=sec)
+            sec_m_p = sec_att.filter(student__gender="Male", status__in=["Present", "Late"]).count()
+            sec_m_a = sec_att.filter(student__gender="Male", status="Absent").count()
+            sec_m_a_pct = round((sec_m_a / sec_m * 100), 1) if sec_m > 0 else 0.0
+
+            sec_f_p = sec_att.filter(student__gender="Female", status__in=["Present", "Late"]).count()
+            sec_f_a = sec_att.filter(student__gender="Female", status="Absent").count()
+            sec_f_a_pct = round((sec_f_a / sec_f * 100), 1) if sec_f > 0 else 0.0
+
+            sec_tot_p = sec_m_p + sec_f_p
+            sec_tot_a = sec_m_a + sec_f_a
+            sec_att_pct = round((sec_tot_p / (sec_tot_p + sec_tot_a) * 100), 1) if (sec_tot_p + sec_tot_a) > 0 else 0.0
+
+            class_breakdown.append({
+                "class_level": cl,
+                "section": sec,
+                "total_enrolled": sec_tot,
+                "male_count": sec_m,
+                "female_count": sec_f,
+                "male_present": sec_m_p,
+                "male_absent": sec_m_a,
+                "male_absent_pct": sec_m_a_pct,
+                "female_present": sec_f_p,
+                "female_absent": sec_f_a,
+                "female_absent_pct": sec_f_a_pct,
+                "attendance_pct": sec_att_pct,
+            })
 
     # Summary metrics before fee_status filtering
     total_active_students = len([s for s in students_list if s.status == "Active"])
@@ -170,7 +246,6 @@ def student_list(request):
 
     classes = ClassLevel.objects.all()
     sections = Section.objects.all()
-
     selected_class_obj = ClassLevel.objects.filter(id=class_id).first() if class_id else None
 
     context = {
@@ -181,6 +256,7 @@ def student_list(request):
         "selected_class": class_id,
         "selected_class_obj": selected_class_obj,
         "selected_section": section_id,
+        "selected_gender": gender,
         "selected_status": status,
         "selected_fee_status": fee_status,
         "active_session": active_session,
@@ -188,6 +264,23 @@ def student_list(request):
         "total_students_with_dues": total_students_with_dues,
         "total_cleared_students": total_cleared_students,
         "total_outstanding_school_dues": total_outstanding_school_dues,
+        # School-Wide Gender Counts & Pct
+        "total_active_school": total_active_school,
+        "school_male_count": school_male_count,
+        "school_female_count": school_female_count,
+        "school_male_pct": school_male_pct,
+        "school_female_pct": school_female_pct,
+        # Today's Absents & Attendance
+        "today_date": today_date,
+        "today_male_present": today_male_present,
+        "today_male_absent": today_male_absent,
+        "today_male_absent_pct": today_male_absent_pct,
+        "today_female_present": today_female_present,
+        "today_female_absent": today_female_absent,
+        "today_female_absent_pct": today_female_absent_pct,
+        "today_overall_att_pct": today_overall_att_pct,
+        # Class-Wise Breakdown
+        "class_breakdown": class_breakdown,
     }
     return render(request, "students/student_list.html", context)
 
@@ -1196,4 +1289,793 @@ def class_students_delete(request, class_id):
         messages.error(request, f"Error deleting students of {class_level.name}: {str(e)}")
 
     return redirect(next_url)
+
+
+# ==============================================================================
+# STUDENT QR CODE & ID CARDS SYSTEM (KMS V4)
+# ==============================================================================
+
+@login_required
+def student_qr_image(request, pk):
+    """
+    Streams dynamic PNG QR code for a student.
+    """
+    student = get_object_or_404(Student, pk=pk)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=3,
+    )
+    qr.add_data(str(student.admission_no or student.id))
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    response = HttpResponse(buf.getvalue(), content_type="image/png")
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
+
+
+@login_required
+def student_id_card(request, pk):
+    """
+    Printable individual student ID Card with scannable QR Code.
+    """
+    student = get_object_or_404(
+        Student.objects.select_related("current_class", "current_section", "family"),
+        pk=pk,
+    )
+    school_setting = SchoolSetting.objects.first()
+    return render(
+        request,
+        "students/student_id_card.html",
+        {
+            "student": student,
+            "school_setting": school_setting,
+        },
+    )
+
+
+@login_required
+def all_student_id_cards(request):
+    """
+    Bulk printable Student ID Cards with scannable QR Codes, filterable by Class and Section.
+    """
+    students_qs = Student.objects.filter(status="Active").select_related(
+        "current_class", "current_section", "family"
+    ).order_by("current_class__id", "current_section__name", "admission_no")
+
+    class_id = request.GET.get("class", "")
+    section_id = request.GET.get("section", "")
+
+    if class_id:
+        students_qs = students_qs.filter(current_class_id=class_id)
+    if section_id:
+        students_qs = students_qs.filter(current_section_id=section_id)
+
+    classes = ClassLevel.objects.all()
+    sections = Section.objects.all()
+    school_setting = SchoolSetting.objects.first()
+
+    return render(
+        request,
+        "students/all_student_id_cards.html",
+        {
+            "students": students_qs,
+            "classes": classes,
+            "sections": sections,
+            "selected_class": class_id,
+            "selected_section": section_id,
+            "school_setting": school_setting,
+        },
+    )
+
+
+# ==============================================================================
+# STUDENT QUICK QR ATTENDANCE SCANNER
+# ==============================================================================
+
+@login_required
+def student_qr_attendance_scan(request):
+    """
+    Live real-time webcam and USB barcode/QR scanner terminal for student attendance.
+    """
+    today = timezone.localtime(timezone.now()).date()
+    today_attendances = (
+        StudentAttendance.objects.filter(date=today)
+        .select_related("student", "student__current_class", "student__current_section")
+        .order_by("-updated_at")
+    )
+
+    total_scanned = today_attendances.count()
+    male_scanned = today_attendances.filter(student__gender="Male").count()
+    female_scanned = today_attendances.filter(student__gender="Female").count()
+
+    return render(
+        request,
+        "students/student_qr_scan.html",
+        {
+            "today": today,
+            "today_attendances": today_attendances[:50],
+            "total_scanned": total_scanned,
+            "male_scanned": male_scanned,
+            "female_scanned": female_scanned,
+        },
+    )
+
+
+@login_required
+def api_process_student_qr_scan(request):
+    """
+    Fast JSON API to mark student attendance instantly from QR scan.
+    Accepts student admission_no or QR payload.
+    """
+    if request.method not in ["POST", "GET"]:
+        return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
+    code = ""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8")) if request.body else {}
+            code = data.get("code", "")
+        except Exception:
+            code = request.POST.get("code", "")
+    if not code:
+        code = request.GET.get("code", "")
+
+    code = str(code).strip()
+    if not code:
+        return JsonResponse({"status": "error", "message": "No QR Code received."}, status=400)
+
+    # Resolve student by admission_no or ID
+    student = Student.objects.filter(admission_no__iexact=code).select_related("current_class", "current_section").first()
+    if not student and code.isdigit():
+        student = Student.objects.filter(id=int(code)).select_related("current_class", "current_section").first()
+
+    if not student:
+        return JsonResponse({
+            "status": "error",
+            "message": f"Student with Admission No '{code}' not found in registry.",
+        }, status=404)
+
+    today = timezone.localtime(timezone.now()).date()
+    now_time = timezone.localtime(timezone.now()).time()
+
+    att, created = StudentAttendance.objects.get_or_create(
+        student=student,
+        date=today,
+        defaults={
+            "status": "Present",
+            "check_in": now_time,
+            "attendance_method": "QR Code",
+            "remarks": "Marked via QR Scan",
+        }
+    )
+
+    already_marked = False
+    if not created:
+        already_marked = True
+        scan_time_str = att.check_in.strftime("%I:%M:%S %p") if att.check_in else "Earlier Today"
+        msg = f"{student.full_name} was already marked {att.status} at {scan_time_str}."
+    else:
+        scan_time_str = now_time.strftime("%I:%M:%S %p")
+        msg = f"SUCCESS: {student.full_name} marked Present ({scan_time_str})."
+
+    # Summary counts for today
+    today_all = StudentAttendance.objects.filter(date=today)
+    tot_count = today_all.count()
+    m_count = today_all.filter(student__gender="Male").count()
+    f_count = today_all.filter(student__gender="Female").count()
+
+    photo_url = student.profile_picture.url if student.profile_picture else ""
+
+    return JsonResponse({
+        "status": "warning" if already_marked else "success",
+        "already_marked": already_marked,
+        "message": msg,
+        "student": {
+            "id": student.id,
+            "admission_no": student.admission_no,
+            "name": student.full_name,
+            "father_name": student.father_name,
+            "gender": student.gender,
+            "class_name": student.current_class.name if student.current_class else "---",
+            "section_name": student.current_section.name if student.current_section else "---",
+            "photo_url": photo_url,
+            "status": att.status,
+            "check_in": scan_time_str,
+        },
+        "stats": {
+            "total_scanned": tot_count,
+            "male_scanned": m_count,
+            "female_scanned": f_count,
+        }
+    })
+
+
+# ==============================================================================
+# CLASS-WISE DAILY ATTENDANCE REGISTER
+# ==============================================================================
+
+@login_required
+def student_daily_attendance(request):
+    """
+    Class-wise daily attendance register with:
+    - S#, Adm#, Name, Father, Gender, Status radio buttons
+    - One-click Mark All Present
+    - School & Class level gender stats (Male/Female present & absent with percentages!)
+    """
+    classes = ClassLevel.objects.prefetch_related("sections").all()
+    selected_class_id = request.GET.get("class_id") or (str(classes.first().id) if classes.exists() else "")
+    selected_class = ClassLevel.objects.filter(id=selected_class_id).first() if selected_class_id else None
+
+    sections = selected_class.sections.all() if selected_class else Section.objects.none()
+    selected_section_id = request.GET.get("section_id") or (str(sections.first().id) if sections.exists() else "")
+    selected_section = Section.objects.filter(id=selected_section_id).first() if selected_section_id else None
+
+    date_str = request.GET.get("date", "")
+    if date_str:
+        try:
+            att_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            att_date = timezone.localtime(timezone.now()).date()
+    else:
+        att_date = timezone.localtime(timezone.now()).date()
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    # Process Form POST (Save Register)
+    if request.method == "POST":
+        with transaction.atomic():
+            saved_count = 0
+            for s in students:
+                field_name = f"status_{s.id}"
+                new_status = request.POST.get(field_name, "Present")
+                if new_status in ["Present", "Late", "Absent", "Leave", "Holiday"]:
+                    obj, created = StudentAttendance.objects.get_or_create(
+                        student=s,
+                        date=att_date,
+                        defaults={
+                            "status": new_status,
+                            "attendance_method": "Manual",
+                            "check_in": timezone.localtime(timezone.now()).time() if new_status in ["Present", "Late"] else None,
+                        }
+                    )
+                    if not created:
+                        obj.status = new_status
+                        obj.save()
+                    saved_count += 1
+            messages.success(request, f"Attendance saved successfully for {saved_count} student(s) on {att_date.strftime('%d-%b-%Y')}.")
+            return redirect(f"{reverse('student_daily_attendance')}?class_id={selected_class_id}&section_id={selected_section_id}&date={att_date.strftime('%Y-%m-%d')}")
+
+    # Fetch existing attendance records for this date
+    att_map = {}
+    if students:
+        records = StudentAttendance.objects.filter(student__in=students, date=att_date)
+        att_map = {r.student_id: r for r in records}
+
+    # Attach attendance object to each student for template
+    for s in students:
+        s.daily_record = att_map.get(s.id)
+        s.current_status = s.daily_record.status if s.daily_record else "Present"
+
+    # Class Demographic & Today's Attendance Metrics
+    total_enrolled = len(students)
+    male_enrolled = len([s for s in students if s.gender == "Male"])
+    female_enrolled = len([s for s in students if s.gender == "Female"])
+
+    present_count = len([s for s in students if s.current_status in ["Present", "Late"]])
+    absent_count = len([s for s in students if s.current_status == "Absent"])
+    leave_count = len([s for s in students if s.current_status == "Leave"])
+
+    male_present = len([s for s in students if s.gender == "Male" and s.current_status in ["Present", "Late"]])
+    male_absent = len([s for s in students if s.gender == "Male" and s.current_status == "Absent"])
+    male_absent_pct = round((male_absent / male_enrolled * 100), 1) if male_enrolled > 0 else 0.0
+
+    female_present = len([s for s in students if s.gender == "Female" and s.current_status in ["Present", "Late"]])
+    female_absent = len([s for s in students if s.gender == "Female" and s.current_status == "Absent"])
+    female_absent_pct = round((female_absent / female_enrolled * 100), 1) if female_enrolled > 0 else 0.0
+
+    tot_evaluated = present_count + absent_count
+    attendance_pct = round((present_count / tot_evaluated * 100), 1) if tot_evaluated > 0 else 0.0
+
+    return render(
+        request,
+        "students/student_daily_attendance.html",
+        {
+            "classes": classes,
+            "sections": sections,
+            "selected_class": selected_class,
+            "selected_section": selected_section,
+            "selected_class_id": selected_class_id,
+            "selected_section_id": selected_section_id,
+            "att_date": att_date,
+            "students": students,
+            "total_enrolled": total_enrolled,
+            "male_enrolled": male_enrolled,
+            "female_enrolled": female_enrolled,
+            "present_count": present_count,
+            "absent_count": absent_count,
+            "leave_count": leave_count,
+            "male_present": male_present,
+            "male_absent": male_absent,
+            "male_absent_pct": male_absent_pct,
+            "female_present": female_present,
+            "female_absent": female_absent,
+            "female_absent_pct": female_absent_pct,
+            "attendance_pct": attendance_pct,
+        },
+    )
+
+
+@login_required
+def student_daily_attendance_print(request):
+    """
+    Official printable Class Attendance Register Sheet (matching KOHISAR MODEL SCHOOL register format).
+    """
+    class_id = request.GET.get("class_id")
+    section_id = request.GET.get("section_id")
+    date_str = request.GET.get("date", "")
+    school_setting = SchoolSetting.objects.first()
+
+    if date_str:
+        try:
+            att_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            att_date = timezone.localtime(timezone.now()).date()
+    else:
+        att_date = timezone.localtime(timezone.now()).date()
+
+    selected_class = ClassLevel.objects.filter(id=class_id).first() if class_id else ClassLevel.objects.first()
+    selected_section = Section.objects.filter(id=section_id).first() if section_id else None
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    records = StudentAttendance.objects.filter(student__in=students, date=att_date)
+    att_map = {r.student_id: r for r in records}
+    for s in students:
+        s.daily_record = att_map.get(s.id)
+        s.current_status = s.daily_record.status if s.daily_record else "Present"
+
+    return render(
+        request,
+        "students/student_daily_attendance_print.html",
+        {
+            "selected_class": selected_class,
+            "selected_section": selected_section,
+            "att_date": att_date,
+            "students": students,
+            "school_setting": school_setting,
+        },
+    )
+
+
+# ==============================================================================
+# CLASS-WISE MONTHLY ATTENDANCE SHEET (31-DAY MATRIX)
+# ==============================================================================
+
+@login_required
+def student_monthly_attendance_sheet(request):
+    """
+    Interactive class-wise monthly attendance sheet matrix with days 1..31,
+    per-student totals and overall class daily/monthly statistics.
+    """
+    classes = ClassLevel.objects.prefetch_related("sections").all()
+    selected_class_id = request.GET.get("class_id") or (str(classes.first().id) if classes.exists() else "")
+    selected_class = ClassLevel.objects.filter(id=selected_class_id).first() if selected_class_id else None
+
+    sections = selected_class.sections.all() if selected_class else Section.objects.none()
+    selected_section_id = request.GET.get("section_id") or ""
+    selected_section = Section.objects.filter(id=selected_section_id).first() if selected_section_id else None
+
+    now = timezone.localtime(timezone.now())
+    month = int(request.GET.get("month", now.month))
+    year = int(request.GET.get("year", now.year))
+
+    _, num_days = calendar.monthrange(year, month)
+    days_range = list(range(1, num_days + 1))
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    # Fetch all records for this month
+    records = StudentAttendance.objects.filter(
+        student__in=students,
+        date__year=year,
+        date__month=month,
+    ).select_related("student")
+
+    # Map: student_id -> day -> status
+    matrix_map = {}
+    for r in records:
+        matrix_map.setdefault(r.student_id, {})[r.date.day] = r.status
+
+    student_rows = []
+    daily_present_totals = {d: 0 for d in days_range}
+    daily_absent_totals = {d: 0 for d in days_range}
+
+    for idx, s in enumerate(students, start=1):
+        day_cells = []
+        p_cnt, a_cnt, l_cnt, lv_cnt = 0, 0, 0, 0
+        s_map = matrix_map.get(s.id, {})
+
+        for d in days_range:
+            st = s_map.get(d)
+            if st in ["Present", "Late"]:
+                p_cnt += 1
+                daily_present_totals[d] += 1
+                badge = "P"
+                css = "cell-p"
+            elif st == "Absent":
+                a_cnt += 1
+                daily_absent_totals[d] += 1
+                badge = "A"
+                css = "cell-a"
+            elif st == "Leave":
+                lv_cnt += 1
+                badge = "Lv"
+                css = "cell-lv"
+            else:
+                badge = "-"
+                css = "cell-none"
+            day_cells.append({"day": d, "status": st, "badge": badge, "css": css})
+
+        total_marked = p_cnt + a_cnt
+        pct = round((p_cnt / total_marked * 100), 1) if total_marked > 0 else 0.0
+
+        student_rows.append({
+            "serial": idx,
+            "student": s,
+            "day_cells": day_cells,
+            "present_count": p_cnt,
+            "absent_count": a_cnt,
+            "leave_count": lv_cnt,
+            "percentage": pct,
+        })
+
+    daily_totals_list = [
+        {"day": d, "present": daily_present_totals[d], "absent": daily_absent_totals[d]}
+        for d in days_range
+    ]
+    month_name = calendar.month_name[month]
+
+    return render(
+        request,
+        "students/student_monthly_attendance_sheet.html",
+        {
+            "classes": classes,
+            "sections": sections,
+            "selected_class": selected_class,
+            "selected_section": selected_section,
+            "selected_class_id": selected_class_id,
+            "selected_section_id": selected_section_id,
+            "month": month,
+            "year": year,
+            "month_name": month_name,
+            "days_range": days_range,
+            "student_rows": student_rows,
+            "daily_totals_list": daily_totals_list,
+            "total_students": len(students),
+        },
+    )
+
+
+@login_required
+def student_monthly_attendance_print(request):
+    """
+    Printable monthly attendance grid for classroom records.
+    """
+    class_id = request.GET.get("class_id")
+    section_id = request.GET.get("section_id")
+    now = timezone.localtime(timezone.now())
+    month = int(request.GET.get("month", now.month))
+    year = int(request.GET.get("year", now.year))
+
+    selected_class = ClassLevel.objects.filter(id=class_id).first() if class_id else ClassLevel.objects.first()
+    selected_section = Section.objects.filter(id=section_id).first() if section_id else None
+    school_setting = SchoolSetting.objects.first()
+
+    _, num_days = calendar.monthrange(year, month)
+    days_range = list(range(1, num_days + 1))
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    records = StudentAttendance.objects.filter(
+        student__in=students,
+        date__year=year,
+        date__month=month,
+    )
+    matrix_map = {}
+    for r in records:
+        matrix_map.setdefault(r.student_id, {})[r.date.day] = r.status
+
+    student_rows = []
+    for idx, s in enumerate(students, start=1):
+        s_days = {}
+        p_cnt, a_cnt, lv_cnt = 0, 0, 0
+        s_map = matrix_map.get(s.id, {})
+        for d in days_range:
+            st = s_map.get(d)
+            s_days[d] = st
+            if st in ["Present", "Late"]:
+                p_cnt += 1
+            elif st == "Absent":
+                a_cnt += 1
+            elif st == "Leave":
+                lv_cnt += 1
+        tot = p_cnt + a_cnt
+        pct = round((p_cnt / tot * 100), 1) if tot > 0 else 0.0
+        student_rows.append({
+            "serial": idx,
+            "student": s,
+            "days": s_days,
+            "present_count": p_cnt,
+            "absent_count": a_cnt,
+            "leave_count": lv_cnt,
+            "percentage": pct,
+        })
+
+    month_name = calendar.month_name[month]
+
+    return render(
+        request,
+        "students/student_monthly_attendance_print.html",
+        {
+            "selected_class": selected_class,
+            "selected_section": selected_section,
+            "month": month,
+            "year": year,
+            "month_name": month_name,
+            "days_range": days_range,
+            "student_rows": student_rows,
+            "school_setting": school_setting,
+        },
+    )
+
+
+@login_required
+def export_student_monthly_attendance_excel(request):
+    """
+    Excel export of monthly student attendance matrix.
+    """
+    from school.excel_utils import create_styled_workbook, excel_download_response
+
+    class_id = request.GET.get("class_id")
+    section_id = request.GET.get("section_id")
+    now = timezone.localtime(timezone.now())
+    month = int(request.GET.get("month", now.month))
+    year = int(request.GET.get("year", now.year))
+
+    selected_class = ClassLevel.objects.filter(id=class_id).first() if class_id else None
+    selected_section = Section.objects.filter(id=section_id).first() if section_id else None
+
+    _, num_days = calendar.monthrange(year, month)
+    days_range = list(range(1, num_days + 1))
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    records = StudentAttendance.objects.filter(
+        student__in=students,
+        date__year=year,
+        date__month=month,
+    )
+    matrix_map = {}
+    for r in records:
+        matrix_map.setdefault(r.student_id, {})[r.date.day] = r.status
+
+    month_name = calendar.month_name[month]
+    headers = ["S#", "Adm #", "Student Name", "Father Name", "Gender"] + [str(d) for d in days_range] + ["Present", "Absent", "Leave", "Att %"]
+
+    rows = []
+    for idx, s in enumerate(students, start=1):
+        s_map = matrix_map.get(s.id, {})
+        row = [idx, s.admission_no, s.full_name, s.father_name, s.gender]
+        p_cnt, a_cnt, lv_cnt = 0, 0, 0
+        for d in days_range:
+            st = s_map.get(d)
+            if st in ["Present", "Late"]:
+                row.append("P")
+                p_cnt += 1
+            elif st == "Absent":
+                row.append("A")
+                a_cnt += 1
+            elif st == "Leave":
+                row.append("L")
+                lv_cnt += 1
+            else:
+                row.append("-")
+        tot = p_cnt + a_cnt
+        pct = f"{round((p_cnt / tot * 100), 1)}%" if tot > 0 else "0%"
+        row.extend([p_cnt, a_cnt, lv_cnt, pct])
+        rows.append(row)
+
+    title = f"Attendance {selected_class.name if selected_class else ''} - {month_name} {year}"
+    buf = create_styled_workbook(title, headers, rows)
+    return excel_download_response(buf, f"Student_Attendance_{month_name}_{year}.xlsx")
+
+
+# ==============================================================================
+# STUDENT YEARLY ATTENDANCE SHEET (END-OF-YEAR ANNUAL SUMS)
+# ==============================================================================
+
+@login_required
+def student_yearly_attendance_sheet(request):
+    """
+    Yearly attendance summary sheet showing 12 monthly sums (Jan..Dec)
+    and end-of-year final totals and percentages for each student.
+    """
+    classes = ClassLevel.objects.prefetch_related("sections").all()
+    selected_class_id = request.GET.get("class_id") or (str(classes.first().id) if classes.exists() else "")
+    selected_class = ClassLevel.objects.filter(id=selected_class_id).first() if selected_class_id else None
+
+    sections = selected_class.sections.all() if selected_class else Section.objects.none()
+    selected_section_id = request.GET.get("section_id") or ""
+    selected_section = Section.objects.filter(id=selected_section_id).first() if selected_section_id else None
+
+    now = timezone.localtime(timezone.now())
+    year = int(request.GET.get("year", now.year))
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    # Fetch all records for this entire year
+    records = StudentAttendance.objects.filter(
+        student__in=students,
+        date__year=year,
+    )
+
+    # student_id -> month -> {present: X, absent: Y, leave: Z}
+    yearly_map = {}
+    for r in records:
+        m = r.date.month
+        m_dict = yearly_map.setdefault(r.student_id, {}).setdefault(m, {"p": 0, "a": 0, "lv": 0})
+        if r.status in ["Present", "Late"]:
+            m_dict["p"] += 1
+        elif r.status == "Absent":
+            m_dict["a"] += 1
+        elif r.status == "Leave":
+            m_dict["lv"] += 1
+
+    months_list = list(range(1, 13))
+    student_rows = []
+
+    for idx, s in enumerate(students, start=1):
+        month_cells = []
+        tot_p, tot_a, tot_lv = 0, 0, 0
+        s_data = yearly_map.get(s.id, {})
+
+        for m in months_list:
+            m_stats = s_data.get(m, {"p": 0, "a": 0, "lv": 0})
+            tot_p += m_stats["p"]
+            tot_a += m_stats["a"]
+            tot_lv += m_stats["lv"]
+            month_cells.append({
+                "month": m,
+                "month_name": calendar.month_abbr[m],
+                "present": m_stats["p"],
+                "absent": m_stats["a"],
+                "leave": m_stats["lv"],
+            })
+
+        tot_held = tot_p + tot_a
+        overall_pct = round((tot_p / tot_held * 100), 1) if tot_held > 0 else 0.0
+
+        student_rows.append({
+            "serial": idx,
+            "student": s,
+            "month_cells": month_cells,
+            "total_present": tot_p,
+            "total_absent": tot_a,
+            "total_leave": tot_lv,
+            "total_held": tot_held,
+            "overall_pct": overall_pct,
+        })
+
+    month_names = [calendar.month_abbr[m] for m in months_list]
+
+    return render(
+        request,
+        "students/student_yearly_attendance_sheet.html",
+        {
+            "classes": classes,
+            "sections": sections,
+            "selected_class": selected_class,
+            "selected_section": selected_section,
+            "selected_class_id": selected_class_id,
+            "selected_section_id": selected_section_id,
+            "year": year,
+            "month_names": month_names,
+            "months_list": months_list,
+            "student_rows": student_rows,
+            "total_students": len(students),
+        },
+    )
+
+
+@login_required
+def export_student_yearly_attendance_excel(request):
+    """
+    Excel export of yearly student attendance sums.
+    """
+    from school.excel_utils import create_styled_workbook, excel_download_response
+
+    class_id = request.GET.get("class_id")
+    section_id = request.GET.get("section_id")
+    now = timezone.localtime(timezone.now())
+    year = int(request.GET.get("year", now.year))
+
+    selected_class = ClassLevel.objects.filter(id=class_id).first() if class_id else None
+    selected_section = Section.objects.filter(id=section_id).first() if section_id else None
+
+    students = []
+    if selected_class:
+        sqs = Student.objects.filter(current_class=selected_class, status="Active")
+        if selected_section:
+            sqs = sqs.filter(current_section=selected_section)
+        students = list(sqs.order_by("admission_no"))
+
+    records = StudentAttendance.objects.filter(student__in=students, date__year=year)
+    yearly_map = {}
+    for r in records:
+        m = r.date.month
+        m_dict = yearly_map.setdefault(r.student_id, {}).setdefault(m, {"p": 0, "a": 0, "lv": 0})
+        if r.status in ["Present", "Late"]:
+            m_dict["p"] += 1
+        elif r.status == "Absent":
+            m_dict["a"] += 1
+        elif r.status == "Leave":
+            m_dict["lv"] += 1
+
+    month_abbrs = [calendar.month_abbr[m] for m in range(1, 13)]
+    headers = ["S#", "Adm #", "Student Name", "Father Name", "Gender"] + month_abbrs + ["Total Present", "Total Absent", "Total Leave", "Annual %"]
+
+    rows = []
+    for idx, s in enumerate(students, start=1):
+        s_data = yearly_map.get(s.id, {})
+        row = [idx, s.admission_no, s.full_name, s.father_name, s.gender]
+        tot_p, tot_a, tot_lv = 0, 0, 0
+        for m in range(1, 13):
+            st = s_data.get(m, {"p": 0, "a": 0, "lv": 0})
+            p = st["p"]
+            tot_p += p
+            tot_a += st["a"]
+            tot_lv += st["lv"]
+            row.append(p if p > 0 else 0)
+        tot_held = tot_p + tot_a
+        pct = f"{round((tot_p / tot_held * 100), 1)}%" if tot_held > 0 else "0%"
+        row.extend([tot_p, tot_a, tot_lv, pct])
+        rows.append(row)
+
+    title = f"Annual Attendance {selected_class.name if selected_class else ''} - {year}"
+    buf = create_styled_workbook(title, headers, rows)
+    return excel_download_response(buf, f"Annual_Attendance_{year}.xlsx")
 

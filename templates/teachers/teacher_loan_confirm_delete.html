@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Delete Loan | {{ loan.teacher.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-danger">
+      <div class="card-header bg-danger text-white py-3">
+        <h5 class="fw-bold mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Delete Loan</h5>
+      </div>
+      <div class="card-body p-4 text-center">
+        <p class="fs-5 mb-2">Are you sure you want to delete this staff loan record?</p>
+        <div class="p-3 bg-light rounded border my-3 text-start small">
+          <div><strong>Staff Member:</strong> {{ loan.teacher.full_name }} ({{ loan.teacher.teacher_id }})</div>
+          <div><strong>Loan Title:</strong> {{ loan.loan_title }}</div>
+          <div><strong>Principal Amount:</strong> PKR {{ loan.principal_amount|floatformat:2|intcomma }}</div>
+          <div><strong>Total Repaid:</strong> PKR {{ loan.total_repaid|floatformat:2|intcomma }}</div>
+          <div><strong>Outstanding Balance:</strong> PKR {{ loan.remaining_balance|floatformat:2|intcomma }}</div>
+        </div>
+        <p class="text-danger small">This action cannot be undone. All linked repayments will also be removed.</p>
+        <form method="post" class="d-flex justify-content-center gap-2 mt-4">
+          {% csrf_token %}
+          <a href="{% url 'teacher_loan_list' %}" class="btn btn-light border px-4">Cancel</a>
+          <button type="submit" class="btn btn-danger fw-bold px-4">
+            <i class="fas fa-trash me-1"></i> Delete Loan
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

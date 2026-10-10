@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ data.wing_label }} Result Register — {{ selected_exam.name }}</title>
+  <link rel="stylesheet" href="/static/plugins/fontawesome-free/css/all.min.css">
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm 6mm;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      background: #f1f5f9;
+      color: #000;
+      margin: 0;
+      padding: 15px;
+    }
+    .print-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .page-sheet {
+      background: #fff;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      page-break-after: always;
+    }
+    .page-sheet:last-child {
+      page-break-after: auto;
+    }
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+    }
+    .header-table td {
+      vertical-align: middle;
+    }
+    .school-title {
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+      margin: 0;
+    }
+    .school-sub {
+      font-size: 11px;
+      color: #334155;
+      margin-top: 2px;
+    }
+    .sheet-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+    .summary-box {
+      width: 100%;
+      border: 1.5px solid #0f172a;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 11px;
+    }
+    .summary-box th, .summary-box td {
+      border: 1px solid #475569;
+      padding: 5px 8px;
+      text-align: center;
+    }
+    .summary-box th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      border: 1.5px solid #000;
+      margin-bottom: 14px;
+    }
+    .data-table th, .data-table td {
+      border: 1px solid #000;
+      padding: 4px 4px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .data-table th {
+      background-color: #f8fafc;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .data-table td.text-left {
+      text-align: left;
+      padding-left: 6px;
+    }
+    .sig-row {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 0 10px;
+    }
+    .sig-col {
+      text-align: center;
+      border-top: 1.5px solid #000;
+      padding-top: 4px;
+      min-width: 140px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-radius: 6px;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .page-sheet {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-container">
+  <!-- Interactive Print Toolbar -->
+  <div class="no-print-bar">
+    <div>
+      <strong>{{ data.school_setting.name|default:"KMS" }}</strong> — {{ data.wing_label }} Result Register ({{ selected_exam.name }})
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="window.print()" style="background: #22c55e; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        <i class="fas fa-print"></i> Print / Save PDF
+      </button>
+      <button onclick="window.close()" style="background: #64748b; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Sheet 1: Wing Master Summary & Top Position Holders -->
+  <div class="page-sheet">
+    <table class="header-table">
+      <tr>
+        <td style="width: 80px; text-align: left;">
+          {% if data.school_setting.logo %}
+            <img src="{{ data.school_setting.logo.url }}" alt="Logo" style="max-height: 65px; max-width: 75px;">
+          {% endif %}
+        </td>
+        <td style="text-align: center;">
+          <h1 class="school-title">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h1>
+          <div class="school-sub">{{ data.school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }} &bull; Ph: {{ data.school_setting.contact }}</div>
+          <div class="sheet-title">{{ data.wing_label }} — EXAMINATION RESULT REGISTER & MASTER GAZETTE</div>
+          <div style="font-size: 11px; font-weight: 700; margin-top: 2px;">
+            Term: {{ selected_exam.name }} &bull; Session: {{ selected_exam.session.name }} &bull; Date: {{ print_date|date:"d-M-Y" }}
+          </div>
+        </td>
+        <td style="width: 80px; text-align: right; font-size: 10px;">
+          <strong>Official Gazette</strong><br>KP Board Pattern
+        </td>
+      </tr>
+    </table>
+
+    <!-- Overall Wing Analytics -->
+    <table class="summary-box">
+      <thead>
+        <tr>
+          <th>Total Classes</th>
+          <th>Total Enrolled</th>
+          <th>Appeared</th>
+          <th>Passed</th>
+          <th>Failed</th>
+          <th>Overall Pass %</th>
+          <th>Passing Threshold</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>{{ data.overall_stats.total_classes }}</strong></td>
+          <td>{{ data.overall_stats.total_enrolled }}</td>
+          <td><strong>{{ data.overall_stats.total_appeared }}</strong></td>
+          <td style="color: #16a34a; font-weight: bold;">{{ data.overall_stats.total_passed }}</td>
+          <td style="color: #dc2626; font-weight: bold;">{{ data.overall_stats.total_failed }}</td>
+          <td style="font-weight: 800; font-size: 12px; color: #1e3a8a;">{{ data.overall_stats.pass_percentage }}%</td>
+          <td>{{ data.school_setting.passing_percentage|default:"30" }}% ({{ data.school_setting.passing_rule|default:"Overall" }})</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Grade Breakdown Strip -->
+    <table class="summary-box" style="margin-bottom: 18px;">
+      <thead>
+        <tr>
+          <th colspan="7" style="background: #e2e8f0; font-size: 11px;">OVERALL WING GRADE SUMMARY</th>
+        </tr>
+        <tr>
+          <th>A+ (80%+)</th>
+          <th>A (70-79%)</th>
+          <th>B (60-69%)</th>
+          <th>C (50-59%)</th>
+          <th>D (40-49%)</th>
+          <th>E (Pass)</th>
+          <th>Fail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="font-weight: bold;">
+          {% for g in data.overall_stats.grades_list %}
+            <td>{{ g.count }}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Top Position Holders Honor Roll -->
+    <div style="font-weight: 900; font-size: 12px; margin-bottom: 6px; text-transform: uppercase; color: #0f172a;">
+      <i class="fas fa-trophy text-warning"></i> TOP POSITION HOLDERS — {{ data.wing_label }}
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr style="background-color: #e2e8f0;">
+          <th style="width: 50px;">Position</th>
+          <th style="width: 70px;">Adm #</th>
+          <th>Student Name</th>
+          <th>Father's Name</th>
+          <th>Class & Section</th>
+          <th style="width: 90px;">Marks Obtained</th>
+          <th style="width: 70px;">%age</th>
+          <th style="width: 60px;">Grade</th>
+          <th style="width: 60px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cand in data.top_10_students %}
+        <tr {% if cand.wing_position <= 3 %}style="font-weight: bold; background-color: #fefce8;"{% endif %}>
+          <td style="font-size: 11px;">
+            {% if cand.wing_position == 1 %}1st (Gold){% elif cand.wing_position == 2 %}2nd (Silver){% elif cand.wing_position == 3 %}3rd (Bronze){% else %}{{ cand.wing_position_display }}{% endif %}
+          </td>
+          <td>{{ cand.student.admission_no }}</td>
+          <td class="text-left"><strong>{{ cand.student.full_name }}</strong></td>
+          <td class="text-left">{{ cand.student.father_name|default:"---" }}</td>
+          <td>{{ cand.class_level.name }}</td>
+          <td>{{ cand.obtained_total }} / {{ cand.grand_total_max|floatformat:0 }}</td>
+          <td>{{ cand.percentage }}%</td>
+          <td>{{ cand.grade }}</td>
+          <td style="color: {% if cand.status == 'Pass' %}#16a34a{% else %}#dc2626{% endif %}; font-weight: bold;">{{ cand.status }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="padding: 10px; color: #64748b;">No position holders found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sig-row" style="margin-top: 45px;">
+      <div class="sig-col">Tabulated By</div>
+      <div class="sig-col">Wing Incharge</div>
+      <div class="sig-col">Controller of Examinations</div>
+      <div class="sig-col">Principal / Director</div>
+    </div>
+  </div>
+
+  <!-- Subsequent Sheets: Individual Class Result Registers -->
+  {% for cr in data.class_results %}
+  <div class="page-sheet">
+    <table class="header-table">
+      <tr>
+        <td style="width: 70px;">
+          {% if data.school_setting.logo %}
+            <img src="{{ data.school_setting.logo.url }}" alt="Logo" style="max-height: 50px;">
+          {% endif %}
+        </td>
+        <td style="text-align: center;">
+          <h2 class="school-title" style="font-size: 16px;">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h2>
+          <div class="sheet-title" style="font-size: 13px;">{{ cr.class_level.name }} — OFFICIAL RESULT SHEET</div>
+          <div style="font-size: 10px; font-weight: bold;">
+            Term: {{ selected_exam.name }} &bull; Session: {{ selected_exam.session.name }} &bull; Max Marks: {{ cr.grand_total_max|floatformat:0 }}
+          </div>
+        </td>
+        <td style="width: 140px; text-align: right; font-size: 9.5px;">
+          Enrolled: <strong>{{ cr.stats.total_enrolled }}</strong><br>
+          Appeared: <strong>{{ cr.stats.appeared }}</strong><br>
+          Pass %: <strong>{{ cr.stats.pass_percentage }}%</strong>
+        </td>
+      </tr>
+    </table>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;">S#</th>
+          <th style="width: 50px;">Adm#</th>
+          <th class="text-left" style="min-width: 130px;">Student Name</th>
+          <th class="text-left" style="min-width: 110px;">Father Name</th>
+          {% for cs in cr.class_subjects %}
+            <th title="{{ cs.subject.name }}">
+              {{ cs.subject.short_name }}<br><span style="font-size: 8px; font-weight: normal;">({{ cs.total_marks|floatformat:0 }})</span>
+            </th>
+          {% endfor %}
+          <th style="width: 55px;">Obt.</th>
+          <th style="width: 45px;">%age</th>
+          <th style="width: 40px;">Pos.</th>
+          <th style="width: 35px;">Grd</th>
+          <th style="width: 45px;">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in cr.student_records %}
+        <tr {% if rec.status == 'Fail' %}style="background-color: #fee2e2;"{% endif %}>
+          <td>{{ rec.sr_no }}</td>
+          <td><strong>{{ rec.student.admission_no }}</strong></td>
+          <td class="text-left">{{ rec.student.full_name }}</td>
+          <td class="text-left">{{ rec.student.father_name|default:"---" }}</td>
+          {% for sm in rec.subject_marks %}
+            <td {% if sm.score_display == 'A' or sm.mark_obj and sm.mark_obj.obtained_marks < sm.class_subject.passing_marks %}style="color: #dc2626; font-weight: bold;"{% endif %}>
+              {{ sm.score_display|default:"-" }}
+            </td>
+          {% endfor %}
+          <td><strong>{{ rec.obtained_total|default:"-" }}</strong></td>
+          <td>{% if rec.percentage is not None %}{{ rec.percentage }}%{% else %}-{% endif %}</td>
+          <td><strong>{{ rec.position_display|default:"-" }}</strong></td>
+          <td><strong>{{ rec.grade|default:"-" }}</strong></td>
+          <td style="font-weight: bold; color: {% if rec.status == 'Pass' %}#16a34a{% else %}#dc2626{% endif %};">
+            {{ rec.status }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ cr.class_subjects|length|add:9 }}">No students registered.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sig-row">
+      <div class="sig-col">Class Teacher</div>
+      <div class="sig-col">Tabulator</div>
+      <div class="sig-col">Controller of Exams</div>
+      <div class="sig-col">Principal</div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+</body>
+</html>

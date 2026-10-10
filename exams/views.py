@@ -2357,5 +2357,831 @@ def export_blank_marks_excel(request):
     return excel_download_response(output, filename)
 
 
+# ==============================================================================
+# 1. WING & ALL-CLASS FULL RESULT BOOK / PRINTABLE REGISTERS
+# ==============================================================================
+
+WING_MAP = {
+    "all": {"label": "Entire School (All Classes)", "levels": None},
+    "Primary": {"label": "Primary Wing (Classes 1 - 5)", "levels": ["Primary"]},
+    "Middle": {"label": "Middle Wing (Classes 6 - 8)", "levels": ["Middle"]},
+    "High": {"label": "High School Wing (Classes 9 - 10)", "levels": ["High"]},
+    "Higher Secondary": {"label": "Higher Secondary / College Wing (11th & 12th)", "levels": ["Higher Secondary"]},
+    "Prep": {"label": "Pre-Primary / Junior Wing (Nursery & Prep)", "levels": ["Prep", "KG"]},
+}
+
+
+def _get_wing_result_data(exam, selected_wing_key="all"):
+    """
+    Helper to compile multi-class result matrices, wing statistics,
+    and top overall position holders across the wing or whole school.
+    """
+    school_setting = SchoolSetting.objects.first()
+    pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+
+    wing_info = WING_MAP.get(selected_wing_key, WING_MAP["all"])
+    levels = wing_info["levels"]
+
+    classes_qs = ClassLevel.objects.all().order_by("id")
+    if levels:
+        classes_qs = classes_qs.filter(level__in=levels)
+
+    class_results = []
+    all_appeared_students = []
+
+    total_enrolled = 0
+    total_appeared = 0
+    total_passed = 0
+    total_failed = 0
+    grades_distribution = {"A+": 0, "A": 0, "B": 0, "C": 0, "D": 0, "E": 0, "Fail": 0}
+
+    for cl in classes_qs:
+        subjs, g_total_max, st_records, stats = compute_class_result_matrix(exam, cl)
+        if not st_records and not subjs:
+            continue
+
+        class_results.append({
+            "class_level": cl,
+            "class_subjects": subjs,
+            "grand_total_max": g_total_max,
+            "student_records": st_records,
+            "stats": stats,
+        })
+
+        total_enrolled += stats.get("total_enrolled", 0)
+        total_appeared += stats.get("appeared", 0)
+        total_passed += stats.get("passed", 0)
+        total_failed += stats.get("failed", 0)
+
+        for g_k, g_v in stats.get("grades_count", {}).items():
+            if g_k in grades_distribution:
+                grades_distribution[g_k] += g_v
+
+        for rec in st_records:
+            if rec["has_any_mark"] and not rec["all_absent"] and rec["percentage"] is not None:
+                all_appeared_students.append({
+                    "student": rec["student"],
+                    "class_level": cl,
+                    "obtained_total": rec["obtained_total"],
+                    "obtained_total_num": rec["obtained_total_num"],
+                    "grand_total_max": g_total_max,
+                    "percentage": rec["percentage"],
+                    "grade": rec["grade"],
+                    "status": rec["status"],
+                    "class_position": rec["position_display"],
+                })
+
+    # Sort all appeared students across the wing by percentage descending
+    all_appeared_students.sort(key=lambda x: (x["percentage"], x["obtained_total_num"]), reverse=True)
+
+    # Assign wing-level rank (handling ties)
+    current_rank = 1
+    for idx, cand in enumerate(all_appeared_students):
+        if idx > 0 and cand["percentage"] == all_appeared_students[idx - 1]["percentage"]:
+            cand["wing_position"] = all_appeared_students[idx - 1]["wing_position"]
+        else:
+            cand["wing_position"] = idx + 1
+        cand["wing_position_display"] = get_position_suffix(cand["wing_position"])
+
+    wing_pass_percentage = round((total_passed / total_appeared * 100), 2) if total_appeared > 0 else 0.0
+
+    overall_stats = {
+        "total_classes": len(class_results),
+        "total_enrolled": total_enrolled,
+        "total_appeared": total_appeared,
+        "total_passed": total_passed,
+        "total_failed": total_failed,
+        "pass_percentage": wing_pass_percentage,
+        "grades_distribution": grades_distribution,
+        "grades_list": [{"grade": k, "count": v} for k, v in grades_distribution.items()],
+    }
+
+    # Top position holders (Top 3 and Top 10)
+    top_3_position_holders = [s for s in all_appeared_students if s.get("wing_position", 999) <= 3]
+    top_10_students = all_appeared_students[:10]
+
+    return {
+        "exam": exam,
+        "selected_wing_key": selected_wing_key,
+        "wing_label": wing_info["label"],
+        "class_results": class_results,
+        "overall_stats": overall_stats,
+        "top_3_position_holders": top_3_position_holders,
+        "top_10_students": top_10_students,
+        "all_appeared_students": all_appeared_students,
+        "school_setting": school_setting,
+    }
+
+
+@login_required
+def wing_result_book(request):
+    """
+    Wing-wise and School-wide Full Master Result Register (Screen View).
+    Supports viewing full results for Primary, Middle, High, Higher Sec, or All Classes.
+    """
+    exams = Exam.objects.all().order_by("-is_active", "-created_at")
+    exam_id = request.GET.get("exam_id")
+    selected_exam = Exam.objects.filter(id=exam_id).first() if exam_id else exams.filter(is_active=True).first() or exams.first()
+
+    selected_wing = request.GET.get("wing", "all")
+    if selected_wing not in WING_MAP:
+        selected_wing = "all"
+
+    data = _get_wing_result_data(selected_exam, selected_wing) if selected_exam else None
+
+    context = {
+        "exams": exams,
+        "selected_exam": selected_exam,
+        "selected_wing": selected_wing,
+        "wing_options": [{"key": k, "label": v["label"]} for k, v in WING_MAP.items()],
+        "data": data,
+    }
+    return render(request, "exams/wing_result_book.html", context)
+
+
+@login_required
+def print_wing_result_book(request):
+    """
+    Print-ready / PDF format for Wing-wise or All-Class Full Result Book with official signatures.
+    """
+    exam_id = request.GET.get("exam_id")
+    selected_exam = get_object_or_404(Exam, pk=exam_id) if exam_id else Exam.objects.filter(is_active=True).first() or Exam.objects.first()
+
+    selected_wing = request.GET.get("wing", "all")
+    if selected_wing not in WING_MAP:
+        selected_wing = "all"
+
+    data = _get_wing_result_data(selected_exam, selected_wing)
+
+    context = {
+        "selected_exam": selected_exam,
+        "selected_wing": selected_wing,
+        "data": data,
+        "print_date": timezone.now().date(),
+    }
+    return render(request, "exams/print_wing_result_book.html", context)
+
+
+@login_required
+def export_wing_result_book_excel(request):
+    """
+    Generates a professionally styled Master Excel Workbook for the selected Wing/School result book.
+    """
+    exam_id = request.GET.get("exam_id")
+    selected_exam = get_object_or_404(Exam, pk=exam_id) if exam_id else Exam.objects.filter(is_active=True).first()
+    selected_wing = request.GET.get("wing", "all")
+    if selected_wing not in WING_MAP:
+        selected_wing = "all"
+
+    data = _get_wing_result_data(selected_exam, selected_wing)
+
+    wb = Workbook()
+    # Sheet 1: Summary & Honor Roll
+    ws_sum = wb.active
+    ws_sum.title = "Wing Summary & Honors"
+
+    title_banner = f"{data['school_setting'].name if data['school_setting'] else 'KMS'} - {data['wing_label']} Result Book ({selected_exam.name})"
+    ws_sum.merge_cells("A1:G1")
+    c1 = ws_sum.cell(row=1, column=1, value=title_banner)
+    c1.font = Font(name="Calibri", size=14, bold=True, color="FFFFFF")
+    c1.fill = PatternFill(start_color="1A365D", end_color="1A365D", fill_type="solid")
+    c1.alignment = Alignment(horizontal="center", vertical="center")
+    ws_sum.row_dimensions[1].height = 36
+
+    # Overall KPIs
+    stats = data["overall_stats"]
+    kpis = [
+        ("Total Classes Included", stats["total_classes"]),
+        ("Total Students Enrolled", stats["total_enrolled"]),
+        ("Total Students Appeared", stats["total_appeared"]),
+        ("Total Passed", stats["total_passed"]),
+        ("Total Failed", stats["total_failed"]),
+        ("Overall Wing Pass %", f"{stats['pass_percentage']}%"),
+    ]
+    for idx, (lbl, val) in enumerate(kpis, start=3):
+        ws_sum.cell(row=idx, column=1, value=lbl).font = Font(bold=True)
+        ws_sum.cell(row=idx, column=2, value=val)
+
+    # Top Honor Roll
+    start_r = 11
+    ws_sum.cell(row=start_r, column=1, value="WING / SCHOOL TOP POSITION HOLDERS").font = Font(bold=True, size=12, color="1A365D")
+    headers_top = ["Position", "Roll / Adm #", "Student Name", "Class", "Marks Obtained", "Percentage", "Grade"]
+    for col_i, h in enumerate(headers_top, 1):
+        cell = ws_sum.cell(row=start_r + 1, column=col_i, value=h)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(start_color="2B6CB0", end_color="2B6CB0", fill_type="solid")
+        cell.border = get_thin_border()
+
+    for idx, cand in enumerate(data["top_10_students"], start=start_r + 2):
+        row_vals = [
+            cand.get("wing_position_display", ""),
+            cand["student"].admission_no,
+            cand["student"].full_name,
+            cand["class_level"].name,
+            f"{cand['obtained_total']} / {int(cand['grand_total_max'])}",
+            f"{cand['percentage']}%",
+            cand["grade"],
+        ]
+        for col_i, val in enumerate(row_vals, 1):
+            c = ws_sum.cell(row=idx, column=col_i, value=val)
+            c.border = get_thin_border()
+
+    # Individual Class Sheets
+    for cr in data["class_results"]:
+        cl = cr["class_level"]
+        sheet_title = re.sub(r'[\\/*?:\[\]]', '_', cl.name)[:30]
+        ws_cl = wb.create_sheet(title=sheet_title)
+
+        ws_cl.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(cr["class_subjects"]) + 7)
+        banner = ws_cl.cell(row=1, column=1, value=f"{cl.name} — {selected_exam.name} Result Sheet")
+        banner.font = Font(name="Calibri", size=13, bold=True, color="FFFFFF")
+        banner.fill = PatternFill(start_color="1A365D", end_color="1A365D", fill_type="solid")
+        banner.alignment = Alignment(horizontal="center", vertical="center")
+        ws_cl.row_dimensions[1].height = 32
+
+        headers = ["S#", "Adm #", "Student Name", "Father's Name"]
+        for cs in cr["class_subjects"]:
+            headers.append(cs.header_label)
+        headers.extend(["Obtained", "Total", "%age", "Grade", "Pos", "Status"])
+
+        for col_i, h in enumerate(headers, 1):
+            cell = ws_cl.cell(row=2, column=col_i, value=h)
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill(start_color="2B6CB0", end_color="2B6CB0", fill_type="solid")
+            cell.border = get_thin_border()
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for row_i, rec in enumerate(cr["student_records"], start=3):
+            s = rec["student"]
+            row_data = [rec.get("sr_no", row_i - 2), s.admission_no, s.full_name, s.father_name]
+            for sm in rec["subject_marks"]:
+                row_data.append(sm["score_display"])
+            row_data.extend([
+                rec["obtained_total"],
+                int(cr["grand_total_max"]),
+                f"{rec['percentage']}%" if rec["percentage"] is not None else "",
+                rec["grade"],
+                rec["position_display"],
+                rec["status"],
+            ])
+            for col_i, val in enumerate(row_data, 1):
+                c = ws_cl.cell(row=row_i, column=col_i, value=val)
+                c.border = get_thin_border()
+                c.alignment = Alignment(horizontal="center" if col_i not in (3, 4) else "left", vertical="center")
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    filename = f"Result_Book_{selected_wing}_{selected_exam.name}.xlsx".replace(" ", "_")
+    return excel_download_response(output, filename)
+
+
+# ==============================================================================
+# 2. CONSOLIDATED ANNUAL RESULT (ALL TERMS CUMULATIVE & POSITION HOLDERS)
+# ==============================================================================
+
+def _get_consolidated_annual_data(session, selected_wing_key="all", selected_class_id=None):
+    """
+    Computes cumulative performance across all terms in an academic session:
+    - Term 1, Mid Term, Final Term marks
+    - Cumulative Grand Total, Overall %, Overall Grade, Final Status
+    - Multi-Level Position Holders:
+        1. School-Level Top Positions (1st, 2nd, 3rd) across the whole institution
+        2. Wing-Level Top Positions (1st, 2nd, 3rd in Primary, Middle, High, Higher Sec)
+        3. Class-Level Top Positions (1st, 2nd, 3rd in each class)
+    - Full School-Wide Analytics & Grade Distribution
+    """
+    school_setting = SchoolSetting.objects.first()
+    pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+
+    # Exams in this session, ordered chronologically
+    exams = list(Exam.objects.filter(session=session).order_by("created_at", "id"))
+
+    wing_info = WING_MAP.get(selected_wing_key, WING_MAP["all"])
+    levels = wing_info["levels"]
+
+    classes_qs = ClassLevel.objects.all().order_by("id")
+    if levels:
+        classes_qs = classes_qs.filter(level__in=levels)
+    if selected_class_id:
+        classes_qs = classes_qs.filter(id=selected_class_id)
+
+    # Pre-cache all ExamMark objects for this session
+    marks_qs = ExamMark.objects.filter(
+        exam__in=exams,
+        class_level__in=classes_qs,
+    ).select_related("exam", "student", "class_level", "subject")
+
+    # (student_id, exam_id) -> list of ExamMark
+    student_exam_marks = {}
+    for m in marks_qs:
+        student_exam_marks.setdefault((m.student_id, m.exam_id), []).append(m)
+
+    # Pre-cache ClassSubject max marks per (class_id, exam_id or general)
+    class_subjects_qs = ClassSubject.objects.filter(class_level__in=classes_qs)
+    class_total_max = {}
+    for cs in class_subjects_qs:
+        class_total_max[cs.class_level_id] = class_total_max.get(cs.class_level_id, Decimal("0.0")) + cs.total_marks
+
+    class_cumulative_rows = []
+    all_school_candidates = []
+    wing_candidates_map = {}  # wing_level -> list of candidates
+
+    total_enrolled = 0
+    total_appeared = 0
+    total_passed = 0
+    total_failed = 0
+    school_grades_count = {"A+": 0, "A": 0, "B": 0, "C": 0, "D": 0, "E": 0, "Fail": 0}
+
+    for cl in classes_qs:
+        students = list(Student.objects.filter(current_class=cl, status="Active").order_by("admission_no"))
+        if not students:
+            continue
+
+        c_max_per_exam = float(class_total_max.get(cl.id, Decimal("100.0")))
+        student_records = []
+
+        for s in students:
+            term_details = []
+            cum_obtained = 0.0
+            cum_max = 0.0
+            terms_appeared_count = 0
+            has_failed_any_term = False
+
+            for exam in exams:
+                m_list = student_exam_marks.get((s.id, exam.id), [])
+                if m_list:
+                    terms_appeared_count += 1
+                    t_obtained = sum(float(m.obtained_marks) for m in m_list if not m.is_absent)
+                    t_max = sum(float(m.total_marks) for m in m_list)
+                    if t_max <= 0:
+                        t_max = c_max_per_exam
+                    t_pct = round((t_obtained / t_max * 100), 1) if t_max > 0 else 0.0
+                    t_grade = calculate_grade(t_pct, passing_pct=pass_pct)
+                    t_status = "Pass" if t_pct >= pass_pct else "Fail"
+                    if t_status == "Fail":
+                        has_failed_any_term = True
+
+                    cum_obtained += t_obtained
+                    cum_max += t_max
+                    term_details.append({
+                        "exam": exam,
+                        "obtained": t_obtained,
+                        "total_max": t_max,
+                        "percentage": t_pct,
+                        "grade": t_grade,
+                        "status": t_status,
+                        "appeared": True,
+                    })
+                else:
+                    term_details.append({
+                        "exam": exam,
+                        "obtained": 0.0,
+                        "total_max": c_max_per_exam,
+                        "percentage": 0.0,
+                        "grade": "-",
+                        "status": "Pending",
+                        "appeared": False,
+                    })
+
+            has_any_appearance = (terms_appeared_count > 0)
+            cum_pct = round((cum_obtained / cum_max * 100), 2) if cum_max > 0 else 0.0
+            cum_grade = calculate_grade(cum_pct, passing_pct=pass_pct) if has_any_appearance else "-"
+            final_status = ("Pass" if cum_pct >= pass_pct else "Fail") if has_any_appearance else "Pending"
+
+            rec = {
+                "student": s,
+                "class_level": cl,
+                "term_details": term_details,
+                "terms_appeared_count": terms_appeared_count,
+                "cum_obtained": cum_obtained,
+                "cum_max": cum_max,
+                "cum_percentage": cum_pct,
+                "cum_grade": cum_grade,
+                "final_status": final_status,
+                "has_any_appearance": has_any_appearance,
+                "class_position": None,
+                "class_position_display": "",
+            }
+            student_records.append(rec)
+
+        # 1. Compute Class-Level Position Holders
+        appeared_in_class = [r for r in student_records if r["has_any_appearance"]]
+        appeared_in_class.sort(key=lambda x: (x["cum_percentage"], x["cum_obtained"]), reverse=True)
+        for idx, r in enumerate(appeared_in_class):
+            if idx > 0 and r["cum_percentage"] == appeared_in_class[idx - 1]["cum_percentage"]:
+                r["class_position"] = appeared_in_class[idx - 1]["class_position"]
+            else:
+                r["class_position"] = idx + 1
+            r["class_position_display"] = get_position_suffix(r["class_position"])
+
+        # Class statistics
+        cl_enrolled = len(students)
+        cl_appeared = len(appeared_in_class)
+        cl_passed = len([r for r in appeared_in_class if r["final_status"] == "Pass"])
+        cl_failed = len([r for r in appeared_in_class if r["final_status"] == "Fail"])
+        cl_pass_pct = round((cl_passed / cl_appeared * 100), 2) if cl_appeared > 0 else 0.0
+
+        total_enrolled += cl_enrolled
+        total_appeared += cl_appeared
+        total_passed += cl_passed
+        total_failed += cl_failed
+
+        for r in appeared_in_class:
+            g = r["cum_grade"]
+            if g in school_grades_count:
+                school_grades_count[g] += 1
+            all_school_candidates.append(r)
+            wing_candidates_map.setdefault(cl.level, []).append(r)
+
+        class_cumulative_rows.append({
+            "class_level": cl,
+            "student_records": student_records,
+            "enrolled": cl_enrolled,
+            "appeared": cl_appeared,
+            "passed": cl_passed,
+            "failed": cl_failed,
+            "pass_percentage": cl_pass_pct,
+            "top_3_class": appeared_in_class[:3],
+        })
+
+    # 2. Compute School-Level Top Positions (1st, 2nd, 3rd) across the whole school
+    all_school_candidates.sort(key=lambda x: (x["cum_percentage"], x["cum_obtained"]), reverse=True)
+    for idx, cand in enumerate(all_school_candidates):
+        if idx > 0 and cand["cum_percentage"] == all_school_candidates[idx - 1]["cum_percentage"]:
+            cand["school_position"] = all_school_candidates[idx - 1]["school_position"]
+        else:
+            cand["school_position"] = idx + 1
+        cand["school_position_display"] = get_position_suffix(cand["school_position"])
+
+    school_top_position_holders = [c for c in all_school_candidates if c.get("school_position", 999) <= 3]
+    school_top_10 = all_school_candidates[:10]
+
+    # 3. Compute Wing-Level Top Positions for each wing category
+    wing_top_positions = {}
+    for w_lvl, w_cands in wing_candidates_map.items():
+        w_cands.sort(key=lambda x: (x["cum_percentage"], x["cum_obtained"]), reverse=True)
+        for idx, cand in enumerate(w_cands):
+            if idx > 0 and cand["cum_percentage"] == w_cands[idx - 1]["cum_percentage"]:
+                cand["wing_position"] = w_cands[idx - 1]["wing_position"]
+            else:
+                cand["wing_position"] = idx + 1
+            cand["wing_position_display"] = get_position_suffix(cand["wing_position"])
+        wing_top_positions[w_lvl] = [c for c in w_cands if c.get("wing_position", 999) <= 3]
+
+    overall_school_pass_pct = round((total_passed / total_appeared * 100), 2) if total_appeared > 0 else 0.0
+
+    analytics = {
+        "total_enrolled": total_enrolled,
+        "total_appeared": total_appeared,
+        "total_passed": total_passed,
+        "total_failed": total_failed,
+        "overall_pass_percentage": overall_school_pass_pct,
+        "grades_count": school_grades_count,
+        "grades_list": [{"grade": k, "count": v} for k, v in school_grades_count.items()],
+    }
+
+    return {
+        "session": session,
+        "exams": exams,
+        "selected_wing_key": selected_wing_key,
+        "wing_label": wing_info["label"],
+        "class_cumulative_rows": class_cumulative_rows,
+        "school_top_position_holders": school_top_position_holders,
+        "school_top_10": school_top_10,
+        "wing_top_positions": wing_top_positions,
+        "analytics": analytics,
+        "school_setting": school_setting,
+    }
+
+
+@login_required
+def consolidated_annual_result(request):
+    """
+    Cumulative Annual Result Hub across all terms (1st Term, Mid Term, Final Term).
+    Displays School-Level, Wing-Level, and Class-Level Top Position Holders and School-Wide Pass Analytics.
+    """
+    sessions = AcademicSession.objects.all().order_by("-start_date")
+    session_id = request.GET.get("session_id")
+    selected_session = AcademicSession.objects.filter(id=session_id).first() if session_id else sessions.filter(is_active=True).first() or sessions.first()
+
+    selected_wing = request.GET.get("wing", "all")
+    if selected_wing not in WING_MAP:
+        selected_wing = "all"
+
+    selected_class_id = request.GET.get("class_id") or ""
+
+    classes = ClassLevel.objects.all().order_by("id")
+    if WING_MAP.get(selected_wing, {}).get("levels"):
+        classes = classes.filter(level__in=WING_MAP[selected_wing]["levels"])
+
+    data = _get_consolidated_annual_data(selected_session, selected_wing, selected_class_id if selected_class_id else None) if selected_session else None
+
+    context = {
+        "sessions": sessions,
+        "selected_session": selected_session,
+        "selected_wing": selected_wing,
+        "selected_class_id": selected_class_id,
+        "classes": classes,
+        "wing_options": [{"key": k, "label": v["label"]} for k, v in WING_MAP.items()],
+        "data": data,
+    }
+    return render(request, "exams/consolidated_annual_result.html", context)
+
+
+@login_required
+def print_consolidated_annual_result(request):
+    """
+    Official Printable / PDF Master Sheet for Consolidated Annual Results.
+    """
+    session_id = request.GET.get("session_id")
+    selected_session = get_object_or_404(AcademicSession, pk=session_id) if session_id else AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+
+    selected_wing = request.GET.get("wing", "all")
+    selected_class_id = request.GET.get("class_id") or ""
+
+    data = _get_consolidated_annual_data(selected_session, selected_wing, selected_class_id if selected_class_id else None)
+
+    context = {
+        "selected_session": selected_session,
+        "data": data,
+        "print_date": timezone.now().date(),
+    }
+    return render(request, "exams/print_consolidated_annual_result.html", context)
+
+
+@login_required
+def export_consolidated_annual_excel(request):
+    """
+    Exports Consolidated All-Terms Annual Master Result to Excel.
+    """
+    session_id = request.GET.get("session_id")
+    selected_session = get_object_or_404(AcademicSession, pk=session_id) if session_id else AcademicSession.objects.filter(is_active=True).first()
+    selected_wing = request.GET.get("wing", "all")
+    selected_class_id = request.GET.get("class_id") or ""
+
+    data = _get_consolidated_annual_data(selected_session, selected_wing, selected_class_id if selected_class_id else None)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Annual Cumulative Result"
+
+    title_banner = f"{data['school_setting'].name if data['school_setting'] else 'KMS'} — Annual Cumulative Master Sheet ({selected_session.name})"
+    total_cols = 5 + (len(data["exams"]) * 2) + 4
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=total_cols)
+    banner = ws.cell(row=1, column=1, value=title_banner)
+    banner.font = Font(name="Calibri", size=14, bold=True, color="FFFFFF")
+    banner.fill = PatternFill(start_color="1A365D", end_color="1A365D", fill_type="solid")
+    banner.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 36
+
+    headers = ["S#", "Adm #", "Student Name", "Father's Name", "Class"]
+    for ex in data["exams"]:
+        headers.extend([f"{ex.name} (Obt)", f"{ex.name} (%)"])
+    headers.extend(["Cum. Obtained", "Cum. Max", "Overall %", "Grade", "Class Pos", "Status"])
+
+    for col_i, h in enumerate(headers, 1):
+        c = ws.cell(row=2, column=col_i, value=h)
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill(start_color="2B6CB0", end_color="2B6CB0", fill_type="solid")
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = get_thin_border()
+    ws.row_dimensions[2].height = 28
+
+    curr_row = 3
+    sr_counter = 1
+    for cl_data in data["class_cumulative_rows"]:
+        cl = cl_data["class_level"]
+        for rec in cl_data["student_records"]:
+            s = rec["student"]
+            row_data = [sr_counter, s.admission_no, s.full_name, s.father_name, cl.name]
+            for td in rec["term_details"]:
+                row_data.append(td["obtained"] if td["appeared"] else "-")
+                row_data.append(f"{td['percentage']}%" if td["appeared"] else "-")
+            row_data.extend([
+                rec["cum_obtained"],
+                rec["cum_max"],
+                f"{rec['cum_percentage']}%",
+                rec["cum_grade"],
+                rec["class_position_display"],
+                rec["final_status"],
+            ])
+            for col_i, val in enumerate(row_data, 1):
+                cell = ws.cell(row=curr_row, column=col_i, value=val)
+                cell.border = get_thin_border()
+                cell.alignment = Alignment(horizontal="center" if col_i not in (3, 4) else "left", vertical="center")
+            curr_row += 1
+            sr_counter += 1
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    filename = f"Annual_Cumulative_Result_{selected_session.name}.xlsx".replace(" ", "_")
+    return excel_download_response(output, filename)
+
+
+# ==============================================================================
+# 3. STUDENT MULTI-TERM ACADEMIC EXAM HISTORY / TRANSCRIPT
+# ==============================================================================
+
+@login_required
+def student_exam_history(request, student_id=None):
+    """
+    Complete Multi-Term Examination History and Academic Progress Report for a student.
+    Shows term-by-term breakdown (1st Term, Mid Term, Final Term), subject marks, %ages,
+    grades, position history, and overall pass/fail trajectory.
+    """
+    students_list = Student.objects.filter(status="Active").select_related("current_class", "current_section").order_by("admission_no")
+
+    selected_student = None
+    if student_id:
+        selected_student = get_object_or_404(Student, pk=student_id)
+    else:
+        q_adm = request.GET.get("admission_no", "").strip()
+        q_std = request.GET.get("student_id", "").strip()
+        if q_std:
+            selected_student = Student.objects.filter(id=q_std).first()
+        elif q_adm:
+            selected_student = Student.objects.filter(admission_no=q_adm).first()
+        if not selected_student:
+            selected_student = students_list.first()
+
+    exam_records = []
+    trajectory = []
+    school_setting = SchoolSetting.objects.first()
+    pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+
+    total_exams_appeared = 0
+    total_exams_passed = 0
+    cum_all_obtained = 0.0
+    cum_all_max = 0.0
+
+    if selected_student:
+        # Get all distinct exams where this student has marks recorded
+        distinct_exams = Exam.objects.filter(
+            marks__student=selected_student
+        ).distinct().order_by("session__start_date", "created_at", "id")
+
+        for ex in distinct_exams:
+            total_exams_appeared += 1
+            marks = ExamMark.objects.filter(
+                exam=ex, student=selected_student
+            ).select_related("subject", "class_level").order_by("subject__order", "subject__name")
+
+            cl = marks.first().class_level if marks.exists() else selected_student.current_class
+
+            # Compute student's position in that class for that exam
+            class_subjects, g_max, st_records, stats = compute_class_result_matrix(ex, cl)
+            st_in_matrix = next((r for r in st_records if r["student"].id == selected_student.id), None)
+
+            obtained_sum = sum(float(m.obtained_marks) for m in marks if not m.is_absent)
+            max_sum = sum(float(m.total_marks) for m in marks)
+            if max_sum <= 0:
+                max_sum = float(g_max)
+
+            term_pct = st_in_matrix["percentage"] if (st_in_matrix and st_in_matrix["percentage"] is not None) else (round((obtained_sum / max_sum * 100), 2) if max_sum > 0 else 0.0)
+            term_grade = st_in_matrix["grade"] if st_in_matrix else calculate_grade(term_pct, passing_pct=pass_pct)
+            term_pos = st_in_matrix["position_display"] if st_in_matrix else "-"
+            term_status = st_in_matrix["status"] if st_in_matrix else ("Pass" if term_pct >= pass_pct else "Fail")
+
+            if term_status == "Pass":
+                total_exams_passed += 1
+
+            cum_all_obtained += obtained_sum
+            cum_all_max += max_sum
+
+            # Subject breakdown list
+            subj_list = []
+            for m in marks:
+                s_pct = m.percentage
+                s_status = "Pass" if not m.is_absent and m.obtained_marks >= (m.total_marks * Decimal(str(pass_pct / 100.0))) else "Fail"
+                subj_list.append({
+                    "subject": m.subject,
+                    "obtained": "A" if m.is_absent else (int(m.obtained_marks) if m.obtained_marks % 1 == 0 else m.obtained_marks),
+                    "total": int(m.total_marks) if m.total_marks % 1 == 0 else m.total_marks,
+                    "percentage": s_pct,
+                    "is_absent": m.is_absent,
+                    "status": s_status,
+                })
+
+            exam_records.append({
+                "exam": ex,
+                "class_level": cl,
+                "subjects": subj_list,
+                "obtained_sum": obtained_sum,
+                "max_sum": max_sum,
+                "percentage": term_pct,
+                "grade": term_grade,
+                "position": term_pos,
+                "status": term_status,
+            })
+
+            trajectory.append({
+                "exam_name": ex.name,
+                "percentage": term_pct,
+                "grade": term_grade,
+                "status": term_status,
+                "position": term_pos,
+            })
+
+    career_pct = round((cum_all_obtained / cum_all_max * 100), 2) if cum_all_max > 0 else 0.0
+    career_grade = calculate_grade(career_pct, passing_pct=pass_pct) if cum_all_max > 0 else "-"
+    success_rate = round((total_exams_passed / total_exams_appeared * 100), 1) if total_exams_appeared > 0 else 0.0
+
+    context = {
+        "students_list": students_list,
+        "selected_student": selected_student,
+        "exam_records": exam_records,
+        "trajectory": trajectory,
+        "total_exams_appeared": total_exams_appeared,
+        "total_exams_passed": total_exams_passed,
+        "cum_all_obtained": cum_all_obtained,
+        "cum_all_max": cum_all_max,
+        "career_pct": career_pct,
+        "career_grade": career_grade,
+        "success_rate": success_rate,
+        "school_setting": school_setting,
+    }
+    return render(request, "exams/student_exam_history.html", context)
+
+
+@login_required
+def print_student_exam_history(request, student_id):
+    """
+    Printable Official Academic Transcript / Student DMC History Card.
+    """
+    student = get_object_or_404(Student, pk=student_id)
+    school_setting = SchoolSetting.objects.first()
+    pass_pct = float(school_setting.passing_percentage) if (school_setting and school_setting.passing_percentage) else 30.0
+
+    distinct_exams = Exam.objects.filter(
+        marks__student=student
+    ).distinct().order_by("session__start_date", "created_at", "id")
+
+    exam_records = []
+    cum_all_obtained = 0.0
+    cum_all_max = 0.0
+
+    for ex in distinct_exams:
+        marks = ExamMark.objects.filter(
+            exam=ex, student=student
+        ).select_related("subject", "class_level").order_by("subject__order", "subject__name")
+
+        cl = marks.first().class_level if marks.exists() else student.current_class
+        class_subjects, g_max, st_records, stats = compute_class_result_matrix(ex, cl)
+        st_in_matrix = next((r for r in st_records if r["student"].id == student.id), None)
+
+        obtained_sum = sum(float(m.obtained_marks) for m in marks if not m.is_absent)
+        max_sum = sum(float(m.total_marks) for m in marks)
+        if max_sum <= 0:
+            max_sum = float(g_max)
+
+        term_pct = st_in_matrix["percentage"] if (st_in_matrix and st_in_matrix["percentage"] is not None) else (round((obtained_sum / max_sum * 100), 2) if max_sum > 0 else 0.0)
+        term_grade = st_in_matrix["grade"] if st_in_matrix else calculate_grade(term_pct, passing_pct=pass_pct)
+        term_pos = st_in_matrix["position_display"] if st_in_matrix else "-"
+        term_status = st_in_matrix["status"] if st_in_matrix else ("Pass" if term_pct >= pass_pct else "Fail")
+
+        cum_all_obtained += obtained_sum
+        cum_all_max += max_sum
+
+        subj_list = []
+        for m in marks:
+            subj_list.append({
+                "subject": m.subject,
+                "obtained": "A" if m.is_absent else (int(m.obtained_marks) if m.obtained_marks % 1 == 0 else m.obtained_marks),
+                "total": int(m.total_marks) if m.total_marks % 1 == 0 else m.total_marks,
+                "percentage": m.percentage,
+                "is_absent": m.is_absent,
+            })
+
+        exam_records.append({
+            "exam": ex,
+            "class_level": cl,
+            "subjects": subj_list,
+            "obtained_sum": obtained_sum,
+            "max_sum": max_sum,
+            "percentage": term_pct,
+            "grade": term_grade,
+            "position": term_pos,
+            "status": term_status,
+        })
+
+    career_pct = round((cum_all_obtained / cum_all_max * 100), 2) if cum_all_max > 0 else 0.0
+    career_grade = calculate_grade(career_pct, passing_pct=pass_pct) if cum_all_max > 0 else "-"
+
+    context = {
+        "student": student,
+        "exam_records": exam_records,
+        "cum_all_obtained": cum_all_obtained,
+        "cum_all_max": cum_all_max,
+        "career_pct": career_pct,
+        "career_grade": career_grade,
+        "school_setting": school_setting,
+        "print_date": timezone.now().date(),
+    }
+    return render(request, "exams/print_student_exam_history.html", context)
+
+
+
 
 

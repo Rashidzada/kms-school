@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Annual Cumulative Master Gazette — {{ selected_session.name }}</title>
+  <link rel="stylesheet" href="/static/plugins/fontawesome-free/css/all.min.css">
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm 6mm;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      background: #f1f5f9;
+      color: #000;
+      margin: 0;
+      padding: 15px;
+    }
+    .print-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .page-sheet {
+      background: #fff;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      page-break-after: always;
+    }
+    .page-sheet:last-child {
+      page-break-after: auto;
+    }
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+    }
+    .header-table td {
+      vertical-align: middle;
+    }
+    .school-title {
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+      margin: 0;
+    }
+    .school-sub {
+      font-size: 11px;
+      color: #334155;
+      margin-top: 2px;
+    }
+    .sheet-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+    .summary-box {
+      width: 100%;
+      border: 1.5px solid #0f172a;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 11px;
+    }
+    .summary-box th, .summary-box td {
+      border: 1px solid #475569;
+      padding: 5px 8px;
+      text-align: center;
+    }
+    .summary-box th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      border: 1.5px solid #000;
+      margin-bottom: 14px;
+    }
+    .data-table th, .data-table td {
+      border: 1px solid #000;
+      padding: 4px 4px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .data-table th {
+      background-color: #f8fafc;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .data-table td.text-left {
+      text-align: left;
+      padding-left: 6px;
+    }
+    .sig-row {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 0 10px;
+    }
+    .sig-col {
+      text-align: center;
+      border-top: 1.5px solid #000;
+      padding-top: 4px;
+      min-width: 140px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-radius: 6px;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .page-sheet {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-container">
+  <!-- Interactive Print Toolbar -->
+  <div class="no-print-bar">
+    <div>
+      <strong>{{ data.school_setting.name|default:"KMS" }}</strong> — Annual Cumulative Gazette (Session: {{ selected_session.name }})
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="window.print()" style="background: #22c55e; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        <i class="fas fa-print"></i> Print / Save PDF
+      </button>
+      <button onclick="window.close()" style="background: #64748b; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Sheet 1: Master Executive Summary & Top Honor Rolls -->
+  <div class="page-sheet">
+    <table class="header-table">
+      <tr>
+        <td style="width: 80px; text-align: left;">
+          {% if data.school_setting.logo %}
+            <img src="{{ data.school_setting.logo.url }}" alt="Logo" style="max-height: 65px; max-width: 75px;">
+          {% endif %}
+        </td>
+        <td style="text-align: center;">
+          <h1 class="school-title">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h1>
+          <div class="school-sub">{{ data.school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }} &bull; Ph: {{ data.school_setting.contact }}</div>
+          <div class="sheet-title">ANNUAL CUMULATIVE EXAMINATION MASTER GAZETTE — SESSION {{ selected_session.name }}</div>
+          <div style="font-size: 11px; font-weight: 700; margin-top: 2px;">
+            Terms Evaluated: {% for ex in data.exams %}{{ ex.name }}{% if not forloop.last %} + {% endif %}{% endfor %} &bull; Date: {{ print_date|date:"d-M-Y" }}
+          </div>
+        </td>
+        <td style="width: 80px; text-align: right; font-size: 10px;">
+          <strong>Executive Gazette</strong><br>Annual Honors
+        </td>
+      </tr>
+    </table>
+
+    <!-- Analytics KPI Box -->
+    <table class="summary-box">
+      <thead>
+        <tr>
+          <th>Total Classes</th>
+          <th>Total Enrolled</th>
+          <th>Appeared In Exams</th>
+          <th>Annual Passed</th>
+          <th>Failed / Compartment</th>
+          <th>School-Wide Pass %</th>
+          <th>Passing Threshold</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>{{ data.class_cumulative_rows|length }}</strong></td>
+          <td>{{ data.analytics.total_enrolled }}</td>
+          <td><strong>{{ data.analytics.total_appeared }}</strong></td>
+          <td style="color: #16a34a; font-weight: bold;">{{ data.analytics.total_passed }}</td>
+          <td style="color: #dc2626; font-weight: bold;">{{ data.analytics.total_failed }}</td>
+          <td style="font-weight: 800; font-size: 12px; color: #1e3a8a;">{{ data.analytics.overall_pass_percentage }}%</td>
+          <td>{{ data.school_setting.passing_percentage|default:"30" }}% ({{ data.school_setting.passing_rule|default:"Overall" }})</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Grade Summary Strip -->
+    <table class="summary-box" style="margin-bottom: 14px;">
+      <thead>
+        <tr>
+          <th colspan="7" style="background: #e2e8f0;">ANNUAL OVERALL GRADE DISTRIBUTION</th>
+        </tr>
+        <tr>
+          <th>A+ (80%+)</th>
+          <th>A (70-79%)</th>
+          <th>B (60-69%)</th>
+          <th>C (50-59%)</th>
+          <th>D (40-49%)</th>
+          <th>E (Pass)</th>
+          <th>Fail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="font-weight: bold;">
+          {% for g in data.analytics.grades_list %}
+            <td>{{ g.count }}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 1. School-Level Top Position Holders -->
+    <div style="font-weight: 900; font-size: 12px; margin-bottom: 6px; text-transform: uppercase; color: #0f172a;">
+      <i class="fas fa-crown"></i> SCHOOL-LEVEL TOP POSITION HOLDERS (WHOLE SCHOOL)
+    </div>
+    <table class="data-table" style="margin-bottom: 14px;">
+      <thead>
+        <tr style="background-color: #fef08a;">
+          <th style="width: 70px;">School Pos</th>
+          <th style="width: 70px;">Adm #</th>
+          <th class="text-left">Student Name</th>
+          <th class="text-left">Father's Name</th>
+          <th>Class</th>
+          <th style="width: 100px;">Cumulative Score</th>
+          <th style="width: 70px;">Annual %</th>
+          <th style="width: 60px;">Grade</th>
+          <th style="width: 70px;">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cand in data.school_top_position_holders %}
+        <tr style="font-weight: bold; background-color: #fffbeb;">
+          <td>
+            {% if cand.school_position == 1 %}1st (Gold Medal){% elif cand.school_position == 2 %}2nd (Silver Medal){% elif cand.school_position == 3 %}3rd (Bronze Medal){% else %}{{ cand.school_position_display }}{% endif %}
+          </td>
+          <td>{{ cand.student.admission_no }}</td>
+          <td class="text-left">{{ cand.student.full_name }}</td>
+          <td class="text-left">{{ cand.student.father_name|default:"---" }}</td>
+          <td>{{ cand.class_level.name }}</td>
+          <td>{{ cand.cum_obtained|floatformat:0 }} / {{ cand.cum_max|floatformat:0 }}</td>
+          <td>{{ cand.cum_percentage }}%</td>
+          <td>{{ cand.cum_grade }}</td>
+          <td style="color: #16a34a;">PASS</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="padding: 8px;">No school position holders recorded.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- 2. Wing-Level Top Position Holders -->
+    <div style="font-weight: 900; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; color: #0f172a;">
+      <i class="fas fa-medal"></i> WING / SECTION LEVEL TOP POSITION HOLDERS
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr style="background-color: #f1f5f9;">
+          <th style="width: 110px;">Wing</th>
+          <th style="width: 50px;">Wing Pos</th>
+          <th style="width: 60px;">Adm #</th>
+          <th class="text-left">Student Name</th>
+          <th>Class</th>
+          <th style="width: 90px;">Cumulative Score</th>
+          <th style="width: 65px;">Annual %</th>
+          <th style="width: 50px;">Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w_name, w_cands in data.wing_top_positions.items %}
+          {% for wc in w_cands %}
+          <tr>
+            {% if forloop.first %}
+              <td rowspan="{{ w_cands|length }}" style="font-weight: bold; background: #fafafa;">{{ w_name }} Wing</td>
+            {% endif %}
+            <td><strong>{{ wc.wing_position_display }}</strong></td>
+            <td>{{ wc.student.admission_no }}</td>
+            <td class="text-left"><strong>{{ wc.student.full_name }}</strong> (S/O {{ wc.student.father_name|default:"---" }})</td>
+            <td>{{ wc.class_level.name }}</td>
+            <td>{{ wc.cum_obtained|floatformat:0 }}/{{ wc.cum_max|floatformat:0 }}</td>
+            <td><strong>{{ wc.cum_percentage }}%</strong></td>
+            <td>{{ wc.cum_grade }}</td>
+          </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sig-row" style="margin-top: 35px;">
+      <div class="sig-col">Tabulated By</div>
+      <div class="sig-col">Wing Head</div>
+      <div class="sig-col">Controller of Examinations</div>
+      <div class="sig-col">Principal / Director</div>
+    </div>
+  </div>
+
+  <!-- Subsequent Sheets: Individual Class Annual Cumulative Registers -->
+  {% for cl_data in data.class_cumulative_rows %}
+  <div class="page-sheet">
+    <table class="header-table">
+      <tr>
+        <td style="width: 70px;">
+          {% if data.school_setting.logo %}
+            <img src="{{ data.school_setting.logo.url }}" alt="Logo" style="max-height: 50px;">
+          {% endif %}
+        </td>
+        <td style="text-align: center;">
+          <h2 class="school-title" style="font-size: 16px;">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h2>
+          <div class="sheet-title" style="font-size: 13px;">{{ cl_data.class_level.name }} — ANNUAL CUMULATIVE RESULT GAZETTE</div>
+          <div style="font-size: 10px; font-weight: bold;">
+            Session: {{ selected_session.name }} &bull; All-Terms Consolidated Record
+          </div>
+        </td>
+        <td style="width: 140px; text-align: right; font-size: 9.5px;">
+          Enrolled: <strong>{{ cl_data.enrolled }}</strong><br>
+          Appeared: <strong>{{ cl_data.appeared }}</strong><br>
+          Annual Pass %: <strong>{{ cl_data.pass_percentage }}%</strong>
+        </td>
+      </tr>
+    </table>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;">S#</th>
+          <th style="width: 50px;">Adm#</th>
+          <th class="text-left" style="min-width: 140px;">Student & Father Name</th>
+          {% for ex in data.exams %}
+            <th>{{ ex.name|truncatechars:14 }}<br><span style="font-size: 8px; font-weight: normal;">(Obt / %)</span></th>
+          {% endfor %}
+          <th style="width: 75px;">Cum. Marks</th>
+          <th style="width: 55px;">Annual %</th>
+          <th style="width: 45px;">Class Pos</th>
+          <th style="width: 40px;">Grade</th>
+          <th style="width: 50px;">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in cl_data.student_records %}
+        <tr {% if rec.final_status == 'Fail' %}style="background-color: #fee2e2;"{% endif %}>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ rec.student.admission_no }}</strong></td>
+          <td class="text-left">
+            <strong>{{ rec.student.full_name }}</strong><br>
+            <span style="font-size: 8.5px; color: #475569;">S/O {{ rec.student.father_name|default:"---" }}</span>
+          </td>
+          {% for td in rec.term_details %}
+            <td>
+              {% if td.appeared %}
+                {{ td.obtained|floatformat:0 }}<br><span style="font-size: 8px; {% if td.status == 'Fail' %}color: #dc2626; font-weight: bold;{% endif %}">{{ td.percentage }}%</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          {% endfor %}
+          <td><strong>{{ rec.cum_obtained|floatformat:0 }}</strong> / {{ rec.cum_max|floatformat:0 }}</td>
+          <td><strong>{% if rec.has_any_appearance %}{{ rec.cum_percentage }}%{% else %}-{% endif %}</strong></td>
+          <td><strong>{{ rec.class_position_display|default:"-" }}</strong></td>
+          <td><strong>{{ rec.cum_grade|default:"-" }}</strong></td>
+          <td style="font-weight: bold; color: {% if rec.final_status == 'Pass' %}#16a34a{% else %}#dc2626{% endif %};">
+            {{ rec.final_status }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ data.exams|length|add:8 }}">No students registered.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sig-row">
+      <div class="sig-col">Class Incharge</div>
+      <div class="sig-col">Tabulator</div>
+      <div class="sig-col">Exam Controller</div>
+      <div class="sig-col">Principal</div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Consolidated Annual Multi-Term Results — {{ selected_session.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .kpi-card {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .honor-card-school {
+    background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%);
+    border: 2px solid #ca8a04;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(202, 138, 4, 0.2);
+  }
+  .honor-card-wing {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+  .table-consolidated th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .table-consolidated td {
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+  .term-col {
+    background-color: #f8fafc;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-layer-group text-primary me-2"></i> Consolidated Annual Multi-Term Results
+    </h3>
+    <p class="text-muted small mb-0">
+      Cumulative academic master sheet evaluating 1st Term, Mid Term, and Annual Exam with School-Level and Wing-Level Position Holders.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'print_consolidated_annual_result' %}?session_id={{ selected_session.id }}&wing={{ selected_wing }}&class_id={{ selected_class_id }}" target="_blank" class="btn btn-outline-dark fw-bold shadow-sm">
+      <i class="fas fa-print me-1"></i> Print / PDF Master Gazette
+    </a>
+    <a href="{% url 'export_consolidated_annual_excel' %}?session_id={{ selected_session.id }}&wing={{ selected_wing }}&class_id={{ selected_class_id }}" class="btn btn-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Export Annual Excel
+    </a>
+    <a href="{% url 'wing_result_book' %}" class="btn btn-outline-primary fw-bold shadow-sm">
+      <i class="fas fa-book-open me-1"></i> Term Result Books
+    </a>
+  </div>
+</div>
+
+<!-- Filter Toolbar -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-body p-3">
+    <form method="GET" class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <label class="form-label small fw-bold text-muted mb-1">Academic Session</label>
+        <select name="session_id" class="form-select" onchange="this.form.submit()">
+          {% for s in sessions %}
+            <option value="{{ s.id }}" {% if selected_session.id == s.id %}selected{% endif %}>
+              {{ s.name }} {% if s.is_active %}[Active]{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small fw-bold text-muted mb-1">School Wing / Section</label>
+        <div class="d-flex flex-wrap gap-1">
+          {% for w in wing_options %}
+            <a href="?session_id={{ selected_session.id }}&wing={{ w.key }}"
+               class="btn btn-sm {% if selected_wing == w.key and not selected_class_id %}btn-primary fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %}">
+              {{ w.label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted mb-1">Class Filter (Optional)</label>
+        <select name="class_id" class="form-select" onchange="this.form.submit()">
+          <option value="">All Classes in {{ data.wing_label }}</option>
+          {% for c in classes %}
+            <option value="{{ c.id }}" {% if selected_class_id == c.id|stringformat:"i" %}selected{% endif %}>
+              {{ c.name }} ({{ c.level }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if data %}
+<!-- Terms Included Strip -->
+<div class="alert alert-secondary py-2 px-3 mb-4 d-flex flex-wrap justify-content-between align-items-center">
+  <div class="small">
+    <i class="fas fa-check-circle text-success me-1"></i> Evaluated Terms in Session <strong>{{ selected_session.name }}</strong>:
+    {% for ex in data.exams %}
+      <span class="badge bg-dark me-1">{{ ex.name }}</span>
+    {% empty %}
+      <span class="text-danger fw-bold">No exam terms configured in this session yet.</span>
+    {% endfor %}
+  </div>
+  <div class="small text-muted">
+    Passing Threshold: <strong>{{ data.school_setting.passing_percentage|default:"30" }}%</strong>
+  </div>
+</div>
+
+<!-- 1. Overall School Performance KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-primary border-4">
+      <div class="small text-muted text-uppercase fw-bold">Total Students Enrolled</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ data.analytics.total_enrolled }}</h3>
+      <span class="small text-muted">Across {{ data.class_cumulative_rows|length }} Classes</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-info border-4">
+      <div class="small text-muted text-uppercase fw-bold">Appeared In Examinations</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ data.analytics.total_appeared }}</h3>
+      <span class="small text-muted">Active Paper Takers</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-success border-4">
+      <div class="small text-muted text-uppercase fw-bold">Passed & Promoted</div>
+      <h3 class="fw-bold mb-0 text-success">{{ data.analytics.total_passed }} <span class="fs-6 text-muted">({{ data.analytics.overall_pass_percentage }}%)</span></h3>
+      <span class="small text-muted">Overall Annual Pass Percentage</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-danger border-4">
+      <div class="small text-muted text-uppercase fw-bold">Failed / Compartment</div>
+      <h3 class="fw-bold mb-0 text-danger">{{ data.analytics.total_failed }}</h3>
+      <span class="small text-muted">Did not meet minimum cutoff</span>
+    </div>
+  </div>
+</div>
+
+<!-- Overall School Grade Distribution -->
+<div class="card mb-4 border-0 shadow-sm bg-light">
+  <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <span class="fw-bold text-dark small text-uppercase">
+      <i class="fas fa-chart-pie me-1 text-primary"></i> School-Wide Cumulative Grades:
+    </span>
+    <div class="d-flex flex-wrap gap-2">
+      {% for g in data.analytics.grades_list %}
+        <span class="badge {% if g.grade == 'A+' or g.grade == 'A' %}bg-success{% elif g.grade == 'B' %}bg-primary{% elif g.grade == 'C' %}bg-info text-dark{% elif g.grade == 'D' %}bg-warning text-dark{% elif g.grade == 'E' %}bg-secondary{% else %}bg-danger{% endif %} px-3 py-2 fs-6">
+          Grade {{ g.grade }}: <strong>{{ g.count }}</strong>
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- 2. School-Level Top Position Holders (Top 1st, 2nd, 3rd in the entire school) -->
+{% if data.school_top_position_holders %}
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+    <h5 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-crown text-warning me-2"></i> School-Level Overall Position Holders (All-Terms Cumulative)
+    </h5>
+    <span class="badge bg-warning text-dark fw-bold">Top 3 Across Whole School</span>
+  </div>
+  <div class="card-body p-3">
+    <div class="row g-3">
+      {% for cand in data.school_top_position_holders %}
+      <div class="col-md-4">
+        <div class="honor-card-school p-3 h-100">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4
+              {% if cand.school_position == 1 %}bg-warning text-dark{% elif cand.school_position == 2 %}bg-secondary text-white{% else %}bg-dark text-white{% endif %}"
+              style="width: 56px; height: 56px; min-width: 56px; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">
+              {{ cand.school_position_display }}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <span class="badge bg-danger text-uppercase mb-1" style="font-size: 8px;">
+                {% if cand.school_position == 1 %}1st in Whole School{% elif cand.school_position == 2 %}2nd in Whole School{% else %}3rd in Whole School{% endif %}
+              </span>
+              <h5 class="fw-bold text-dark mb-0 text-truncate">{{ cand.student.full_name }}</h5>
+              <div class="small text-muted">S/O {{ cand.student.father_name|default:"---" }}</div>
+              <div class="small fw-bold text-primary">
+                {{ cand.class_level.name }} &bull; Adm #{{ cand.student.admission_no }}
+              </div>
+            </div>
+          </div>
+          <hr class="my-2 border-warning">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="small text-muted">Cumulative:</span>
+              <strong class="text-dark">{{ cand.cum_obtained|floatformat:0 }} / {{ cand.cum_max|floatformat:0 }}</strong>
+            </div>
+            <div>
+              <span class="badge bg-success fs-6">{{ cand.cum_percentage }}%</span>
+              <span class="badge bg-dark fs-6">{{ cand.cum_grade }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- 3. Wing-Level Position Holders (Primary, Middle, High, Higher Sec) -->
+{% if data.wing_top_positions %}
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header bg-white py-3 border-bottom">
+    <h5 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-medal text-primary me-2"></i> Wing-Level Position Holders (Section / Wing Ranks)
+    </h5>
+  </div>
+  <div class="card-body p-3">
+    <div class="row g-4">
+      {% for w_name, w_cands in data.wing_top_positions.items %}
+      <div class="col-md-6">
+        <div class="card h-100 border">
+          <div class="card-header bg-light py-2 fw-bold text-primary d-flex justify-content-between">
+            <span>{{ w_name }} Wing Top Students</span>
+            <span class="badge bg-primary">{{ w_cands|length }} Honors</span>
+          </div>
+          <div class="card-body p-2">
+            <div class="list-group list-group-flush">
+              {% for wc in w_cands %}
+              <div class="list-group-item d-flex justify-content-between align-items-center px-2 py-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge {% if wc.wing_position == 1 %}bg-warning text-dark{% elif wc.wing_position == 2 %}bg-secondary text-white{% else %}bg-dark text-white{% endif %}">
+                    {{ wc.wing_position_display }}
+                  </span>
+                  <div>
+                    <div class="fw-bold text-dark mb-0">{{ wc.student.full_name }}</div>
+                    <small class="text-muted">{{ wc.class_level.name }} &bull; Adm #{{ wc.student.admission_no }}</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-success">{{ wc.cum_percentage }}%</span>
+                  <div class="small text-muted">{{ wc.cum_obtained|floatformat:0 }}/{{ wc.cum_max|floatformat:0 }}</div>
+                </div>
+              </div>
+              {% empty %}
+              <div class="p-2 text-muted small text-center">No candidates in this wing.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- 4. Class-by-Class Cumulative All-Terms Result Matrices -->
+{% for cl_data in data.class_cumulative_rows %}
+<div class="card mb-4 border-0 shadow-sm" id="class-{{ cl_data.class_level.id }}">
+  <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+    <div>
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="fas fa-graduation-cap text-primary me-2"></i> {{ cl_data.class_level.name }} — Cumulative Annual Sheet
+      </h5>
+      <span class="small text-muted">
+        Enrolled: <strong>{{ cl_data.enrolled }}</strong> &bull;
+        Appeared: <strong>{{ cl_data.appeared }}</strong> &bull;
+        Passed: <strong class="text-success">{{ cl_data.passed }}</strong> &bull;
+        Failed: <strong class="text-danger">{{ cl_data.failed }}</strong> &bull;
+        Annual Pass %: <strong class="text-primary">{{ cl_data.pass_percentage }}%</strong>
+      </span>
+    </div>
+    <div>
+      <!-- Class 1st, 2nd, 3rd quick badge -->
+      {% for top_s in cl_data.top_3_class %}
+        <span class="badge {% if top_s.class_position == 1 %}bg-warning text-dark{% elif top_s.class_position == 2 %}bg-secondary{% else %}bg-dark{% endif %} me-1" title="{{ top_s.student.full_name }} ({{ top_s.cum_percentage }}%)">
+          {{ top_s.class_position_display }}: {{ top_s.student.full_name|truncatechars:12 }}
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-consolidated mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th class="text-center" style="width: 40px;">S#</th>
+            <th class="text-center" style="width: 65px;">Adm#</th>
+            <th style="min-width: 160px;">Student & Father</th>
+            {% for ex in data.exams %}
+              <th class="text-center" style="min-width: 90px;" title="{{ ex.name }}">
+                {{ ex.name|truncatechars:16 }}<br>
+                <small class="opacity-75">Obt / %</small>
+              </th>
+            {% endfor %}
+            <th class="text-center" style="width: 95px;">Cum. Marks</th>
+            <th class="text-center" style="width: 75px;">Overall %</th>
+            <th class="text-center" style="width: 65px;">Class Pos</th>
+            <th class="text-center" style="width: 55px;">Grade</th>
+            <th class="text-center" style="width: 70px;">Result</th>
+            <th class="text-center" style="width: 65px;">History</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in cl_data.student_records %}
+          <tr class="{% if rec.final_status == 'Fail' %}table-danger-subtle{% endif %}">
+            <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
+            <td class="text-center fw-bold">{{ rec.student.admission_no }}</td>
+            <td>
+              <div class="fw-bold text-dark">{{ rec.student.full_name }}</div>
+              <small class="text-muted">S/O {{ rec.student.father_name|default:"---" }}</small>
+            </td>
+            {% for td in rec.term_details %}
+              <td class="text-center term-col">
+                {% if td.appeared %}
+                  <strong>{{ td.obtained|floatformat:0 }}</strong><br>
+                  <span class="small {% if td.status == 'Fail' %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                    {{ td.percentage }}%
+                  </span>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+            {% endfor %}
+            <td class="text-center fw-bold text-dark">
+              {{ rec.cum_obtained|floatformat:0 }} <small class="text-muted">/ {{ rec.cum_max|floatformat:0 }}</small>
+            </td>
+            <td class="text-center fw-bold">
+              {% if rec.has_any_appearance %}{{ rec.cum_percentage }}%{% else %}-{% endif %}
+            </td>
+            <td class="text-center">
+              {% if rec.class_position %}
+                <span class="badge {% if rec.class_position == 1 %}bg-warning text-dark{% elif rec.class_position == 2 %}bg-secondary{% elif rec.class_position == 3 %}bg-info text-dark{% else %}bg-light text-dark border{% endif %}">
+                  {{ rec.class_position_display }}
+                </span>
+              {% else %}-{% endif %}
+            </td>
+            <td class="text-center fw-bold">
+              {% if rec.cum_grade and rec.cum_grade != '-' %}
+                <span class="badge {% if rec.cum_grade in 'A+ A' %}bg-success{% elif rec.cum_grade == 'B' %}bg-primary{% elif rec.cum_grade in 'C D' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                  {{ rec.cum_grade }}
+                </span>
+              {% else %}-{% endif %}
+            </td>
+            <td class="text-center fw-bold">
+              {% if rec.final_status == "Pass" %}
+                <span class="badge bg-success">PASS</span>
+              {% elif rec.final_status == "Fail" %}
+                <span class="badge bg-danger">FAIL</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ rec.final_status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <a href="{% url 'student_exam_history_detail' rec.student.id %}" class="btn btn-sm btn-outline-primary py-0 px-2" title="View Multi-Term History">
+                <i class="fas fa-history"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ data.exams|length|add:9 }}" class="text-center py-4 text-muted">
+              No students enrolled in {{ cl_data.class_level.name }}.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

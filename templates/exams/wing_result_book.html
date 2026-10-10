@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ data.wing_label|default:"Wing Result Book" }} — {{ selected_exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .kpi-card {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .honor-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.15s ease;
+  }
+  .honor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+  }
+  .badge-pos-1 { background: #d97706; color: #fff; }
+  .badge-pos-2 { background: #475569; color: #fff; }
+  .badge-pos-3 { background: #b45309; color: #fff; }
+  .table-matrix th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .table-matrix td {
+    font-size: 0.86rem;
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-book-open text-primary me-2"></i> {{ data.wing_label|default:"Wing & School Master Result Book" }}
+    </h3>
+    <p class="text-muted small mb-0">
+      Term: <strong class="text-primary">{{ selected_exam.name }}</strong> (Session: {{ selected_exam.session.name }})
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'print_wing_result_book' %}?exam_id={{ selected_exam.id }}&wing={{ selected_wing }}" target="_blank" class="btn btn-outline-dark fw-bold shadow-sm">
+      <i class="fas fa-print me-1"></i> Print / PDF Full Register
+    </a>
+    <a href="{% url 'export_wing_result_book_excel' %}?exam_id={{ selected_exam.id }}&wing={{ selected_wing }}" class="btn btn-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Export Master Excel
+    </a>
+    <a href="{% url 'consolidated_annual_result' %}" class="btn btn-outline-primary fw-bold shadow-sm">
+      <i class="fas fa-layer-group me-1"></i> Consolidated All-Terms
+    </a>
+  </div>
+</div>
+
+<!-- Controls & Filter Toolbar -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-body p-3">
+    <form method="GET" class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted mb-1">Select Examination Term</label>
+        <select name="exam_id" class="form-select" onchange="this.form.submit()">
+          {% for ex in exams %}
+            <option value="{{ ex.id }}" {% if selected_exam.id == ex.id %}selected{% endif %}>
+              {{ ex.name }} ({{ ex.session.name }}) {% if ex.is_active %}[Active]{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label small fw-bold text-muted mb-1">School Wing / Section Category</label>
+        <div class="d-flex flex-wrap gap-1">
+          {% for w in wing_options %}
+            <a href="?exam_id={{ selected_exam.id }}&wing={{ w.key }}"
+               class="btn btn-sm {% if selected_wing == w.key %}btn-primary fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %}">
+              {{ w.label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if data %}
+<!-- Overall Statistics Strip -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-primary border-4">
+      <div class="small text-muted text-uppercase fw-bold">Classes Included</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ data.overall_stats.total_classes }}</h3>
+      <span class="small text-muted">{{ data.overall_stats.total_enrolled }} Total Enrolled Students</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-info border-4">
+      <div class="small text-muted text-uppercase fw-bold">Students Appeared</div>
+      <h3 class="fw-bold mb-0 text-dark">{{ data.overall_stats.total_appeared }}</h3>
+      <span class="small text-muted">Active Paper Takers</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-success border-4">
+      <div class="small text-muted text-uppercase fw-bold">Passed & Success Rate</div>
+      <h3 class="fw-bold mb-0 text-success">{{ data.overall_stats.total_passed }} <span class="fs-6 text-muted">({{ data.overall_stats.pass_percentage }}%)</span></h3>
+      <span class="small text-muted">Passing Cutoff: {{ data.school_setting.passing_percentage|default:"30" }}%</span>
+    </div>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <div class="kpi-card border-start border-danger border-4">
+      <div class="small text-muted text-uppercase fw-bold">Failed / Compartment</div>
+      <h3 class="fw-bold mb-0 text-danger">{{ data.overall_stats.total_failed }}</h3>
+      <span class="small text-muted">Needs Remedial Attention</span>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Distribution Badge Bar -->
+<div class="card mb-4 border-0 shadow-sm bg-light">
+  <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <span class="fw-bold text-dark small text-uppercase">
+      <i class="fas fa-chart-pie me-1 text-primary"></i> Wing Grade Distribution:
+    </span>
+    <div class="d-flex flex-wrap gap-2">
+      {% for g in data.overall_stats.grades_list %}
+        <span class="badge {% if g.grade == 'A+' or g.grade == 'A' %}bg-success{% elif g.grade == 'B' %}bg-primary{% elif g.grade == 'C' %}bg-info text-dark{% elif g.grade == 'D' %}bg-warning text-dark{% elif g.grade == 'E' %}bg-secondary{% else %}bg-danger{% endif %} px-3 py-2 fs-6">
+          Grade {{ g.grade }}: <strong>{{ g.count }}</strong>
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Wing Top 3 Honor Roll Cards -->
+{% if data.top_3_position_holders %}
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-trophy text-warning me-2"></i> Top Position Holders — {{ data.wing_label }}
+    </h5>
+    <span class="badge bg-warning text-dark fw-bold">Official Honor Roll</span>
+  </div>
+  <div class="card-body p-3">
+    <div class="row g-3">
+      {% for cand in data.top_3_position_holders %}
+      <div class="col-md-4">
+        <div class="honor-card p-3 h-100 position-relative">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4
+              {% if cand.wing_position == 1 %}badge-pos-1{% elif cand.wing_position == 2 %}badge-pos-2{% else %}badge-pos-3{% endif %}"
+              style="width: 54px; height: 54px; min-width: 54px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+              {{ cand.wing_position_display }}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <h6 class="fw-bold text-dark mb-0 text-truncate">{{ cand.student.full_name }}</h6>
+              <div class="small text-muted">S/O {{ cand.student.father_name|default:"---" }}</div>
+              <div class="small fw-semibold text-primary">
+                {{ cand.class_level.name }} &bull; Adm #{{ cand.student.admission_no }}
+              </div>
+            </div>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="small text-muted">Score:</span>
+              <strong class="text-dark">{{ cand.obtained_total }}/{{ cand.grand_total_max|floatformat:0 }}</strong>
+            </div>
+            <div>
+              <span class="badge bg-success fs-6">{{ cand.percentage }}%</span>
+              <span class="badge bg-dark fs-6">{{ cand.grade }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Class-by-Class Result Sheets -->
+{% for cr in data.class_results %}
+<div class="card mb-4 border-0 shadow-sm" id="class-{{ cr.class_level.id }}">
+  <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+    <div>
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="fas fa-chalkboard text-primary me-2"></i> {{ cr.class_level.name }}
+      </h5>
+      <span class="small text-muted">
+        Enrolled: <strong>{{ cr.stats.total_enrolled }}</strong> &bull;
+        Appeared: <strong>{{ cr.stats.appeared }}</strong> &bull;
+        Passed: <strong class="text-success">{{ cr.stats.passed }}</strong> &bull;
+        Failed: <strong class="text-danger">{{ cr.stats.failed }}</strong> &bull;
+        Pass %: <strong class="text-primary">{{ cr.stats.pass_percentage }}%</strong> &bull;
+        Class Max: <strong>{{ cr.grand_total_max|floatformat:0 }}</strong>
+      </span>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'print_class_result_sheet' %}?exam_id={{ selected_exam.id }}&class_id={{ cr.class_level.id }}" target="_blank" class="btn btn-sm btn-outline-dark">
+        <i class="fas fa-print me-1"></i> Print Class Sheet
+      </a>
+      <a href="{% url 'bulk_dmc_print' %}?exam_id={{ selected_exam.id }}&class_id={{ cr.class_level.id }}" target="_blank" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-id-card me-1"></i> Print All DMCs
+      </a>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-matrix mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th class="text-center" style="width: 45px;">S#</th>
+            <th class="text-center" style="width: 75px;">Adm #</th>
+            <th style="min-width: 170px;">Student & Father</th>
+            {% for cs in cr.class_subjects %}
+              <th class="text-center" title="{{ cs.subject.name }} (Max: {{ cs.total_marks|floatformat:0 }}, Pass: {{ cs.passing_marks|floatformat:0 }})">
+                {{ cs.subject.short_name }}<br><small class="opacity-75">({{ cs.total_marks|floatformat:0 }})</small>
+              </th>
+            {% endfor %}
+            <th class="text-center" style="width: 80px;">Obt.</th>
+            <th class="text-center" style="width: 70px;">%age</th>
+            <th class="text-center" style="width: 65px;">Pos.</th>
+            <th class="text-center" style="width: 60px;">Grade</th>
+            <th class="text-center" style="width: 70px;">Status</th>
+            <th class="text-center" style="width: 70px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in cr.student_records %}
+          <tr class="{% if rec.status == 'Fail' %}table-danger-subtle{% endif %}">
+            <td class="text-center fw-bold text-muted">{{ rec.sr_no }}</td>
+            <td class="text-center fw-bold">{{ rec.student.admission_no }}</td>
+            <td>
+              <div class="fw-bold text-dark">{{ rec.student.full_name }}</div>
+              <small class="text-muted">S/O {{ rec.student.father_name|default:"---" }}</small>
+            </td>
+            {% for sm in rec.subject_marks %}
+              <td class="text-center {% if sm.score_display == 'A' %}text-danger fw-bold{% elif sm.mark_obj and sm.mark_obj.obtained_marks < sm.class_subject.passing_marks %}text-danger fw-bold{% endif %}">
+                {{ sm.score_display|default:"-" }}
+              </td>
+            {% endfor %}
+            <td class="text-center fw-bold text-dark">{{ rec.obtained_total|default:"-" }}</td>
+            <td class="text-center fw-bold">
+              {% if rec.percentage is not None %}{{ rec.percentage }}%{% else %}-{% endif %}
+            </td>
+            <td class="text-center">
+              {% if rec.position %}
+                <span class="badge {% if rec.position == 1 %}bg-warning text-dark{% elif rec.position == 2 %}bg-secondary{% elif rec.position == 3 %}bg-info text-dark{% else %}bg-light text-dark border{% endif %}">
+                  {{ rec.position_display }}
+                </span>
+              {% else %}-{% endif %}
+            </td>
+            <td class="text-center fw-bold">
+              {% if rec.grade %}
+                <span class="badge {% if rec.grade in 'A+ A' %}bg-success{% elif rec.grade == 'B' %}bg-primary{% elif rec.grade in 'C D' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                  {{ rec.grade }}
+                </span>
+              {% else %}-{% endif %}
+            </td>
+            <td class="text-center fw-bold">
+              {% if rec.status == "Pass" %}
+                <span class="badge bg-success">PASS</span>
+              {% elif rec.status == "Fail" %}
+                <span class="badge bg-danger">FAIL</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ rec.status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <a href="{% url 'student_exam_history_detail' rec.student.id %}" class="btn btn-sm btn-outline-info py-0 px-1" title="View Full Exam History">
+                <i class="fas fa-history"></i>
+              </a>
+              <a href="{% url 'student_dmc' rec.student.id selected_exam.id %}" target="_blank" class="btn btn-sm btn-outline-dark py-0 px-1" title="Print DMC">
+                <i class="fas fa-file-alt"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ cr.class_subjects|length|add:9 }}" class="text-center py-4 text-muted">
+              No students or recorded marks for {{ cr.class_level.name }}.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="alert alert-info py-4 text-center">
+  <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+  No active classes found for this category or no examination marks recorded yet.
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

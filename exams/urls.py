@@ -25,4 +25,19 @@ urlpatterns = [
     path("roll-number/<int:student_id>/<int:exam_id>/", views.single_student_roll_number_slip, name="student_roll_number_slip_exam"),
     path("blank-sheet/", views.blank_marks_sheet, name="blank_marks_sheet"),
     path("blank-sheet/export/", views.export_blank_marks_excel, name="export_blank_marks_excel"),
+
+    # Wing & Whole-School Master Result Books
+    path("wing-result/", views.wing_result_book, name="wing_result_book"),
+    path("wing-result/print/", views.print_wing_result_book, name="print_wing_result_book"),
+    path("wing-result/export/", views.export_wing_result_book_excel, name="export_wing_result_book_excel"),
+
+    # Consolidated Annual Results (All Terms Cumulative & Top Position Holders)
+    path("consolidated-annual/", views.consolidated_annual_result, name="consolidated_annual_result"),
+    path("consolidated-annual/print/", views.print_consolidated_annual_result, name="print_consolidated_annual_result"),
+    path("consolidated-annual/export/", views.export_consolidated_annual_excel, name="export_consolidated_annual_excel"),
+
+    # Student Multi-Term Academic History & Transcripts
+    path("student-history/", views.student_exam_history, name="student_exam_history"),
+    path("student-history/<int:student_id>/", views.student_exam_history, name="student_exam_history_detail"),
+    path("student-history/<int:student_id>/print/", views.print_student_exam_history, name="print_student_exam_history"),
 ]

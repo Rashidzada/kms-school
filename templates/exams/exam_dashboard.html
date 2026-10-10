@@ -14,20 +14,20 @@
     </p>
   </div>
   <div class="d-flex flex-wrap gap-2">
-    <a href="{% url 'blank_marks_sheet' %}" class="btn btn-outline-primary fw-bold shadow-sm">
-      <i class="fas fa-file-alt me-1"></i> Blank Marks Sheet
+    <a href="{% url 'wing_result_book' %}" class="btn btn-primary fw-bold shadow-sm">
+      <i class="fas fa-book-open me-1"></i> Wing Result Books
     </a>
-    <a href="{% url 'roll_number_slips' %}" class="btn btn-dark fw-bold shadow-sm">
-      <i class="fas fa-id-badge me-1"></i> Roll Number Slips
+    <a href="{% url 'consolidated_annual_result' %}" class="btn btn-info text-dark fw-bold shadow-sm">
+      <i class="fas fa-layer-group me-1"></i> Consolidated Annual Gazette
+    </a>
+    <a href="{% url 'student_exam_history' %}" class="btn btn-outline-dark fw-bold shadow-sm">
+      <i class="fas fa-history me-1"></i> Student Exam History
     </a>
     <a href="{% url 'class_marks_entry_grid' %}" class="btn btn-warning text-dark fw-bold shadow-sm">
       <i class="fas fa-edit me-1"></i> Enter Marks Grid
     </a>
-    <a href="{% url 'exam_create' %}" class="btn btn-primary fw-bold shadow-sm">
-      <i class="fas fa-plus me-1"></i> New Examination
-    </a>
-    <a href="{% url 'subject_manage' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
-      <i class="fas fa-sliders-h me-1"></i> Class Subjects Setup
+    <a href="{% url 'exam_create' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+      <i class="fas fa-plus me-1"></i> New Exam
     </a>
   </div>
 </div>
@@ -89,6 +89,81 @@
 
 <!-- Main Modules Cards -->
 <div class="row g-4 mb-4">
+  <!-- NEW 1. Wing & School Result Books -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-primary border-4">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
+            <i class="fas fa-book-open fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Wing & School Result Book</h5>
+            <span class="badge bg-primary">Full Term Register & Gazette</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Generate complete multi-class result books for <strong>Primary (1-5)</strong>, <strong>Middle (6-8)</strong>, <strong>High (9-10)</strong>, <strong>College / Higher Sec</strong>, or the entire school. Includes top position holders honor roll, passing statistics, and official PDF print registers.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'wing_result_book' %}" class="btn btn-primary fw-bold flex-grow-1">
+            <i class="fas fa-book-reader me-1"></i> Open Result Books
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW 2. Consolidated Annual Multi-Term Gazette -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-warning border-4">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle me-3">
+            <i class="fas fa-layer-group fa-2x text-warning"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Consolidated Annual Gazette</h5>
+            <span class="badge bg-warning text-dark">All-Terms Cumulative</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Master cumulative evaluation combining <strong>1st Term</strong>, <strong>Mid Term</strong>, and <strong>Final Exam</strong>. Features <strong>School-Level Top Positions (1st, 2nd, 3rd)</strong>, Wing-level ranks, class positions, and comprehensive school-wide pass percentage analytics.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'consolidated_annual_result' %}" class="btn btn-warning text-dark fw-bold flex-grow-1">
+            <i class="fas fa-trophy me-1"></i> Open Annual Gazette
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW 3. Student Academic Exam History -->
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-top border-info border-4">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle me-3">
+            <i class="fas fa-history fa-2x"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1 text-dark">Student Exam History</h5>
+            <span class="badge bg-info text-dark">Official Transcripts</span>
+          </div>
+        </div>
+        <p class="text-muted small flex-grow-1">
+          Look up any student to view their multi-term examination history. Track subject progression from term to term, career percentages, grades, class rank trajectory, and print official student academic transcripts.
+        </p>
+        <div class="d-flex gap-2 mt-3">
+          <a href="{% url 'student_exam_history' %}" class="btn btn-dark fw-bold flex-grow-1">
+            <i class="fas fa-user-graduate me-1"></i> Student Transcripts
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 1. Master Class Result Sheet (Image 1) -->
   <div class="col-md-6">
     <div class="card h-100 shadow-sm border-top border-primary border-3">

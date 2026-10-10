@@ -729,3 +729,171 @@ def export_defaulters_excel(request):
     buffer = create_styled_workbook("Fee Defaulters Ledger", headers, rows, school_name=school_name)
     return excel_download_response(buffer, filename)
 
+
+# ==============================================================================
+# STUDENT & FAMILY OUTSTANDING DUES REMINDER NOTICES (PRINTABLE / PDF SLIPS)
+# ==============================================================================
+
+def _get_student_dues_data(student, session=None):
+    """
+    Helper to extract complete fee dues, unpaid months ledger,
+    and linked family sibling summaries for a student.
+    """
+    if not session:
+        session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+
+    school_setting = SchoolSetting.objects.first()
+    ledger = StudentFeeLedger.objects.filter(student=student, academic_session=session).first()
+    if not ledger and session:
+        ledger = StudentFeeLedger.objects.create(student=student, academic_session=session)
+        initialize_ledger_months(
+            ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
+        )
+
+    unpaid_entries = list(ledger.monthly_entries.filter(is_paid=False).order_by("month")) if ledger else []
+    ledger_entries = list(ledger.monthly_entries.order_by("month")) if ledger else []
+    total_dues = max(Decimal("0.00"), ledger_entries[-1].balance if ledger_entries else Decimal("0.00"))
+
+    family = student.family
+    family_total_dues = Decimal("0.00")
+    family_siblings = []
+    if family and session:
+        for sib in family.students.filter(status="Active").select_related("current_class", "current_section"):
+            sib_ledger = StudentFeeLedger.objects.filter(student=sib, academic_session=session).first()
+            sib_dues = Decimal("0.00")
+            sib_unpaid_count = 0
+            if sib_ledger:
+                sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
+                sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
+                sib_unpaid_count = sib_ledger.monthly_entries.filter(is_paid=False).count()
+            family_total_dues += sib_dues
+            family_siblings.append({
+                "student": sib,
+                "dues": sib_dues,
+                "unpaid_count": sib_unpaid_count,
+            })
+
+    return {
+        "student": student,
+        "session": session,
+        "ledger": ledger,
+        "unpaid_entries": unpaid_entries,
+        "total_dues": total_dues,
+        "family": family,
+        "family_total_dues": family_total_dues,
+        "family_siblings": family_siblings,
+        "school_setting": school_setting,
+    }
+
+
+def _get_family_dues_data(family, session=None):
+    """
+    Helper to extract consolidated family household fee dues across all enrolled siblings.
+    """
+    if not session:
+        session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+
+    school_setting = SchoolSetting.objects.first()
+    fam_students = family.students.filter(status="Active").select_related("current_class", "current_section")
+
+    siblings_data = []
+    grand_total_dues = Decimal("0.00")
+    total_unpaid_months = 0
+
+    for s in fam_students:
+        s_data = _get_student_dues_data(s, session)
+        siblings_data.append(s_data)
+        grand_total_dues += s_data["total_dues"]
+        total_unpaid_months += len(s_data["unpaid_entries"])
+
+    return {
+        "family": family,
+        "session": session,
+        "siblings_data": siblings_data,
+        "grand_total_dues": grand_total_dues,
+        "total_unpaid_months": total_unpaid_months,
+        "school_setting": school_setting,
+    }
+
+
+@login_required
+def student_dues_notice(request, student_id):
+    """
+    Official Printable / PDF Fee Dues Reminder Notice & Payment Chalan for an individual student.
+    """
+    student = get_object_or_404(Student, pk=student_id)
+    session_id = request.GET.get("session")
+    session = AcademicSession.objects.filter(id=session_id).first() if session_id else None
+
+    data = _get_student_dues_data(student, session)
+    context = {
+        "data": data,
+        "student": data["student"],
+        "unpaid_entries": data["unpaid_entries"],
+        "total_dues": data["total_dues"],
+        "family": data["family"],
+        "family_total_dues": data["family_total_dues"],
+        "family_siblings": data["family_siblings"],
+        "school_setting": data["school_setting"],
+        "session": data["session"],
+        "issue_date": timezone.now().date(),
+        "notice_ref": f"REM-ADM{student.admission_no}-{timezone.now().strftime('%Y%m%d')}",
+    }
+    return render(request, "finance/student_dues_notice.html", context)
+
+
+@login_required
+def family_dues_notice(request, household_id):
+    """
+    Official Printable / PDF Consolidated Family Household Fee Dues Reminder Notice.
+    Covers all siblings with individual itemized dues and consolidated household total.
+    """
+    family = get_object_or_404(FamilyHousehold, pk=household_id)
+    session_id = request.GET.get("session")
+    session = AcademicSession.objects.filter(id=session_id).first() if session_id else None
+
+    data = _get_family_dues_data(family, session)
+    context = {
+        "data": data,
+        "family": data["family"],
+        "siblings_data": data["siblings_data"],
+        "grand_total_dues": data["grand_total_dues"],
+        "total_unpaid_months": data["total_unpaid_months"],
+        "school_setting": data["school_setting"],
+        "session": data["session"],
+        "issue_date": timezone.now().date(),
+        "notice_ref": f"FAM-REM-{family.family_id}-{timezone.now().strftime('%Y%m%d')}",
+    }
+    return render(request, "finance/family_dues_notice.html", context)
+
+
+@login_required
+def bulk_student_dues_notices(request):
+    """
+    Batch printable PDF slips for multiple student fee defaulters (e.g. filtered by class).
+    """
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    class_id = request.GET.get("class", "")
+    section_id = request.GET.get("section", "")
+
+    students = Student.objects.filter(status="Active").select_related("current_class", "current_section")
+    if class_id:
+        students = students.filter(current_class_id=class_id)
+    if section_id:
+        students = students.filter(current_section_id=section_id)
+
+    students_dues_list = []
+    for s in students:
+        s_data = _get_student_dues_data(s, active_session)
+        if s_data["total_dues"] > 0:
+            students_dues_list.append(s_data)
+
+    context = {
+        "students_dues_list": students_dues_list,
+        "school_setting": SchoolSetting.objects.first(),
+        "session": active_session,
+        "issue_date": timezone.now().date(),
+    }
+    return render(request, "finance/bulk_student_dues_notices.html", context)
+
+

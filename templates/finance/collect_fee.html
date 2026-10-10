@@ -7,12 +7,34 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-8">
+    <!-- Top Action Bar for Dues PDF & Print Reminder Notices -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Student Profile
+      </a>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-danger fw-bold shadow-sm" title="Print Official Dues Reminder Notice / Chalan for Parents">
+          <i class="fas fa-file-pdf me-1"></i> Print / PDF Dues Notice
+        </a>
+        {% if family %}
+          <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-primary fw-bold shadow-sm" title="Print Full Family Household Dues Reminder Notice">
+            <i class="fas fa-users me-1"></i> Full Family Dues Notice (PDF)
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
     <div class="card shadow-sm border-success">
-      <div class="card-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
+      <div class="card-header bg-success text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <h5 class="fw-bold mb-0">
           <i class="fas fa-money-bill-wave me-2"></i> Collect Student Fee: {{ student.full_name }}
         </h5>
-        <span class="badge bg-white text-success">Adm: {{ student.admission_no }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-warning btn-sm text-dark fw-bold py-1 px-2" title="Print PDF Dues Slip">
+            <i class="fas fa-file-pdf me-1"></i> Dues Slip
+          </a>
+          <span class="badge bg-white text-success">Adm: {{ student.admission_no }}</span>
+        </div>
       </div>
       <div class="card-body p-4">
         <!-- Unpaid months overview -->
@@ -60,11 +82,16 @@
         <div class="row g-2 mb-4">
           <div class="col-md-6">
             <div class="p-3 rounded h-100 {% if student_total_dues > 0 %}bg-danger bg-opacity-10 border border-danger{% else %}bg-success bg-opacity-10 border border-success{% endif %}">
-              <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="small fw-bold text-dark"><i class="fas fa-user-graduate me-1 text-primary"></i> Total Student Dues:</span>
                 <span class="fw-bold {% if student_total_dues > 0 %}text-danger{% else %}text-success{% endif %}">
                   PKR {{ student_total_dues|floatformat:2|intcomma }}
                 </span>
+              </div>
+              <div class="mt-2 text-end">
+                <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.8rem;">
+                  <i class="fas fa-file-pdf me-1"></i> Print Student Dues Notice
+                </a>
               </div>
             </div>
           </div>
@@ -77,9 +104,14 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-2">
                   <small class="text-muted">{{ family_siblings_summary|length }} sibling{{ family_siblings_summary|length|pluralize }} enrolled</small>
-                  <a href="{% url 'family_payment' family.pk %}" class="btn btn-xs btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
-                    Pay All Siblings &rarr;
-                  </a>
+                  <div class="d-flex gap-1">
+                    <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                      <i class="fas fa-file-pdf me-1"></i> Family Notice
+                    </a>
+                    <a href="{% url 'family_payment' family.pk %}" class="btn btn-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                      Pay All &rarr;
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

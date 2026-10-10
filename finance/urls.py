@@ -12,4 +12,7 @@ urlpatterns = [
     path("class-summary/", views.class_fee_summary, name="class_fee_summary"),
     path("defaulters/", views.defaulters_list, name="defaulters_list"),
     path("defaulters/export-excel/", views.export_defaulters_excel, name="export_defaulters_excel"),
+    path("student-dues-notice/<int:student_id>/", views.student_dues_notice, name="student_dues_notice"),
+    path("family-dues-notice/<int:household_id>/", views.family_dues_notice, name="family_dues_notice"),
+    path("bulk-dues-notices/", views.bulk_student_dues_notices, name="bulk_student_dues_notices"),
 ]

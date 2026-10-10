@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Batch Student Fee Dues Reminder Notices — {{ session.name }}</title>
+  <link rel="stylesheet" href="/static/plugins/fontawesome-free/css/all.min.css">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 10mm;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      background: #f1f5f9;
+      color: #000;
+      margin: 0;
+      padding: 15px;
+    }
+    .notice-sheet {
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      background: #fff;
+      padding: 24px 28px;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      page-break-after: always;
+    }
+    .notice-sheet:last-child {
+      page-break-after: auto;
+    }
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-bottom: 2.5px solid #0f172a;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .school-title {
+      font-size: 19px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #0f172a;
+      margin: 0;
+    }
+    .school-sub {
+      font-size: 10.5px;
+      color: #334155;
+      margin-top: 2px;
+    }
+    .doc-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #b91c1c;
+      margin-top: 4px;
+    }
+    .info-table {
+      width: 100%;
+      border: 1.5px solid #000;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 11px;
+    }
+    .info-table td {
+      border: 1px solid #cbd5e1;
+      padding: 5px 8px;
+    }
+    .lbl {
+      background: #f8fafc;
+      font-weight: bold;
+      width: 18%;
+      color: #334155;
+    }
+    .val {
+      font-weight: 600;
+      width: 32%;
+      color: #000;
+    }
+    .dues-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000;
+      font-size: 10.5px;
+      margin-bottom: 14px;
+    }
+    .dues-table th, .dues-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: center;
+    }
+    .dues-table th {
+      background: #f1f5f9;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .total-box {
+      background: #fef2f2;
+      border: 2px solid #b91c1c;
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .total-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #991b1b;
+      text-transform: uppercase;
+    }
+    .total-amount {
+      font-size: 20px;
+      font-weight: 900;
+      color: #b91c1c;
+    }
+    .parent-note-box {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 10px;
+      line-height: 1.45;
+      margin-bottom: 20px;
+      color: #1e293b;
+    }
+    .sig-row {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      font-weight: bold;
+      padding: 0 10px;
+    }
+    .sig-col {
+      text-align: center;
+      border-top: 1.5px solid #000;
+      padding-top: 4px;
+      min-width: 140px;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      max-width: 800px;
+      margin: 0 auto 15px auto;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .notice-sheet {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="no-print-bar">
+  <div>
+    <strong>Batch Fee Dues Reminder Notices ({{ students_dues_list|length }} Students)</strong> &bull; Session: {{ session.name }}
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <button onclick="window.print()" style="background: #22c55e; color: #fff; border: none; padding: 6px 18px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+      <i class="fas fa-print"></i> Print All Notices (PDF)
+    </button>
+    <button onclick="window.close()" style="background: #64748b; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+      Close
+    </button>
+  </div>
+</div>
+
+{% for s_data in students_dues_list %}
+<div class="notice-sheet">
+  <!-- Header -->
+  <table class="header-table">
+    <tr>
+      <td style="width: 70px; text-align: left; vertical-align: middle;">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" style="max-height: 55px; max-width: 65px;">
+        {% endif %}
+      </td>
+      <td style="text-align: center; vertical-align: middle;">
+        <h1 class="school-title">{{ school_setting.name|default:"Kohisar Model School & College" }}</h1>
+        <div class="school-sub">
+          {{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }} &bull; Ph: {{ school_setting.contact }}
+        </div>
+        <div class="doc-title">
+          <i class="fas fa-bell"></i> OUTSTANDING FEE DUES REMINDER NOTICE & PAYMENT CHALAN
+        </div>
+      </td>
+      <td style="width: 100px; text-align: right; vertical-align: middle; font-size: 9.5px;">
+        Date: <strong>{{ issue_date|date:"d.m.Y" }}</strong><br>
+        Session: <strong>{{ session.name }}</strong>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Student Info -->
+  <table class="info-table">
+    <tr>
+      <td class="lbl">Student Name:</td>
+      <td class="val"><strong>{{ s_data.student.full_name }}</strong></td>
+      <td class="lbl">Admission No:</td>
+      <td class="val"><strong style="color: #b91c1c;">{{ s_data.student.admission_no }}</strong></td>
+    </tr>
+    <tr>
+      <td class="lbl">Father's Name:</td>
+      <td class="val">{{ s_data.student.father_name|default:"---" }}</td>
+      <td class="lbl">Class & Section:</td>
+      <td class="val"><strong>{{ s_data.student.current_class.name }} - {{ s_data.student.current_section.name }}</strong></td>
+    </tr>
+    <tr>
+      <td class="lbl">Contact Number:</td>
+      <td class="val">{{ s_data.student.contact_number|default:"---" }}</td>
+      <td class="lbl">Residence:</td>
+      <td class="val">{{ s_data.student.residence|default:"---" }}</td>
+    </tr>
+  </table>
+
+  <!-- Unpaid Months Table -->
+  <table class="dues-table">
+    <thead>
+      <tr>
+        <th style="width: 30px;">S#</th>
+        <th>Month</th>
+        <th>Arrears</th>
+        <th>Monthly Fee</th>
+        <th>Other</th>
+        <th>Total Due</th>
+        <th>Paid</th>
+        <th>Outstanding Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in s_data.unpaid_entries %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><strong>{{ u.get_month_display }}</strong></td>
+        <td>PKR {{ u.arrears|floatformat:0 }}</td>
+        <td>PKR {{ u.monthly_fee|floatformat:0 }}</td>
+        <td>PKR {{ u.exam_fee|add:u.other_charges|floatformat:0 }}</td>
+        <td>PKR {{ u.total_amount|floatformat:0 }}</td>
+        <td style="color: #16a34a;">PKR {{ u.paid_amount|floatformat:0 }}</td>
+        <td style="font-weight: bold; color: #b91c1c;">PKR {{ u.balance|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">No unpaid months.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Total Dues Box -->
+  <div class="total-box">
+    <div>
+      <div class="total-title">Total Outstanding Dues Payable:</div>
+      <small style="color: #475569;">Please deposit at the accounts desk within 7 days</small>
+    </div>
+    <div class="total-amount">
+      PKR {{ s_data.total_dues|floatformat:2 }}
+    </div>
+  </div>
+
+  <div class="parent-note-box">
+    <strong>Notice for Parents:</strong> Please deposit the above outstanding amount at the school accounts desk within <strong>7 days</strong>. Timely fee clearance ensures regular school attendance and exam registration for your child. If already paid, please present the deposit slip for adjustment.
+  </div>
+
+  <div class="sig-row">
+    <div class="sig-col">Accounts Incharge</div>
+    <div class="sig-col">Principal / Director</div>
+    <div class="sig-col">Parent / Guardian Signature</div>
+  </div>
+</div>
+{% empty %}
+<div class="alert alert-info text-center py-5">
+  No students with outstanding dues found in this selection.
+</div>
+{% endfor %}
+
+</body>
+</html>

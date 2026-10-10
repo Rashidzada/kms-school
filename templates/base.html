@@ -89,12 +89,58 @@
       color: #fff;
     }
     .sidebar-section-title {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #a0aec0;
-      padding: 0.8rem 1.25rem 0.3rem;
-      font-weight: 700;
+      letter-spacing: 1.1px;
+      font-weight: 800;
+      padding: 0.42rem 0.85rem;
+      margin: 0.95rem 0.65rem 0.35rem 0.65rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3.5px solid #38bdf8;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+    .sidebar-section-title i {
+      font-size: 0.82rem;
+    }
+    .sidebar-section-core {
+      background: rgba(56, 189, 248, 0.14);
+      border-left-color: #38bdf8;
+      color: #7dd3fc;
+    }
+    .sidebar-section-students {
+      background: rgba(52, 211, 153, 0.14);
+      border-left-color: #34d399;
+      color: #6ee7b7;
+    }
+    .sidebar-section-attendance {
+      background: rgba(251, 191, 36, 0.16);
+      border-left-color: #fbbf24;
+      color: #fde047;
+    }
+    .sidebar-section-exams {
+      background: rgba(167, 139, 250, 0.14);
+      border-left-color: #a78bfa;
+      color: #c4b5fd;
+    }
+    .sidebar-section-teachers {
+      background: rgba(244, 63, 94, 0.14);
+      border-left-color: #f43f5e;
+      color: #fda4af;
+    }
+    .sidebar-section-finance {
+      background: rgba(45, 212, 191, 0.14);
+      border-left-color: #2dd4bf;
+      color: #5eead4;
+    }
+    .sidebar-section-admin {
+      background: rgba(148, 163, 184, 0.16);
+      border-left-color: #94a3b8;
+      color: #f1f5f9;
     }
     .sidebar-nav {
       list-style: none;
@@ -284,7 +330,7 @@
         </div>
       </a>
 
-      <div class="sidebar-section-title">Core Management</div>
+      <div class="sidebar-section-title sidebar-section-core"><i class="fas fa-layer-group me-1"></i> Core Management</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'dashboard' %}" class="nav-link">
@@ -293,7 +339,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">Students & Admissions</div>
+      <div class="sidebar-section-title sidebar-section-students"><i class="fas fa-user-graduate me-1"></i> Students & Admissions</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'student_list' %}" class="nav-link">
@@ -337,7 +383,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">Student Attendance & QR</div>
+      <div class="sidebar-section-title sidebar-section-attendance"><i class="fas fa-qrcode me-1"></i> Student Attendance & QR</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'student_qr_attendance_scan' %}" class="nav-link">
@@ -366,7 +412,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">Examinations & Results</div>
+      <div class="sidebar-section-title sidebar-section-exams"><i class="fas fa-medal me-1"></i> Examinations & Results</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'exam_dashboard' %}" class="nav-link">
@@ -415,7 +461,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">Teachers & Staff</div>
+      <div class="sidebar-section-title sidebar-section-teachers"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers & Staff</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'teacher_list' %}" class="nav-link">
@@ -484,7 +530,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">Fee & Accounts</div>
+      <div class="sidebar-section-title sidebar-section-finance"><i class="fas fa-coins me-1"></i> Fee & Accounts</div>
       <ul class="sidebar-nav">
         <li class="nav-item">
           <a href="{% url 'fee_register' %}" class="nav-link">
@@ -528,7 +574,7 @@
         </li>
       </ul>
 
-      <div class="sidebar-section-title">System & Administration</div>
+      <div class="sidebar-section-title sidebar-section-admin"><i class="fas fa-sliders-h me-1"></i> System & Administration</div>
       <ul class="sidebar-nav mb-4">
         <li class="nav-item">
           <a href="{% url 'school_settings' %}" class="nav-link">

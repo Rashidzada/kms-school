@@ -636,6 +636,18 @@
             <i class="fas fa-calendar-check me-1"></i>
             Active Session: <strong>{{ active_session.name|default:"Not Set" }}</strong>
           </div>
+          {% if software_license %}
+          <a href="{% url 'license_developer_portal' %}" 
+             class="badge text-decoration-none shadow-sm d-flex align-items-center gap-1 px-3 py-2 border {{ software_license.status_badge_class }}" 
+             style="font-size: 0.82rem; border-radius: 8px; transition: transform 0.15s ease;"
+             onmouseover="this.style.transform='scale(1.03)'"
+             onmouseout="this.style.transform='scale(1.0)'"
+             title="Software Subscription / License Duration &bull; Click to Open Developer Portal">
+            <i class="fas fa-shield-alt"></i>
+            <span class="d-none d-md-inline">License:</span>
+            <strong>{{ software_license.time_remaining_display }}</strong>
+          </a>
+          {% endif %}
         </div>
 
         <div class="d-flex align-items-center gap-2 gap-md-3">

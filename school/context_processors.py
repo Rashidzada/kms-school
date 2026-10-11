@@ -1,9 +1,9 @@
-from .models import AcademicSession, SchoolSetting
+from .models import AcademicSession, SchoolSetting, SoftwareLicense
 
 
 def school_context(request):
     """
-    Injects active academic session and school setting into every template context.
+    Injects active academic session, school setting, and software license into every template context.
     """
     setting = SchoolSetting.objects.first()
     if not setting:
@@ -18,7 +18,14 @@ def school_context(request):
     if not active_session:
         active_session = AcademicSession.objects.first()
 
+    try:
+        software_license = SoftwareLicense.get_license()
+    except Exception:
+        software_license = None
+
     return {
         "school_setting": setting,
         "active_session": active_session,
+        "software_license": software_license,
     }
+

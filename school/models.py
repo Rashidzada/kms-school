@@ -132,17 +132,49 @@ class SoftwareLicense(models.Model):
     def time_remaining_display(self):
         from django.utils import timezone
         if not self.is_valid():
-            return "Expired"
+            return "License Expired"
         diff = self.expires_at - timezone.now()
-        days = diff.days
+        total_days = diff.days
         hours = diff.seconds // 3600
         mins = (diff.seconds % 3600) // 60
-        if days > 0:
-            return f"{days} days, {hours} hrs"
-        elif hours > 0:
-            return f"{hours} hrs, {mins} mins"
+
+        if total_days >= 365:
+            years = total_days // 365
+            rem_days = total_days % 365
+            months = rem_days // 30
+            if months > 0:
+                return f"{years} Yr{'s' if years > 1 else ''}, {months} Mo{'s' if months > 1 else ''} left"
+            return f"{years} Year{'s' if years > 1 else ''} left"
+        elif total_days >= 30:
+            months = total_days // 30
+            rem_days = total_days % 30
+            if rem_days > 0:
+                return f"{months} Month{'s' if months > 1 else ''}, {rem_days} Day{'s' if rem_days > 1 else ''} left"
+            return f"{months} Month{'s' if months > 1 else ''} left"
+        elif total_days >= 1:
+            if hours > 0:
+                return f"{total_days} Day{'s' if total_days > 1 else ''}, {hours} Hr{'s' if hours > 1 else ''} left"
+            return f"{total_days} Day{'s' if total_days > 1 else ''} left"
+        elif hours >= 1:
+            return f"{hours} Hr{'s' if hours > 1 else ''}, {mins} Min{'s' if mins > 1 else ''} left"
         else:
-            return f"{max(0, mins)} mins"
+            return f"{max(0, mins)} Mins left"
+
+    @property
+    def status_badge_class(self):
+        from django.utils import timezone
+        if not self.is_valid():
+            return "bg-danger text-white"
+        diff = self.expires_at - timezone.now()
+        days = diff.days
+        if days > 30:
+            return "bg-success text-white"
+        elif days > 7:
+            return "bg-info text-dark"
+        elif days > 1:
+            return "bg-warning text-dark"
+        else:
+            return "bg-danger text-white"
 
     @classmethod
     def get_license(cls):

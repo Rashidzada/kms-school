@@ -1393,6 +1393,7 @@ def student_qr_attendance_scan(request):
     male_scanned = today_attendances.filter(student__gender="Male").count()
     female_scanned = today_attendances.filter(student__gender="Female").count()
     total_out = today_attendances.filter(check_out__isnull=False).count()
+    still_in_count = today_attendances.filter(check_in__isnull=False, check_out__isnull=True).count()
 
     active_students = Student.objects.filter(status="Active").select_related("current_class", "current_section").order_by("admission_no")
 
@@ -1401,11 +1402,12 @@ def student_qr_attendance_scan(request):
         "students/student_qr_scan.html",
         {
             "today": today,
-            "today_attendances": today_attendances[:100],
+            "today_attendances": today_attendances[:150],
             "total_scanned": total_scanned,
             "male_scanned": male_scanned,
             "female_scanned": female_scanned,
             "total_out": total_out,
+            "still_in_count": still_in_count,
             "active_students": active_students,
         },
     )
@@ -1526,6 +1528,7 @@ def api_process_student_qr_scan(request):
     m_count = today_all.filter(student__gender="Male").count()
     f_count = today_all.filter(student__gender="Female").count()
     out_count = today_all.filter(check_out__isnull=False).count()
+    still_count = today_all.filter(check_in__isnull=False, check_out__isnull=True).count()
 
     photo_url = student.profile_picture.url if student.profile_picture else ""
 
@@ -1553,6 +1556,7 @@ def api_process_student_qr_scan(request):
             "male_scanned": m_count,
             "female_scanned": f_count,
             "total_out": out_count,
+            "still_in": still_count,
         }
     })
 
@@ -1621,6 +1625,7 @@ def api_update_student_attendance(request):
 
     # Recalculate stats
     today_all = StudentAttendance.objects.filter(date=target_date)
+    photo_url = student.profile_picture.url if student.profile_picture else ""
     return JsonResponse({
         "status": "success",
         "message": f"Updated attendance for {student.full_name} ({att.status}).",
@@ -1628,9 +1633,15 @@ def api_update_student_attendance(request):
             "id": student.id,
             "admission_no": student.admission_no,
             "name": student.full_name,
+            "father_name": student.father_name,
+            "gender": student.gender,
+            "class_name": student.current_class.name if student.current_class else "---",
+            "section_name": student.current_section.name if student.current_section else "---",
+            "photo_url": photo_url,
             "status": att.status,
             "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "---",
             "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "---",
+            "attendance_method": att.attendance_method,
             "remarks": att.remarks,
         },
         "stats": {
@@ -1638,6 +1649,7 @@ def api_update_student_attendance(request):
             "male_scanned": today_all.filter(student__gender="Male").count(),
             "female_scanned": today_all.filter(student__gender="Female").count(),
             "total_out": today_all.filter(check_out__isnull=False).count(),
+            "still_in": today_all.filter(check_in__isnull=False, check_out__isnull=True).count(),
         }
     })
 

@@ -158,7 +158,7 @@
   </div>
 
   <!-- Today's Live Stats Banner -->
-  <div class="row g-3 mb-3">
+  <div class="row g-2 mb-3">
     <div class="col-6 col-md-4 col-xl-2">
       <div class="card shadow-sm border-0 border-start border-4 border-primary h-100">
         <div class="card-body p-2 p-md-3">
@@ -187,25 +187,29 @@
       </div>
     </div>
     <div class="col-6 col-md-4 col-xl-2">
-      <div class="card shadow-sm border-0 border-start border-4 border-danger h-100">
+      <div class="card shadow-sm border-0 border-start border-4 border-warning h-100 bg-light">
         <div class="card-body p-2 p-md-3">
-          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Absent / Half Day</div>
-          <div class="fs-4 fw-bold text-danger mt-1" id="stat-absent">{{ absent_count|add:half_day_count }}</div>
-          <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-user-times me-1"></i>{{ half_day_count }} half day</small>
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Afternoon OUT</div>
+          <div class="fs-4 fw-bold text-warning mt-1" id="stat-out">{{ total_out_count }}</div>
+          <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-sign-out-alt me-1"></i>Checked Out</small>
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-8 col-xl-4">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 border-start border-4 border-info h-100 bg-light">
+        <div class="card-body p-2 p-md-3">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Still on Campus</div>
+          <div class="fs-4 fw-bold text-info mt-1" id="stat-still-in">{{ still_in_count }}</div>
+          <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-school me-1"></i>Pending Out</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4 col-xl-2">
       <div class="card shadow-sm border-0 border-start border-4 border-danger h-100 bg-light">
-        <div class="card-body p-2 p-md-3 d-flex align-items-center justify-content-between">
-          <div>
-            <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Today's Salary Deductions</div>
-            <div class="fs-4 fw-bold text-danger mt-1" id="stat-deduction">PKR {{ total_deductions_today|floatformat:2|intcomma }}</div>
-            <small class="text-muted" style="font-size: 0.72rem;">Shift: {{ setting.shift_start_time|time:"h:i A" }} - {{ setting.shift_end_time|time:"h:i A" }} ({{ setting.working_hours_per_day }}h)</small>
-          </div>
-          <div class="text-danger opacity-50 display-6">
-            <i class="fas fa-receipt"></i>
-          </div>
+        <div class="card-body p-2 p-md-3">
+          <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem;">Salary Cut Sheet</div>
+          <div class="fs-5 fw-bold text-danger mt-1" id="stat-deduction">PKR {{ total_deductions_today|floatformat:2|intcomma }}</div>
+          <small class="text-muted" style="font-size: 0.72rem;"><i class="fas fa-receipt me-1"></i>Today's Cuts</small>
         </div>
       </div>
     </div>
@@ -410,14 +414,45 @@
       </div>
     </div>
 
-    <!-- Right Column: Today's Live Attendance Stream -->
+    <!-- Right Column: Today's Live Attendance Stream with IN & OUT Separate Tabs -->
     <div class="col-lg-7">
       <div class="card shadow-sm border-0 h-100">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-          <h5 class="fw-bold text-dark mb-0">
-            <i class="fas fa-history text-primary me-2"></i>Today's Attendance Logs & Cutting Sheet
-          </h5>
-          <span class="badge bg-light text-dark border">{{ today|date:"l, d F Y" }}</span>
+        <div class="card-header bg-white py-2">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold text-dark mb-0">
+              <i class="fas fa-history text-primary me-2"></i>Today's Attendance Logs & Cutting Sheet
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-light text-dark border" id="teacher-stream-badge">{{ today_attendances|length }} Logged</span>
+              <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" id="btn-open-teacher-override">
+                <i class="fas fa-plus-circle me-1"></i> Manual Override
+              </button>
+            </div>
+          </div>
+
+          <!-- Separate Filter Tabs for IN and OUT and Still In School -->
+          <ul class="nav nav-pills nav-fill small bg-light p-1 rounded" id="teacherTableTabs">
+            <li class="nav-item">
+              <button class="nav-link filter-tab-btn active bg-primary text-white" id="tab-t-all" data-tab="all" type="button">
+                <i class="fas fa-list me-1"></i> All Logs (<span id="tab-t-badge-all">{{ today_attendances|length }}</span>)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link filter-tab-btn text-success" id="tab-t-in" data-tab="in" type="button">
+                <i class="fas fa-sign-in-alt me-1"></i> Morning IN (<span id="tab-t-badge-in">{{ present_count|add:late_count }}</span>)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link filter-tab-btn text-warning" id="tab-t-out" data-tab="out" type="button">
+                <i class="fas fa-sign-out-alt me-1"></i> Afternoon OUT (<span id="tab-t-badge-out">{{ total_out_count }}</span>)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link filter-tab-btn text-info" id="tab-t-still-in" data-tab="still-in" type="button">
+                <i class="fas fa-school me-1"></i> Still on Campus (<span id="tab-t-badge-still-in">{{ still_in_count }}</span>)
+              </button>
+            </li>
+          </ul>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive" style="max-height: 680px; overflow-y: auto;">
@@ -436,7 +471,9 @@
               </thead>
               <tbody id="attendance-tbody">
                 {% for att in today_attendances %}
-                <tr id="att-row-{{ att.teacher.pk }}">
+                <tr id="att-row-{{ att.teacher.pk }}"
+                    data-has-in="{% if att.check_in %}1{% else %}0{% endif %}"
+                    data-has-out="{% if att.check_out %}1{% else %}0{% endif %}">
                   <td>
                     <div class="d-flex align-items-center">
                       {% if att.teacher.profile_picture %}
@@ -585,34 +622,65 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-        <form id="customTeacherAttendanceForm">
+        <form id="customTeacherAttendanceForm" onsubmit="return false;">
           <input type="hidden" id="edit-teacher-id">
-          <div class="mb-3">
+
+          <div class="mb-3" id="select-teacher-container" style="display: none;">
+            <label class="form-label small fw-bold">Select Staff Member</label>
+            <select id="edit-select-teacher-dropdown" class="form-select">
+              <option value="">-- Choose Faculty Member --</option>
+              {% for t in active_teachers %}
+                <option value="{{ t.pk }}" data-staff-id="{{ t.teacher_id }}" data-name="{{ t.full_name }}" data-desig="{{ t.designation }}">
+                  {{ t.full_name }} &bull; {{ t.teacher_id }} ({{ t.designation }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3" id="display-teacher-container">
             <label class="form-label small text-muted text-uppercase fw-bold mb-1">Staff Member</label>
-            <div class="p-2 bg-light rounded border">
-              <strong class="text-dark" id="edit-teacher-name">Teacher Name</strong>
-              <div class="small text-muted" id="edit-teacher-staff-id">Staff ID: 10001</div>
+            <div class="p-2 bg-light rounded border d-flex justify-content-between align-items-center">
+              <div>
+                <strong class="text-dark d-block fs-6" id="edit-teacher-name">Teacher Name</strong>
+                <div class="small text-muted" id="edit-teacher-staff-id">Staff ID: 10001</div>
+              </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="btn-switch-teacher-picker" style="font-size: 0.75rem;">
+                Switch Faculty
+              </button>
             </div>
           </div>
+
           <div class="mb-3">
             <label class="form-label small fw-bold">Attendance Status</label>
-            <select id="edit-teacher-status" class="form-select">
-              <option value="Present">Present (On Time)</option>
-              <option value="Late">Late Comer</option>
-              <option value="Half Day">Half Day</option>
-              <option value="Absent">Absent</option>
-              <option value="Leave">Approved Leave (PTO)</option>
-              <option value="Holiday">Holiday / Off</option>
+            <select id="edit-teacher-status" class="form-select form-select-lg fw-bold">
+              <option value="Present" class="text-success">Present (On Time)</option>
+              <option value="Late" class="text-warning">Late Comer</option>
+              <option value="Half Day" class="text-info">Half Day</option>
+              <option value="Absent" class="text-danger">Absent</option>
+              <option value="Leave" class="text-secondary">Approved Leave (PTO)</option>
+              <option value="Holiday" class="text-secondary">Holiday / Off</option>
             </select>
           </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label small fw-bold">Morning Check-In</label>
-              <input type="time" id="edit-teacher-check-in" class="form-control">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold mb-0">Morning Check-In</label>
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-success py-0 px-1" style="font-size: 0.7rem;" id="btn-t-in-now">Now</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-1" style="font-size: 0.7rem;" id="btn-t-in-8am">8:00 AM</button>
+                </div>
+              </div>
+              <input type="time" id="edit-teacher-check-in" class="form-control font-monospace">
             </div>
             <div class="col-6">
-              <label class="form-label small fw-bold">Departure Check-Out</label>
-              <input type="time" id="edit-teacher-check-out" class="form-control">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold mb-0">Departure Check-Out</label>
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-warning py-0 px-1 text-dark" style="font-size: 0.7rem;" id="btn-t-out-now">Now</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-1" style="font-size: 0.7rem;" id="btn-t-out-clear">Clear</button>
+                </div>
+              </div>
+              <input type="time" id="edit-teacher-check-out" class="form-control font-monospace">
             </div>
           </div>
           <div class="row g-2 mb-3">
@@ -868,18 +936,27 @@ document.addEventListener('DOMContentLoaded', function() {
       </td>
     `;
 
+    const hasIn = (data.check_in && data.check_in !== '---') ? '1' : '0';
+    const hasOut = (data.check_out && data.check_out !== '---') ? '1' : '0';
+
     if (row) {
+      row.setAttribute('data-has-in', hasIn);
+      row.setAttribute('data-has-out', hasOut);
       row.innerHTML = htmlContent;
       row.classList.add('table-primary');
       setTimeout(() => row.classList.remove('table-primary'), 2000);
     } else {
       row = document.createElement('tr');
       row.id = 'att-row-' + data.teacher.id;
+      row.setAttribute('data-has-in', hasIn);
+      row.setAttribute('data-has-out', hasOut);
       row.innerHTML = htmlContent;
       tbody.prepend(row);
       row.classList.add('table-success');
       setTimeout(() => row.classList.remove('table-success'), 2000);
     }
+    refreshTeacherTabCounters();
+    applyTeacherTableFilter(activeTeacherTab);
   }
 
   function updateLiveStats(data) {
@@ -1294,6 +1371,108 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  // Time Converter Helper
+  function to24Hour(timeStr) {
+    if (!timeStr || timeStr === '---') return '';
+    timeStr = timeStr.trim();
+    if (/^\d{1,2}:\d{2}$/.test(timeStr)) {
+      const parts = timeStr.split(':');
+      return parts[0].padStart(2, '0') + ':' + parts[1];
+    }
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const mins = match[2];
+      const meridiem = (match[3] || '').toUpperCase();
+      if (meridiem === 'PM' && hours < 12) hours += 12;
+      if (meridiem === 'AM' && hours === 12) hours = 0;
+      return String(hours).padStart(2, '0') + ':' + mins;
+    }
+    return '';
+  }
+
+  function getNowTimeStr() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  // Separate Filter Tabs for IN and OUT and Still on Campus
+  let activeTeacherTab = 'all';
+
+  function applyTeacherTableFilter(tabName) {
+    activeTeacherTab = tabName;
+    const rows = document.querySelectorAll('#attendance-tbody tr:not(#no-attendance-row)');
+
+    rows.forEach(r => {
+      const hasIn = r.getAttribute('data-has-in') === '1';
+      const hasOut = r.getAttribute('data-has-out') === '1';
+
+      let show = false;
+      if (tabName === 'all') show = true;
+      else if (tabName === 'in') show = hasIn;
+      else if (tabName === 'out') show = hasOut;
+      else if (tabName === 'still-in') show = hasIn && !hasOut;
+
+      r.style.display = show ? '' : 'none';
+    });
+
+    document.querySelectorAll('#teacherTableTabs .filter-tab-btn').forEach(btn => {
+      const bTab = btn.getAttribute('data-tab');
+      if (bTab === tabName) {
+        btn.classList.add('active');
+        if (bTab === 'all') btn.className = 'nav-link filter-tab-btn active bg-primary text-white';
+        else if (bTab === 'in') btn.className = 'nav-link filter-tab-btn active bg-success text-white';
+        else if (bTab === 'out') btn.className = 'nav-link filter-tab-btn active bg-warning text-dark';
+        else if (bTab === 'still-in') btn.className = 'nav-link filter-tab-btn active bg-info text-dark';
+      } else {
+        btn.classList.remove('active');
+        if (bTab === 'all') btn.className = 'nav-link filter-tab-btn text-primary';
+        else if (bTab === 'in') btn.className = 'nav-link filter-tab-btn text-success';
+        else if (bTab === 'out') btn.className = 'nav-link filter-tab-btn text-warning';
+        else if (bTab === 'still-in') btn.className = 'nav-link filter-tab-btn text-info';
+      }
+    });
+  }
+
+  document.querySelectorAll('#teacherTableTabs .filter-tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tab = this.getAttribute('data-tab');
+      applyTeacherTableFilter(tab);
+      if (tab === 'in' && window.currentTeacherScanMode !== 'in') window.setTeacherScanMode('in');
+      if (tab === 'out' && window.currentTeacherScanMode !== 'out') window.setTeacherScanMode('out');
+    });
+  });
+
+  function refreshTeacherTabCounters() {
+    const rows = document.querySelectorAll('#attendance-tbody tr:not(#no-attendance-row)');
+    let total = rows.length;
+    let inCount = 0;
+    let outCount = 0;
+    let stillInCount = 0;
+
+    rows.forEach(r => {
+      const hasIn = r.getAttribute('data-has-in') === '1';
+      const hasOut = r.getAttribute('data-has-out') === '1';
+      if (hasIn) inCount++;
+      if (hasOut) outCount++;
+      if (hasIn && !hasOut) stillInCount++;
+    });
+
+    document.getElementById('tab-t-badge-all').textContent = total;
+    document.getElementById('tab-t-badge-in').textContent = inCount;
+    document.getElementById('tab-t-badge-out').textContent = outCount;
+    document.getElementById('tab-t-badge-still-in').textContent = stillInCount;
+    const streamBadge = document.getElementById('teacher-stream-badge');
+    if (streamBadge) streamBadge.textContent = total + " Logged";
+
+    const statOutEl = document.getElementById('stat-out');
+    if (statOutEl) statOutEl.textContent = outCount;
+    const statStillInEl = document.getElementById('stat-still-in');
+    if (statStillInEl) statStillInEl.textContent = stillInCount;
+  }
+
   // Mode Selector for Teachers: 'in' | 'out' | 'auto'
   window.currentTeacherScanMode = 'in';
   window.setTeacherScanMode = function(mode) {
@@ -1326,6 +1505,68 @@ document.addEventListener('DOMContentLoaded', function() {
   const teacherModalEl = document.getElementById('customTeacherEditModal');
   const teacherModal = new bootstrap.Modal(teacherModalEl);
 
+  function openTeacherEditModal(tid, name, staffId, status, checkIn, checkOut, ded, bonus, remarks) {
+    document.getElementById('edit-teacher-id').value = tid || '';
+    document.getElementById('edit-teacher-name').textContent = name || 'Faculty Member';
+    document.getElementById('edit-teacher-staff-id').textContent = staffId ? ('Staff ID: ' + staffId) : '';
+    document.getElementById('edit-teacher-status').value = status || 'Present';
+    document.getElementById('edit-teacher-check-in').value = to24Hour(checkIn);
+    document.getElementById('edit-teacher-check-out').value = to24Hour(checkOut);
+    document.getElementById('edit-teacher-deduction').value = ded || '0.00';
+    document.getElementById('edit-teacher-bonus').value = bonus || '0.00';
+    document.getElementById('edit-teacher-remarks').value = remarks || '';
+
+    if (!tid) {
+      document.getElementById('select-teacher-container').style.display = 'block';
+      document.getElementById('display-teacher-container').style.display = 'none';
+      document.getElementById('edit-select-teacher-dropdown').value = '';
+    } else {
+      document.getElementById('select-teacher-container').style.display = 'none';
+      document.getElementById('display-teacher-container').style.display = 'block';
+    }
+
+    teacherModal.show();
+  }
+
+  // Switch faculty button
+  document.getElementById('btn-switch-teacher-picker').addEventListener('click', function() {
+    document.getElementById('select-teacher-container').style.display = 'block';
+    document.getElementById('display-teacher-container').style.display = 'none';
+  });
+
+  document.getElementById('edit-select-teacher-dropdown').addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    if (this.value) {
+      document.getElementById('edit-teacher-id').value = this.value;
+      document.getElementById('edit-teacher-name').textContent = opt.getAttribute('data-name');
+      document.getElementById('edit-teacher-staff-id').textContent = 'Staff ID: ' + opt.getAttribute('data-staff-id');
+      document.getElementById('select-teacher-container').style.display = 'none';
+      document.getElementById('display-teacher-container').style.display = 'block';
+    }
+  });
+
+  // Quick Preset Buttons in Teacher Modal
+  document.getElementById('btn-t-in-now').addEventListener('click', () => {
+    document.getElementById('edit-teacher-check-in').value = getNowTimeStr();
+  });
+  document.getElementById('btn-t-in-8am').addEventListener('click', () => {
+    document.getElementById('edit-teacher-check-in').value = "08:00";
+  });
+  document.getElementById('btn-t-out-now').addEventListener('click', () => {
+    document.getElementById('edit-teacher-check-out').value = getNowTimeStr();
+  });
+  document.getElementById('btn-t-out-clear').addEventListener('click', () => {
+    document.getElementById('edit-teacher-check-out').value = "";
+  });
+
+  // Table header Manual Override button
+  const btnOpenTeacherOverride = document.getElementById('btn-open-teacher-override');
+  if (btnOpenTeacherOverride) {
+    btnOpenTeacherOverride.addEventListener('click', () => {
+      openTeacherEditModal('', '', '', 'Present', getNowTimeStr(), '', '0.00', '0.00', '');
+    });
+  }
+
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('.btn-custom-change-teacher') || e.target.closest('.btn-edit-teacher-att');
     if (btn) {
@@ -1338,23 +1579,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const ded = btn.getAttribute('data-ded') || '0.00';
       const bonus = btn.getAttribute('data-bonus') || '0.00';
       const remarks = btn.getAttribute('data-remarks') || '';
-
-      document.getElementById('edit-teacher-id').value = tid;
-      document.getElementById('edit-teacher-name').textContent = name;
-      document.getElementById('edit-teacher-staff-id').textContent = 'Staff ID: ' + staffId;
-      document.getElementById('edit-teacher-status').value = status;
-      document.getElementById('edit-teacher-check-in').value = checkIn.replace(/[^\d:]/g, '').substring(0, 5);
-      document.getElementById('edit-teacher-check-out').value = checkOut.replace(/[^\d:]/g, '').substring(0, 5);
-      document.getElementById('edit-teacher-deduction').value = ded;
-      document.getElementById('edit-teacher-bonus').value = bonus;
-      document.getElementById('edit-teacher-remarks').value = remarks;
-
-      teacherModal.show();
+      openTeacherEditModal(tid, name, staffId, status, checkIn, checkOut, ded, bonus, remarks);
     }
   });
 
   document.getElementById('btn-save-custom-teacher-att').addEventListener('click', function() {
     const tid = document.getElementById('edit-teacher-id').value;
+    if (!tid) {
+      alert("Please select a faculty member first.");
+      return;
+    }
     const status = document.getElementById('edit-teacher-status').value;
     const checkIn = document.getElementById('edit-teacher-check-in').value;
     const checkOut = document.getElementById('edit-teacher-check-out').value;
@@ -1383,17 +1617,40 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data.success) {
         teacherModal.hide();
         playAudioSound();
-        // Update table row
-        const row = document.getElementById('att-row-' + tid);
-        if (row) {
-          const cells = row.querySelectorAll('td');
-          if (cells.length >= 7) {
-            cells[1].innerHTML = `<span class="badge bg-light text-dark border font-monospace">${data.teacher.check_in || '---'}</span>`;
-            cells[2].innerHTML = `<span class="badge bg-light text-dark border font-monospace">${data.teacher.check_out || '---'}</span>`;
-            cells[3].innerHTML = `<span class="badge ${data.teacher.status === 'Present' ? 'bg-success' : (data.teacher.status === 'Late' ? 'bg-warning text-dark' : 'bg-danger')}">${data.teacher.status}</span>`;
-            cells[5].innerHTML = `<span class="font-monospace text-danger fw-bold">-${Number(data.teacher.deduction_amount).toFixed(2)}</span>`;
-          }
+
+        // Update or dynamically prepend row using updateTableRow
+        const updateData = {
+          teacher: data.teacher,
+          status: data.teacher.status,
+          check_in: data.teacher.check_in,
+          check_out: data.teacher.check_out,
+          late_minutes: data.teacher.late_minutes,
+          deduction_amount: data.teacher.deduction_amount,
+          bonus_amount: data.teacher.bonus_amount
+        };
+        updateTableRow(updateData);
+
+        // Update quick badge on faculty roster
+        updateQuickBadge(updateData);
+
+        // Update stats
+        if (data.stats) {
+          const sp = document.getElementById('stat-present');
+          if (sp) sp.textContent = data.stats.present_count;
+          const sl = document.getElementById('stat-late');
+          if (sl) sl.textContent = data.stats.late_count;
+          const sa = document.getElementById('stat-absent');
+          if (sa) sa.textContent = data.stats.absent_count + data.stats.half_day_count;
+          const sOut = document.getElementById('stat-out');
+          if (sOut) sOut.textContent = data.stats.total_out;
+          const sStill = document.getElementById('stat-still-in');
+          if (sStill) sStill.textContent = data.stats.still_in;
+          const sDed = document.getElementById('stat-deduction');
+          if (sDed) sDed.textContent = 'PKR ' + Number(data.stats.total_deductions_today).toFixed(2);
         }
+
+        refreshTeacherTabCounters();
+        applyTeacherTableFilter(activeTeacherTab);
       } else {
         alert("Error: " + (data.message || "Failed to update attendance"));
       }
@@ -1403,6 +1660,8 @@ document.addEventListener('DOMContentLoaded', function() {
       alert("Connection error occurred.");
     });
   });
+
+  refreshTeacherTabCounters();
 });
 </script>
 {% endblock %}

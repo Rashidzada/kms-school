@@ -987,6 +987,8 @@ def qr_attendance_scan(request):
     late_count = today_attendances.filter(status="Late").count()
     absent_count = today_attendances.filter(status="Absent").count()
     half_day_count = today_attendances.filter(status="Half Day").count()
+    total_out_count = today_attendances.filter(check_out__isnull=False).count()
+    still_in_count = today_attendances.filter(check_in__isnull=False, check_out__isnull=True).count()
     total_deductions_today = sum(a.deduction_amount for a in today_attendances)
 
     context = {
@@ -999,6 +1001,8 @@ def qr_attendance_scan(request):
         "late_count": late_count,
         "absent_count": absent_count,
         "half_day_count": half_day_count,
+        "total_out_count": total_out_count,
+        "still_in_count": still_in_count,
         "total_deductions_today": total_deductions_today,
     }
     return render(request, "teachers/qr_attendance_scan.html", context)
@@ -1118,6 +1122,15 @@ def api_process_qr_scan(request):
         "working_hours": float(att.working_hours),
         "deduction_amount": float(att.deduction_amount),
         "bonus_amount": float(att.bonus_amount),
+        "stats": {
+            "present_count": TeacherAttendance.objects.filter(date=today, status="Present").count(),
+            "late_count": TeacherAttendance.objects.filter(date=today, status="Late").count(),
+            "absent_count": TeacherAttendance.objects.filter(date=today, status="Absent").count(),
+            "half_day_count": TeacherAttendance.objects.filter(date=today, status="Half Day").count(),
+            "total_out": TeacherAttendance.objects.filter(date=today, check_out__isnull=False).count(),
+            "still_in": TeacherAttendance.objects.filter(date=today, check_in__isnull=False, check_out__isnull=True).count(),
+            "total_deductions_today": float(sum(a.deduction_amount for a in TeacherAttendance.objects.filter(date=today))),
+        }
     })
 
 
@@ -1197,6 +1210,9 @@ def api_update_teacher_attendance(request):
     att.attendance_method = "Manual Override"
     att.save()
 
+    all_att = TeacherAttendance.objects.filter(date=target_date)
+    photo_url = teacher.profile_picture.url if teacher.profile_picture else ""
+
     return JsonResponse({
         "success": True,
         "message": f"Successfully updated attendance for {teacher.full_name}.",
@@ -1204,6 +1220,8 @@ def api_update_teacher_attendance(request):
             "id": teacher.pk,
             "staff_id": teacher.teacher_id,
             "name": teacher.full_name,
+            "designation": teacher.designation,
+            "photo_url": photo_url,
             "status": att.status,
             "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "",
             "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "",
@@ -1211,6 +1229,15 @@ def api_update_teacher_attendance(request):
             "deduction_amount": float(att.deduction_amount),
             "bonus_amount": float(att.bonus_amount),
             "remarks": att.remarks,
+        },
+        "stats": {
+            "present_count": all_att.filter(status="Present").count(),
+            "late_count": all_att.filter(status="Late").count(),
+            "absent_count": all_att.filter(status="Absent").count(),
+            "half_day_count": all_att.filter(status="Half Day").count(),
+            "total_out": all_att.filter(check_out__isnull=False).count(),
+            "still_in": all_att.filter(check_in__isnull=False, check_out__isnull=True).count(),
+            "total_deductions_today": float(sum(a.deduction_amount for a in all_att)),
         }
     })
 

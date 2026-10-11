@@ -66,10 +66,33 @@
     0% { transform: scale(1.02); }
     100% { transform: scale(1); }
   }
+  .quick-student-item:hover {
+    background-color: #f1f5f9;
+  }
+  .mode-btn-active-in {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    border-color: #059669 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+  }
+  .mode-btn-active-out {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4) !important;
+  }
+  .mode-btn-active-auto {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<audio id="scan-chime-sound" src="{% static 'sounds/chime.wav' %}" preload="auto"></audio>
+
 <div class="container-fluid px-0">
   <!-- Header Bar -->
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
@@ -78,7 +101,7 @@
         <i class="fas fa-qrcode text-warning me-2"></i>Student QR Attendance Terminal
       </h3>
       <p class="text-muted small mb-0">
-        Scan student ID Card / QR Badge with camera or USB scanner for instant morning check-in.
+        Scan student ID Card / QR Badge with camera, USB gun, or quick roster for Morning IN and Afternoon OUT departures.
       </p>
     </div>
     <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
@@ -100,84 +123,224 @@
     </div>
   </div>
 
-  <!-- Today's Live Stats Banner -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-4 col-6">
-      <div class="card shadow-sm border-0 border-start border-4 border-primary h-100 p-3">
-        <span class="text-muted text-uppercase fw-bold small">Total Students Scanned Today</span>
-        <h3 class="fw-bold text-dark mb-0 mt-1" id="stat-total-scanned">{{ total_scanned }}</h3>
-        <small class="text-muted">Morning Attendance Log</small>
+  <!-- Attendance Mode Selector: IN vs OUT vs AUTO -->
+  <div class="card border-0 shadow-sm mb-3 bg-light">
+    <div class="card-body p-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-bold text-dark small text-uppercase">
+          <i class="fas fa-exchange-alt text-primary me-1"></i> Scanner Mode:
+        </span>
+        <div class="btn-group" role="group" id="scanModeGroup">
+          <button type="button" class="btn btn-sm fw-bold mode-btn mode-btn-active-in" id="modeBtnIn" onclick="setScanMode('in')">
+            <i class="fas fa-sign-in-alt me-1"></i> Morning Check-IN
+          </button>
+          <button type="button" class="btn btn-outline-warning text-dark btn-sm fw-bold mode-btn" id="modeBtnOut" onclick="setScanMode('out')">
+            <i class="fas fa-sign-out-alt me-1"></i> Afternoon Check-OUT
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm fw-bold mode-btn" id="modeBtnAuto" onclick="setScanMode('auto')">
+            <i class="fas fa-magic me-1"></i> Auto (1st IN, 2nd OUT)
+          </button>
+        </div>
+      </div>
+      <div class="text-muted small">
+        <span class="badge bg-secondary" id="activeModeBadge">MODE: Morning IN</span>
+        <span class="text-secondary ms-2"><i class="fas fa-shield-alt text-success me-1"></i>Principal & VP Custom Controls Enabled</span>
       </div>
     </div>
-    <div class="col-md-4 col-6">
+  </div>
+
+  <!-- Today's Live Stats Banner -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm border-0 border-start border-4 border-primary h-100 p-3">
+        <span class="text-muted text-uppercase fw-bold small">Total Students Scanned</span>
+        <h3 class="fw-bold text-dark mb-0 mt-1" id="stat-total-scanned">{{ total_scanned }}</h3>
+        <small class="text-muted">Today's Total Attendance</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
       <div class="card shadow-sm border-0 border-start border-4 border-info h-100 p-3">
         <span class="text-muted text-uppercase fw-bold small">Boys Scanned (Male)</span>
         <h3 class="fw-bold text-info mb-0 mt-1" id="stat-male-scanned">{{ male_scanned }}</h3>
         <small class="text-muted">Recorded Present</small>
       </div>
     </div>
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-6">
       <div class="card shadow-sm border-0 border-start border-4 border-danger h-100 p-3">
         <span class="text-muted text-uppercase fw-bold small">Girls Scanned (Female)</span>
         <h3 class="fw-bold text-danger mb-0 mt-1" id="stat-female-scanned">{{ female_scanned }}</h3>
         <small class="text-muted">Recorded Present</small>
       </div>
     </div>
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm border-0 border-start border-4 border-warning h-100 p-3">
+        <span class="text-muted text-uppercase fw-bold small">Departure Checked-Out</span>
+        <h3 class="fw-bold text-warning mb-0 mt-1" id="stat-total-out">{{ total_out }}</h3>
+        <small class="text-muted">Completed Afternoon OUT</small>
+      </div>
+    </div>
   </div>
 
   <!-- Scanner and Real-Time Feedback Row -->
-  <div class="row g-4 mb-4">
-    <!-- Left: QR Camera Viewfinder & USB Input -->
-    <div class="col-lg-6">
+  <div class="row g-3 mb-4">
+    <!-- Left: QR Camera Viewfinder, Device Controls & USB Input -->
+    <div class="col-lg-5">
       <div class="card border-0 shadow-sm mb-3">
-        <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-          <strong class="text-dark"><i class="fas fa-camera text-primary me-1"></i> Live Camera QR Scanner</strong>
-          <div class="d-flex gap-2">
-            <button class="btn btn-xs btn-outline-secondary" id="btn-toggle-cam">
-              <i class="fas fa-sync-alt me-1"></i> Switch Camera
-            </button>
-          </div>
+        <div class="card-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
+          <span class="fw-bold"><i class="fas fa-camera text-success me-2"></i> Live Camera QR Scanner</span>
+          <span class="badge bg-secondary" id="camera-status-badge">Standby</span>
         </div>
         <div class="card-body p-3">
-          <div class="scanner-wrapper" id="scanner-wrapper-box">
+          <div class="scanner-wrapper mb-2" id="scanner-wrapper-box">
             <div id="qr-reader"></div>
-            <div class="scanner-laser"></div>
-            <div class="scanner-target-box"></div>
+            <div class="scanner-laser" id="scanner-laser" style="display: none;"></div>
+            <div class="scanner-target-box" id="scanner-target-box" style="display: none;"></div>
           </div>
-          <div class="text-center mt-2">
-            <small class="text-muted">Point camera directly at the student's ID card QR Code.</small>
+
+          <!-- Camera Selection & Flip Controls -->
+          <div class="row g-2 align-items-center mb-2">
+            <div class="col-7">
+              <select id="camera-select" class="form-select form-select-sm">
+                <option value="">Auto Select Camera</option>
+              </select>
+            </div>
+            <div class="col-3">
+              <button id="btn-flip-cam" class="btn btn-outline-secondary btn-sm w-100 fw-bold" type="button" title="Flip Camera">
+                <i class="fas fa-sync-alt me-1"></i> Flip
+              </button>
+            </div>
+            <div class="col-2">
+              <button id="btn-torch" class="btn btn-outline-warning text-dark btn-sm w-100 fw-bold" type="button" title="Torch" style="display: none;">
+                <i class="fas fa-bolt"></i>
+              </button>
+            </div>
+            <div class="col-12 mt-1">
+              <button id="btn-toggle-camera" class="btn btn-primary btn-sm w-100 fw-bold py-2 fs-6">
+                <i class="fas fa-video me-1"></i> Start Camera Scanner
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Snap & Image File Scan Options -->
+          <div class="d-flex justify-content-between align-items-center mb-2 pt-1 border-top">
+            <label for="mobile-student-cam" class="btn btn-sm btn-outline-success fw-bold py-1 px-2" style="font-size: 0.78rem; cursor: pointer;">
+              <i class="fas fa-mobile-alt me-1"></i> Gate Mobile Camera
+              <input type="file" id="mobile-student-cam" accept="image/*" capture="environment" style="display: none;">
+            </label>
+            <label class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 0.78rem; cursor: pointer;">
+              <i class="fas fa-image me-1"></i> Scan From Image
+              <input type="file" id="student-file-input" accept="image/*" style="display: none;">
+            </label>
           </div>
 
           <!-- Barcode / USB Scanner Immediate Input Box -->
-          <div class="mt-3 pt-3 border-top">
-            <label class="form-label small fw-bold mb-1">
-              <i class="fas fa-barcode text-success me-1"></i> USB Barcode Scanner / Manual Admission No Entry
+          <div class="pt-2 border-top">
+            <label class="form-label small fw-bold mb-1 d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-barcode text-success me-1"></i> USB Gun Barcode / Admission # Typing:</span>
+              <span class="badge bg-success" style="font-size: 0.65rem;">Auto-punch on typing</span>
             </label>
-            <div class="input-group">
-              <input type="text" id="manual-admission-input" class="form-control form-control-lg fw-bold" placeholder="Scan barcode or type Admission # and press Enter..." autofocus>
-              <button class="btn btn-primary fw-bold px-4" id="btn-manual-submit" type="button">
-                <i class="fas fa-check-circle me-1"></i> Mark Present
+            <form id="manual-scan-form" class="input-group mb-2">
+              <input 
+                type="text" 
+                id="manual-admission-input" 
+                class="form-control form-control-lg fw-bold font-monospace" 
+                placeholder="Scan barcode or type Admission # / Name..." 
+                list="students-datalist"
+                autocomplete="off"
+                autofocus
+              >
+              <button class="btn btn-success fw-bold px-3" id="btn-manual-submit" type="submit">
+                <i class="fas fa-check-circle me-1"></i> Mark
+              </button>
+            </form>
+
+            <datalist id="students-datalist">
+              {% for s in active_students %}
+                <option value="{{ s.admission_no }}">{{ s.full_name }} ({{ s.current_class.name }} - {{ s.current_section.name }})</option>
+              {% endfor %}
+            </datalist>
+
+            <!-- Quick 1-Click Dropdown Selector -->
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted"><i class="fas fa-user-graduate"></i></span>
+              <select id="quick-student-select" class="form-select">
+                <option value="">-- Or Pick Student From List to Mark --</option>
+                {% for s in active_students %}
+                  <option value="{{ s.admission_no }}">
+                    Adm #{{ s.admission_no }} - {{ s.full_name }} ({{ s.current_class.name }} - {{ s.current_section.name }})
+                  </option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-outline-primary" type="button" id="btn-quick-punch" title="Punch selected student">
+                <i class="fas fa-arrow-right"></i>
               </button>
             </div>
-            <small class="text-muted d-block mt-1">USB handheld barcode/QR guns will type here automatically.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Student Roster Card with 1-click Punch -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+          <span class="fw-bold text-dark small">
+            <i class="fas fa-users text-primary me-1"></i>Student Quick Punch List ({{ active_students|length }})
+          </span>
+          <span class="badge bg-light text-muted border small" style="font-size: 0.68rem;">1-Click Mark</span>
+        </div>
+        <div class="card-body p-2">
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text bg-light text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" id="filter-students-input" class="form-control" placeholder="Search student by name, admission #, class...">
+          </div>
+          <div style="max-height: 250px; overflow-y: auto;">
+            <ul class="list-group list-group-flush small" id="students-quick-list">
+              {% for s in active_students %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-2 quick-student-item" data-search="{{ s.full_name|lower }} {{ s.admission_no|lower }} {{ s.current_class.name|lower }} {{ s.father_name|lower }}">
+                <div class="d-flex align-items-center me-2 text-truncate">
+                  {% if s.profile_picture %}
+                    <img src="{{ s.profile_picture.url }}" class="rounded-circle me-2 flex-shrink-0" style="width: 26px; height: 26px; object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 26px; height: 26px; font-size: 0.7rem; font-weight: bold;">
+                      {{ s.full_name|slice:":1" }}
+                    </div>
+                  {% endif %}
+                  <div class="text-truncate">
+                    <span class="fw-bold text-dark d-block text-truncate">{{ s.full_name }}</span>
+                    <span class="text-muted" style="font-size: 0.72rem;">Adm # {{ s.admission_no }} &bull; {{ s.current_class.name }}-{{ s.current_section.name }}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 btn-punch-student" data-adm="{{ s.admission_no }}" title="Punch {{ s.full_name }}">
+                    <i class="fas fa-check"></i> Punch
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1 btn-edit-student-att" data-id="{{ s.id }}" data-adm="{{ s.admission_no }}" data-name="{{ s.full_name }}" title="Custom Override by Principal/VP">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Student Instant Verification Card -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100" id="result-card">
-        <div class="card-header bg-white py-3">
+    <!-- Right: Instant Verification Card & Attendance Stream -->
+    <div class="col-lg-7">
+      <!-- Instant Verification Card -->
+      <div class="card border-0 shadow-sm mb-3" id="result-card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
           <h6 class="fw-bold mb-0 text-dark">
-            <i class="fas fa-user-check text-success me-2"></i> Instant Verification & Status
+            <i class="fas fa-user-check text-success me-2"></i> Instant Verification & Confirmation
           </h6>
+          <span class="badge bg-light text-dark border" id="res-badge-action">Check-In</span>
         </div>
         <div class="card-body p-4 text-center d-flex flex-column justify-content-center" id="result-card-body">
           <div id="result-placeholder">
             <i class="fas fa-qrcode text-muted fa-4x mb-3" style="opacity: 0.3;"></i>
             <h5 class="text-muted fw-bold">Ready to Scan</h5>
-            <p class="text-muted small">Scan student QR code badge to display student photo, name, class, and attendance confirmation.</p>
+            <p class="text-muted small mb-0">Scan student QR badge or enter Admission # to confirm attendance with sound and photo verification.</p>
           </div>
 
           <div id="result-content" style="display: none;">
@@ -194,81 +357,202 @@
             </div>
             <div class="alert alert-success py-2 mb-0" id="res-alert">
               <h5 class="fw-bold mb-0" id="res-msg"><i class="fas fa-check-circle me-1"></i> Marked Present!</h5>
-              <small class="d-block mt-1" id="res-time">Checked in at 08:12 AM</small>
+              <div class="d-flex justify-content-center gap-3 mt-1 small">
+                <span id="res-time-in">Check-in: 08:12 AM</span>
+                <span id="res-time-out" class="border-start ps-3">Departure Out: ---</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Today's Live Scan Log Table -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-      <h6 class="fw-bold mb-0 text-dark">
-        <i class="fas fa-history text-secondary me-2"></i> Today's Live Attendance Stream ({{ today|date:"d-M-Y" }})
-      </h6>
-      <span class="badge bg-light text-dark border" id="stream-count-badge">{{ today_attendances|length }} Logged</span>
-    </div>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" id="log-table">
-        <thead class="table-light">
-          <tr>
-            <th>Time</th>
-            <th>Adm #</th>
-            <th>Student Name</th>
-            <th>Father Name</th>
-            <th>Class & Section</th>
-            <th>Gender</th>
-            <th>Status</th>
-            <th>Method</th>
-          </tr>
-        </thead>
-        <tbody id="log-tbody">
-          {% for att in today_attendances %}
-            <tr>
-              <td><strong>{{ att.check_in|time:"h:i:s A"|default:"---" }}</strong></td>
-              <td><span class="badge bg-light text-dark border fw-bold">{{ att.student.admission_no }}</span></td>
-              <td class="fw-bold text-dark">{{ att.student.full_name }}</td>
-              <td class="text-muted">{{ att.student.father_name }}</td>
-              <td><span class="badge bg-primary">{{ att.student.current_class.name }} - {{ att.student.current_section.name }}</span></td>
-              <td>
-                {% if att.student.gender == "Male" %}
-                  <span class="badge bg-info text-dark">Male</span>
-                {% else %}
-                  <span class="badge bg-danger">Female</span>
-                {% endif %}
-              </td>
-              <td>
-                <span class="badge bg-success"><i class="fas fa-check me-1"></i> {{ att.status }}</span>
-              </td>
-              <td><span class="badge bg-secondary">{{ att.attendance_method }}</span></td>
-            </tr>
-          {% empty %}
-            <tr id="empty-row">
-              <td colspan="8" class="text-center py-4 text-muted">
-                No students checked in yet today. Ready for scans.
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <!-- Today's Live Scan Log Table -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0 text-dark">
+            <i class="fas fa-history text-secondary me-2"></i> Today's Live Attendance Stream ({{ today|date:"d-M-Y" }})
+          </h6>
+          <span class="badge bg-light text-dark border" id="stream-count-badge">{{ today_attendances|length }} Logged</span>
+        </div>
+        <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+          <table class="table table-hover align-middle mb-0" id="log-table">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th>Student</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th class="text-end">Principal / VP Action</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody">
+              {% for att in today_attendances %}
+                <tr id="student-row-{{ att.student.id }}">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      {% if att.student.profile_picture %}
+                        <img src="{{ att.student.profile_picture.url }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                      {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 small fw-bold" style="width: 32px; height: 32px;">
+                          {{ att.student.full_name|slice:":1" }}
+                        </div>
+                      {% endif %}
+                      <div>
+                        <div class="fw-bold text-dark">{{ att.student.full_name }}</div>
+                        <small class="text-muted">Adm #{{ att.student.admission_no }} &bull; {{ att.student.current_class.name }}-{{ att.student.current_section.name }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border font-monospace in-time-cell">
+                      {{ att.check_in|time:"h:i A"|default:"---" }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border font-monospace out-time-cell">
+                      {{ att.check_out|time:"h:i A"|default:"---" }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-cell">
+                      {% if att.status == "Present" %}
+                        <span class="badge bg-success">Present</span>
+                      {% elif att.status == "Late" %}
+                        <span class="badge bg-warning text-dark">Late</span>
+                      {% elif att.status == "Absent" %}
+                        <span class="badge bg-danger">Absent</span>
+                      {% elif att.status == "Leave" %}
+                        <span class="badge bg-secondary">Leave</span>
+                      {% else %}
+                        <span class="badge bg-info text-dark">{{ att.status }}</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td><span class="badge bg-light text-muted border small">{{ att.attendance_method }}</span></td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btn-custom-change" 
+                            data-id="{{ att.student.id }}" 
+                            data-name="{{ att.student.full_name }}" 
+                            data-adm="{{ att.student.admission_no }}" 
+                            data-status="{{ att.status }}" 
+                            data-in="{{ att.check_in|time:'H:i'|default:'' }}" 
+                            data-out="{{ att.check_out|time:'H:i'|default:'' }}" 
+                            data-remarks="{{ att.remarks|default:'' }}">
+                      <i class="fas fa-user-edit me-1"></i> Change
+                    </button>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr id="empty-row">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    No students checked in yet today. Ready for scans.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Html5Qrcode Library -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<!-- Modal: Custom Attendance Editor for Principal & Vice Principal -->
+<div class="modal fade" id="customEditModal" tabindex="-1" aria-labelledby="customEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white py-3">
+        <h5 class="modal-title fw-bold" id="customEditModalLabel">
+          <i class="fas fa-user-cog text-warning me-2"></i>Principal / VP Attendance Override
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="customAttendanceForm">
+          <input type="hidden" id="edit-student-id">
+          <div class="mb-3">
+            <label class="form-label small text-muted text-uppercase fw-bold mb-1">Student</label>
+            <div class="p-2 bg-light rounded border">
+              <strong class="text-dark" id="edit-student-name">Student Name</strong>
+              <div class="small text-muted" id="edit-student-adm">Adm # 1001</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Attendance Status</label>
+            <select id="edit-status" class="form-select">
+              <option value="Present">Present</option>
+              <option value="Late">Late Comer</option>
+              <option value="Absent">Absent</option>
+              <option value="Leave">Approved Leave</option>
+              <option value="Holiday">Holiday / Off</option>
+            </select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Morning Check-In Time</label>
+              <input type="time" id="edit-check-in" class="form-control">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Afternoon Check-Out Time</label>
+              <input type="time" id="edit-check-out" class="form-control">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Official Remarks / Authority Note</label>
+            <input type="text" id="edit-remarks" class="form-control" placeholder="E.g., Authorized early leave by Principal">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer bg-light py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary fw-bold" id="btn-save-custom-att">
+          <i class="fas fa-save me-1"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Local Fallback Vendor Scripts: Html5Qrcode + jsQR High-Speed Loop -->
+<script src="{% static 'vendor/html5-qrcode.min.js' %}"></script>
+<script src="{% static 'vendor/jsQR.min.js' %}"></script>
 
 <script>
-// Web Audio API Synthesizer Chime Sound
+// Sound feedback
+const chimeAudio = document.getElementById('scan-chime-sound');
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
 function playSuccessBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (chimeAudio) {
+      chimeAudio.currentTime = 0;
+      chimeAudio.play().catch(() => playSynthBeep());
+    } else {
+      playSynthBeep();
+    }
+  } catch (e) {
+    playSynthBeep();
+  }
+}
+
+function playSynthBeep() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime); // High pleasant A5
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.15);
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
@@ -276,14 +560,13 @@ function playSuccessBeep() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.3);
-  } catch (e) {
-    console.log("Audio not supported or blocked", e);
-  }
+  } catch (e) {}
 }
 
 function playWarningBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
@@ -298,9 +581,36 @@ function playWarningBeep() {
   } catch (e) {}
 }
 
-document.getElementById('btnTestSound').addEventListener('click', function() {
-  playSuccessBeep();
-});
+document.getElementById('btnTestSound').addEventListener('click', playSuccessBeep);
+
+// Mode selector: 'in' | 'out' | 'auto'
+let currentScanMode = 'in';
+
+function setScanMode(mode) {
+  currentScanMode = mode;
+  const btnIn = document.getElementById('modeBtnIn');
+  const btnOut = document.getElementById('modeBtnOut');
+  const btnAuto = document.getElementById('modeBtnAuto');
+  const badge = document.getElementById('activeModeBadge');
+
+  btnIn.className = 'btn btn-outline-success btn-sm fw-bold mode-btn';
+  btnOut.className = 'btn btn-outline-warning text-dark btn-sm fw-bold mode-btn';
+  btnAuto.className = 'btn btn-outline-primary btn-sm fw-bold mode-btn';
+
+  if (mode === 'in') {
+    btnIn.className = 'btn btn-sm fw-bold mode-btn mode-btn-active-in';
+    badge.textContent = 'MODE: Morning IN';
+    badge.className = 'badge bg-success';
+  } else if (mode === 'out') {
+    btnOut.className = 'btn btn-sm fw-bold mode-btn mode-btn-active-out';
+    badge.textContent = 'MODE: Afternoon OUT';
+    badge.className = 'badge bg-warning text-dark';
+  } else {
+    btnAuto.className = 'btn btn-sm fw-bold mode-btn mode-btn-active-auto';
+    badge.textContent = 'MODE: Auto (1st IN, 2nd OUT)';
+    badge.className = 'badge bg-primary';
+  }
+}
 
 // Scan Processing
 let isProcessing = false;
@@ -312,8 +622,8 @@ function processScanCode(code) {
   if (!code) return;
 
   const now = Date.now();
-  if (code === lastScannedCode && (now - lastScannedTime) < 3000) {
-    return; // Debounce rapid identical scans within 3 seconds
+  if (code === lastScannedCode && (now - lastScannedTime) < 1500) {
+    return;
   }
   lastScannedCode = code;
   lastScannedTime = now;
@@ -321,24 +631,25 @@ function processScanCode(code) {
   if (isProcessing) return;
   isProcessing = true;
 
+  const scannerBox = document.getElementById('scanner-wrapper-box');
+  scannerBox.classList.add('scan-success-flash');
+  setTimeout(() => scannerBox.classList.remove('scan-success-flash'), 700);
+
   fetch("{% url 'api_process_student_qr_scan' %}", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-CSRFToken": "{{ csrf_token }}"
     },
-    body: JSON.stringify({ code: code })
+    body: JSON.stringify({ code: code, scan_mode: currentScanMode })
   })
   .then(res => res.json())
   .then(data => {
     isProcessing = false;
-    const scannerBox = document.getElementById('scanner-wrapper-box');
 
     if (data.status === 'success' || data.status === 'warning') {
       if (data.status === 'success') {
         playSuccessBeep();
-        scannerBox.classList.add('scan-success-flash');
-        setTimeout(() => scannerBox.classList.remove('scan-success-flash'), 700);
       } else {
         playWarningBeep();
       }
@@ -354,7 +665,11 @@ function processScanCode(code) {
       document.getElementById('res-adm').textContent = "Adm # " + s.admission_no;
       document.getElementById('res-class').textContent = s.class_name + " - " + s.section_name;
       document.getElementById('res-msg').innerHTML = (data.status === 'success' ? '<i class="fas fa-check-circle me-1"></i> ' : '<i class="fas fa-exclamation-circle me-1"></i> ') + data.message;
-      document.getElementById('res-time').textContent = "Checked in at: " + s.check_in;
+      document.getElementById('res-time-in').textContent = "Check-in: " + (s.check_in || "---");
+      document.getElementById('res-time-out').textContent = "Departure Out: " + (s.check_out || "---");
+
+      document.getElementById('res-badge-action').textContent = data.action === 'out' ? 'Departure OUT' : 'Morning IN';
+      document.getElementById('res-badge-action').className = 'badge ' + (data.action === 'out' ? 'bg-warning text-dark' : 'bg-success');
 
       const alertBox = document.getElementById('res-alert');
       if (data.already_marked) {
@@ -374,28 +689,12 @@ function processScanCode(code) {
         document.getElementById('stat-total-scanned').textContent = data.stats.total_scanned;
         document.getElementById('stat-male-scanned').textContent = data.stats.male_scanned;
         document.getElementById('stat-female-scanned').textContent = data.stats.female_scanned;
+        document.getElementById('stat-total-out').textContent = data.stats.total_out;
+        document.getElementById('stream-count-badge').textContent = data.stats.total_scanned + " Logged";
       }
 
-      // Prepend to log table if freshly marked
-      if (data.status === 'success') {
-        const emptyRow = document.getElementById('empty-row');
-        if (emptyRow) emptyRow.remove();
-
-        const tbody = document.getElementById('log-tbody');
-        const tr = document.createElement('tr');
-        tr.style.backgroundColor = '#ecfdf5';
-        tr.innerHTML = `
-          <td><strong>${s.check_in}</strong></td>
-          <td><span class="badge bg-light text-dark border fw-bold">${s.admission_no}</span></td>
-          <td class="fw-bold text-dark">${s.name}</td>
-          <td class="text-muted">${s.father_name || '---'}</td>
-          <td><span class="badge bg-primary">${s.class_name} - ${s.section_name}</span></td>
-          <td><span class="badge ${s.gender === 'Male' ? 'bg-info text-dark' : 'bg-danger'}">${s.gender}</span></td>
-          <td><span class="badge bg-success"><i class="fas fa-check me-1"></i> Present</span></td>
-          <td><span class="badge bg-secondary">QR Code</span></td>
-        `;
-        tbody.insertBefore(tr, tbody.firstChild);
-      }
+      // Update Table Row
+      updateStudentTableRow(s);
     } else {
       playWarningBeep();
       alert("Error: " + (data.message || "Failed to process scan"));
@@ -403,8 +702,10 @@ function processScanCode(code) {
 
     // Reset manual input
     const manualInput = document.getElementById('manual-admission-input');
-    manualInput.value = "";
-    manualInput.focus();
+    if (manualInput) {
+      manualInput.value = "";
+      manualInput.focus();
+    }
   })
   .catch(err => {
     isProcessing = false;
@@ -412,56 +713,388 @@ function processScanCode(code) {
   });
 }
 
-// Manual and USB barcode scanner enter key handler
+function updateStudentTableRow(s) {
+  const emptyRow = document.getElementById('empty-row');
+  if (emptyRow) emptyRow.remove();
+
+  const tbody = document.getElementById('log-tbody');
+  let row = document.getElementById('student-row-' + s.id);
+
+  const statusBadge = s.status === 'Present' ? '<span class="badge bg-success">Present</span>' :
+                      s.status === 'Late' ? '<span class="badge bg-warning text-dark">Late</span>' :
+                      s.status === 'Absent' ? '<span class="badge bg-danger">Absent</span>' :
+                      `<span class="badge bg-secondary">${s.status}</span>`;
+
+  const photoHtml = s.photo_url 
+    ? `<img src="${s.photo_url}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">`
+    : `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 small fw-bold" style="width: 32px; height: 32px;">${s.name.charAt(0)}</div>`;
+
+  const html = `
+    <td>
+      <div class="d-flex align-items-center">
+        ${photoHtml}
+        <div>
+          <div class="fw-bold text-dark">${s.name}</div>
+          <small class="text-muted">Adm #${s.admission_no} &bull; ${s.class_name}-${s.section_name}</small>
+        </div>
+      </div>
+    </td>
+    <td><span class="badge bg-light text-dark border font-monospace in-time-cell">${s.check_in || '---'}</span></td>
+    <td><span class="badge bg-light text-dark border font-monospace out-time-cell">${s.check_out || '---'}</span></td>
+    <td><span class="status-cell">${statusBadge}</span></td>
+    <td><span class="badge bg-light text-muted border small">${s.attendance_method || 'QR Code'}</span></td>
+    <td class="text-end">
+      <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btn-custom-change" 
+              data-id="${s.id}" 
+              data-name="${s.name}" 
+              data-adm="${s.admission_no}" 
+              data-status="${s.status}" 
+              data-in="${s.check_in || ''}" 
+              data-out="${s.check_out || ''}" 
+              data-remarks="">
+        <i class="fas fa-user-edit me-1"></i> Change
+      </button>
+    </td>
+  `;
+
+  if (row) {
+    row.innerHTML = html;
+    row.classList.add('table-info');
+    setTimeout(() => row.classList.remove('table-info'), 1500);
+  } else {
+    row = document.createElement('tr');
+    row.id = 'student-row-' + s.id;
+    row.innerHTML = html;
+    tbody.insertBefore(row, tbody.firstChild);
+    row.classList.add('table-success');
+    setTimeout(() => row.classList.remove('table-success'), 1500);
+  }
+}
+
+// Manual Form & USB Gun Submission
+const manualForm = document.getElementById('manual-scan-form');
 const manualInput = document.getElementById('manual-admission-input');
-manualInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
+
+manualForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const val = manualInput.value.trim();
+  if (val) processScanCode(val);
+});
+
+// Auto-pickup on student datalist pick
+const studentDatalistOptions = Array.from(document.querySelectorAll('#students-datalist option')).map(o => o.value);
+manualInput.addEventListener('input', function() {
+  const val = manualInput.value.trim();
+  if (studentDatalistOptions.includes(val)) {
+    processScanCode(val);
+  }
+});
+
+// Quick Dropdown Selector
+const quickSelect = document.getElementById('quick-student-select');
+quickSelect.addEventListener('change', function() {
+  if (this.value) {
     processScanCode(this.value);
+    this.value = '';
   }
 });
-document.getElementById('btn-manual-submit').addEventListener('click', function() {
-  processScanCode(manualInput.value);
+document.getElementById('btn-quick-punch').addEventListener('click', function() {
+  if (quickSelect.value) {
+    processScanCode(quickSelect.value);
+    quickSelect.value = '';
+  }
 });
 
-// Setup Camera Scanner using Html5Qrcode
-let html5QrCode = null;
-let currentFacingMode = "environment";
+// Quick Roster 1-Click Punch buttons
+document.querySelectorAll('.btn-punch-student').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const adm = this.getAttribute('data-adm');
+    if (adm) processScanCode(adm);
+  });
+});
 
-function startCamera() {
-  if (typeof Html5Qrcode === 'undefined') {
-    console.log("Html5Qrcode not yet loaded");
-    return;
-  }
-  html5QrCode = new Html5Qrcode("qr-reader");
-  const config = { fps: 15, qrbox: { width: 220, height: 220 } };
-
-  html5QrCode.start(
-    { facingMode: currentFacingMode },
-    config,
-    (decodedText) => {
-      processScanCode(decodedText);
-    },
-    (errorMessage) => {
-      // scanning frames, ignore regular miss
-    }
-  ).catch(err => {
-    console.log("Camera access denied or unavailable: ", err);
+// Filter in quick roster list
+const filterInput = document.getElementById('filter-students-input');
+if (filterInput) {
+  filterInput.addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    document.querySelectorAll('#students-quick-list li').forEach(item => {
+      const text = item.getAttribute('data-search') || '';
+      item.style.display = text.includes(q) ? 'flex' : 'none';
+    });
   });
 }
 
-document.getElementById('btn-toggle-cam').addEventListener('click', function() {
-  if (html5QrCode) {
-    html5QrCode.stop().then(() => {
-      currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
-      startCamera();
-    }).catch(err => console.error(err));
+// Modal: Custom Attendance Override by Principal & Vice Principal
+const customModalEl = document.getElementById('customEditModal');
+const customModal = new bootstrap.Modal(customModalEl);
+
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-custom-change') || e.target.closest('.btn-edit-student-att');
+  if (btn) {
+    const sid = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    const adm = btn.getAttribute('data-adm');
+    const status = btn.getAttribute('data-status') || 'Present';
+    const checkIn = btn.getAttribute('data-in') || '';
+    const checkOut = btn.getAttribute('data-out') || '';
+    const remarks = btn.getAttribute('data-remarks') || '';
+
+    document.getElementById('edit-student-id').value = sid;
+    document.getElementById('edit-student-name').textContent = name;
+    document.getElementById('edit-student-adm').textContent = "Admission # " + adm;
+    document.getElementById('edit-status').value = status;
+    document.getElementById('edit-check-in').value = checkIn.replace(/[^\d:]/g, '').substring(0, 5);
+    document.getElementById('edit-check-out').value = checkOut.replace(/[^\d:]/g, '').substring(0, 5);
+    document.getElementById('edit-remarks').value = remarks;
+
+    customModal.show();
   }
 });
 
+document.getElementById('btn-save-custom-att').addEventListener('click', function() {
+  const sid = document.getElementById('edit-student-id').value;
+  const status = document.getElementById('edit-status').value;
+  const checkIn = document.getElementById('edit-check-in').value;
+  const checkOut = document.getElementById('edit-check-out').value;
+  const remarks = document.getElementById('edit-remarks').value;
+
+  fetch("{% url 'api_update_student_attendance' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: JSON.stringify({
+      student_id: sid,
+      status: status,
+      check_in: checkIn,
+      check_out: checkOut,
+      remarks: remarks
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      customModal.hide();
+      playSuccessBeep();
+      if (data.stats) {
+        document.getElementById('stat-total-scanned').textContent = data.stats.total_scanned;
+        document.getElementById('stat-male-scanned').textContent = data.stats.male_scanned;
+        document.getElementById('stat-female-scanned').textContent = data.stats.female_scanned;
+        document.getElementById('stat-total-out').textContent = data.stats.total_out;
+      }
+      // Refresh row
+      const row = document.getElementById('student-row-' + sid);
+      if (row) {
+        row.querySelector('.in-time-cell').textContent = data.student.check_in || '---';
+        row.querySelector('.out-time-cell').textContent = data.student.check_out || '---';
+        row.querySelector('.status-cell').innerHTML = `<span class="badge ${data.student.status === 'Present' ? 'bg-success' : 'bg-warning text-dark'}">${data.student.status}</span>`;
+      }
+    } else {
+      alert("Error: " + (data.message || "Failed to update attendance"));
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Connection error occurred.");
+  });
+});
+
+// Dual Engine Camera Scanner Setup (Html5Qrcode + High-Speed Adaptive jsQR)
+let html5QrCode = null;
+let isCameraRunning = false;
+let currentCameraId = null;
+let currentFacingMode = "user";
+let jsQrTimer = null;
+const offscreenCanvas = document.createElement('canvas');
+const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+
+const btnToggleCam = document.getElementById('btn-toggle-camera');
+const camSelect = document.getElementById('camera-select');
+const camStatusBadge = document.getElementById('camera-status-badge');
+const btnFlipCam = document.getElementById('btn-flip-cam');
+const btnTorch = document.getElementById('btn-torch');
+let isTorchActive = false;
+
+function initCamera() {
+  if (!html5QrCode && typeof Html5Qrcode !== 'undefined') {
+    html5QrCode = new Html5Qrcode("qr-reader");
+  }
+}
+
+function startJsQrLoop() {
+  if (jsQrTimer) clearInterval(jsQrTimer);
+  jsQrTimer = setInterval(() => {
+    if (isProcessing) return;
+    const video = document.querySelector("#qr-reader video");
+    if (!video || video.readyState < 2 || video.videoWidth === 0) return;
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const targetW = Math.min(vw, 640);
+    const targetH = Math.round((vh / vw) * targetW);
+
+    if (offscreenCanvas.width !== targetW || offscreenCanvas.height !== targetH) {
+      offscreenCanvas.width = targetW;
+      offscreenCanvas.height = targetH;
+    }
+    offscreenCtx.drawImage(video, 0, 0, targetW, targetH);
+    const frame = offscreenCtx.getImageData(0, 0, targetW, targetH);
+
+    if (window.jsQR) {
+      const res = jsQR(frame.data, targetW, targetH, { inversionAttempts: "attemptBoth" });
+      if (res && res.data) {
+        processScanCode(res.data);
+      }
+    }
+  }, 70);
+}
+
+function stopJsQrLoop() {
+  if (jsQrTimer) {
+    clearInterval(jsQrTimer);
+    jsQrTimer = null;
+  }
+}
+
+// Camera Enumeration
+if (typeof Html5Qrcode !== 'undefined') {
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      camSelect.innerHTML = '';
+      devices.forEach((cam, idx) => {
+        const opt = document.createElement('option');
+        opt.value = cam.id;
+        opt.text = cam.label || `Camera ${idx + 1}`;
+        camSelect.appendChild(opt);
+      });
+      currentCameraId = devices[0].id;
+      camSelect.value = currentCameraId;
+    }
+  }).catch(err => console.warn(err));
+}
+
+camSelect.addEventListener('change', function() {
+  currentCameraId = this.value;
+  if (isCameraRunning) {
+    stopCamera().then(() => startCamera());
+  }
+});
+
+btnFlipCam.addEventListener('click', function() {
+  currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+  currentCameraId = null;
+  if (isCameraRunning) {
+    stopCamera().then(() => startCamera());
+  } else {
+    startCamera();
+  }
+});
+
+function startCamera() {
+  initCamera();
+  getAudioContext();
+  const config = { fps: 20, aspectRatio: 1.0, disableFlip: false };
+  const param = currentCameraId ? currentCameraId : { facingMode: currentFacingMode };
+
+  return html5QrCode.start(
+    param,
+    config,
+    (decodedText) => processScanCode(decodedText),
+    (err) => {}
+  ).then(() => {
+    isCameraRunning = true;
+    btnToggleCam.innerHTML = '<i class="fas fa-video-slash me-1"></i> Stop Camera';
+    btnToggleCam.className = 'btn btn-danger btn-sm w-100 fw-bold py-2 fs-6';
+    camStatusBadge.textContent = 'Active Scanning';
+    camStatusBadge.className = 'badge bg-success';
+    document.getElementById('scanner-laser').style.display = 'block';
+    document.getElementById('scanner-target-box').style.display = 'block';
+    startJsQrLoop();
+  }).catch(err => {
+    console.warn("Fallback camera start:", err);
+    return html5QrCode.start(
+      { facingMode: currentFacingMode },
+      config,
+      (decodedText) => processScanCode(decodedText),
+      (err) => {}
+    ).then(() => {
+      isCameraRunning = true;
+      btnToggleCam.innerHTML = '<i class="fas fa-video-slash me-1"></i> Stop Camera';
+      btnToggleCam.className = 'btn btn-danger btn-sm w-100 fw-bold py-2 fs-6';
+      camStatusBadge.textContent = 'Active Scanning';
+      camStatusBadge.className = 'badge bg-success';
+      document.getElementById('scanner-laser').style.display = 'block';
+      document.getElementById('scanner-target-box').style.display = 'block';
+      startJsQrLoop();
+    }).catch(finalErr => {
+      alert("Camera Note: Live camera streaming requires camera permission or HTTPS/Localhost.");
+    });
+  });
+}
+
+function stopCamera() {
+  stopJsQrLoop();
+  document.getElementById('scanner-laser').style.display = 'none';
+  document.getElementById('scanner-target-box').style.display = 'none';
+
+  if (html5QrCode && isCameraRunning) {
+    return html5QrCode.stop().then(() => {
+      isCameraRunning = false;
+      btnToggleCam.innerHTML = '<i class="fas fa-video me-1"></i> Start Camera Scanner';
+      btnToggleCam.className = 'btn btn-primary btn-sm w-100 fw-bold py-2 fs-6';
+      camStatusBadge.textContent = 'Standby';
+      camStatusBadge.className = 'badge bg-secondary';
+    });
+  }
+  return Promise.resolve();
+}
+
+btnToggleCam.addEventListener('click', function() {
+  if (isCameraRunning) {
+    stopCamera();
+  } else {
+    startCamera();
+  }
+});
+
+// File Image & Mobile Snap Handlers
+const fileInput = document.getElementById('student-file-input');
+if (fileInput) {
+  fileInput.addEventListener('change', function(e) {
+    if (e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    initCamera();
+    html5QrCode.scanFile(file, true).then(code => {
+      processScanCode(code);
+      fileInput.value = '';
+    }).catch(() => {
+      alert("Could not detect QR code in the image.");
+      fileInput.value = '';
+    });
+  });
+}
+
+const mobileSnap = document.getElementById('mobile-student-cam');
+if (mobileSnap) {
+  mobileSnap.addEventListener('change', function(e) {
+    if (e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    initCamera();
+    html5QrCode.scanFile(file, true).then(code => {
+      processScanCode(code);
+      mobileSnap.value = '';
+    }).catch(() => {
+      alert("Could not detect QR code in the snapshot.");
+      mobileSnap.value = '';
+    });
+  });
+}
+
 window.addEventListener('load', function() {
   startCamera();
-  manualInput.focus();
+  if (manualInput) manualInput.focus();
 });
 </script>
 {% endblock %}

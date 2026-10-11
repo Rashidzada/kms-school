@@ -32,6 +32,7 @@ urlpatterns = [
     path("id-cards/", views.all_student_id_cards, name="all_student_id_cards"),
     path("attendance/scan/", views.student_qr_attendance_scan, name="student_qr_attendance_scan"),
     path("attendance/api/scan/", views.api_process_student_qr_scan, name="api_process_student_qr_scan"),
+    path("attendance/api/update/", views.api_update_student_attendance, name="api_update_student_attendance"),
     path("attendance/daily/", views.student_daily_attendance, name="student_daily_attendance"),
     path("attendance/daily/print/", views.student_daily_attendance_print, name="student_daily_attendance_print"),
     path("attendance/monthly-sheet/", views.student_monthly_attendance_sheet, name="student_monthly_attendance_sheet"),

@@ -174,6 +174,7 @@ class StudentAttendance(models.Model):
     date = models.DateField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Present")
     check_in = models.TimeField(null=True, blank=True)
+    check_out = models.TimeField(null=True, blank=True)
     attendance_method = models.CharField(
         max_length=20, choices=METHOD_CHOICES, default="QR Code"
     )

@@ -1009,6 +1009,7 @@ def api_process_qr_scan(request):
     """
     AJAX handler for live QR barcode scans. Handles Check-in, Check-out,
     late minutes calculation, and instant hourly/daily cutting amounts.
+    Supports scan_mode: 'auto', 'in', 'out'.
     """
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "POST method required."}, status=405)
@@ -1019,6 +1020,7 @@ def api_process_qr_scan(request):
         data = request.POST
 
     raw_code = str(data.get("code", "")).strip()
+    scan_mode = str(data.get("scan_mode", "auto")).lower()
     if not raw_code:
         return JsonResponse({"success": False, "message": "No QR code detected."})
 
@@ -1043,7 +1045,6 @@ def api_process_qr_scan(request):
             "message": f"Staff ID '{raw_code}' not found in school database.",
         })
 
-
     now_dt = timezone.localtime(timezone.now())
     today = now_dt.date()
     now_time = now_dt.time().replace(microsecond=0)
@@ -1052,31 +1053,49 @@ def api_process_qr_scan(request):
     att = TeacherAttendance.objects.filter(teacher=teacher, date=today).first()
 
     if not att:
-        # First scan of the day -> Check In
-        att = TeacherAttendance(
-            teacher=teacher,
-            date=today,
-            check_in=now_time,
-            attendance_method="QR Code",
-            status="Present",
-        )
-        att.calculate_and_apply_deduction(setting)
-        att.save()
-        action = "check_in"
-        msg = f"Check-In recorded at {now_time.strftime('%I:%M %p')}."
-    else:
-        # Subsequent scan -> Check Out
-        if not att.check_out:
-            att.check_out = now_time
+        # First scan of the day
+        if scan_mode == "out":
+            att = TeacherAttendance(
+                teacher=teacher,
+                date=today,
+                check_in=now_time,
+                check_out=now_time,
+                attendance_method="QR Code",
+                status="Present",
+            )
             action = "check_out"
             msg = f"Check-Out recorded at {now_time.strftime('%I:%M %p')}."
         else:
-            att.check_out = now_time
-            action = "check_out_updated"
-            msg = f"Check-Out updated to {now_time.strftime('%I:%M %p')}."
-
+            att = TeacherAttendance(
+                teacher=teacher,
+                date=today,
+                check_in=now_time,
+                attendance_method="QR Code",
+                status="Present",
+            )
+            action = "check_in"
+            msg = f"Check-In recorded at {now_time.strftime('%I:%M %p')}."
         att.calculate_and_apply_deduction(setting)
         att.save()
+    else:
+        # Existing attendance
+        if scan_mode == "in":
+            # Explicit check-in request when already present
+            action = "check_in"
+            msg = f"{teacher.full_name} is already checked in at {att.check_in.strftime('%I:%M %p') if att.check_in else 'Earlier'}."
+        else:
+            # Check out or auto
+            if not att.check_out:
+                att.check_out = now_time
+                action = "check_out"
+                msg = f"Check-Out recorded at {now_time.strftime('%I:%M %p')}."
+            else:
+                att.check_out = now_time
+                action = "check_out_updated"
+                msg = f"Check-Out updated to {now_time.strftime('%I:%M %p')}."
+
+            att.calculate_and_apply_deduction(setting)
+            att.save()
 
     photo_url = teacher.profile_picture.url if teacher.profile_picture else ""
 
@@ -1099,6 +1118,100 @@ def api_process_qr_scan(request):
         "working_hours": float(att.working_hours),
         "deduction_amount": float(att.deduction_amount),
         "bonus_amount": float(att.bonus_amount),
+    })
+
+
+@login_required
+def api_update_teacher_attendance(request):
+    """
+    Custom override API for Principal & Vice Principal to edit a teacher's status,
+    check_in, check_out, deduction, bonus or remarks for any given date.
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "POST method required."}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    teacher_id = data.get("teacher_id")
+    date_str = data.get("date")
+    status = data.get("status", "Present")
+    check_in_str = data.get("check_in", "").strip()
+    check_out_str = data.get("check_out", "").strip()
+    deduction_str = data.get("deduction", "0.00").strip()
+    bonus_str = data.get("bonus", "0.00").strip()
+    remarks = data.get("remarks", "").strip()
+
+    teacher = get_object_or_404(Teacher, pk=teacher_id)
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            target_date = timezone.localtime(timezone.now()).date()
+    else:
+        target_date = timezone.localtime(timezone.now()).date()
+
+    check_in_val = None
+    if check_in_str:
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+            try:
+                check_in_val = datetime.strptime(check_in_str, fmt).time()
+                break
+            except ValueError:
+                pass
+
+    check_out_val = None
+    if check_out_str:
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+            try:
+                check_out_val = datetime.strptime(check_out_str, fmt).time()
+                break
+            except ValueError:
+                pass
+
+    try:
+        deduction_val = Decimal(deduction_str or "0.00")
+    except Exception:
+        deduction_val = Decimal("0.00")
+
+    try:
+        bonus_val = Decimal(bonus_str or "0.00")
+    except Exception:
+        bonus_val = Decimal("0.00")
+
+    att, _ = TeacherAttendance.objects.get_or_create(
+        teacher=teacher,
+        date=target_date,
+        defaults={"attendance_method": "Manual"}
+    )
+    att.status = status
+    if check_in_val or check_in_str:
+        att.check_in = check_in_val
+    if check_out_val or check_out_str:
+        att.check_out = check_out_val
+    att.deduction_amount = deduction_val
+    att.bonus_amount = bonus_val
+    att.remarks = remarks or f"Custom edit by Principal/VP ({request.user.username})"
+    att.attendance_method = "Manual Override"
+    att.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": f"Successfully updated attendance for {teacher.full_name}.",
+        "teacher": {
+            "id": teacher.pk,
+            "staff_id": teacher.teacher_id,
+            "name": teacher.full_name,
+            "status": att.status,
+            "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "",
+            "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "",
+            "late_minutes": att.late_minutes,
+            "deduction_amount": float(att.deduction_amount),
+            "bonus_amount": float(att.bonus_amount),
+            "remarks": att.remarks,
+        }
     })
 
 

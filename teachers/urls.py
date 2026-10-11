@@ -17,6 +17,7 @@ urlpatterns = [
     # KMS V4 Teacher Attendance & QR Code System Routes
     path("attendance/scan/", views.qr_attendance_scan, name="qr_attendance_scan"),
     path("attendance/api/scan/", views.api_process_qr_scan, name="api_process_qr_scan"),
+    path("attendance/api/update/", views.api_update_teacher_attendance, name="api_update_teacher_attendance"),
     path("attendance/daily/", views.daily_attendance_register, name="daily_attendance_register"),
     path("attendance/daily/print/", views.daily_attendance_print, name="daily_attendance_print"),
     path("attendance/biometric-import/", views.biometric_fingerprint_import, name="biometric_fingerprint_import"),

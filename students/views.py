@@ -1380,6 +1380,7 @@ def all_student_id_cards(request):
 def student_qr_attendance_scan(request):
     """
     Live real-time webcam and USB barcode/QR scanner terminal for student attendance.
+    Includes Morning IN and Afternoon OUT modes, live stats, and custom updates.
     """
     today = timezone.localtime(timezone.now()).date()
     today_attendances = (
@@ -1391,16 +1392,21 @@ def student_qr_attendance_scan(request):
     total_scanned = today_attendances.count()
     male_scanned = today_attendances.filter(student__gender="Male").count()
     female_scanned = today_attendances.filter(student__gender="Female").count()
+    total_out = today_attendances.filter(check_out__isnull=False).count()
+
+    active_students = Student.objects.filter(status="Active").select_related("current_class", "current_section").order_by("admission_no")
 
     return render(
         request,
         "students/student_qr_scan.html",
         {
             "today": today,
-            "today_attendances": today_attendances[:50],
+            "today_attendances": today_attendances[:100],
             "total_scanned": total_scanned,
             "male_scanned": male_scanned,
             "female_scanned": female_scanned,
+            "total_out": total_out,
+            "active_students": active_students,
         },
     )
 
@@ -1408,30 +1414,48 @@ def student_qr_attendance_scan(request):
 @login_required
 def api_process_student_qr_scan(request):
     """
-    Fast JSON API to mark student attendance instantly from QR scan.
-    Accepts student admission_no or QR payload.
+    Fast JSON API to mark student attendance instantly from QR scan or barcode.
+    Supports scan_mode: 'auto', 'in', or 'out'.
     """
     if request.method not in ["POST", "GET"]:
         return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
 
     code = ""
+    scan_mode = "auto"
     if request.method == "POST":
         try:
             data = json.loads(request.body.decode("utf-8")) if request.body else {}
             code = data.get("code", "")
+            scan_mode = data.get("scan_mode", "auto")
         except Exception:
             code = request.POST.get("code", "")
+            scan_mode = request.POST.get("scan_mode", "auto")
     if not code:
         code = request.GET.get("code", "")
+        scan_mode = request.GET.get("scan_mode", "auto")
 
     code = str(code).strip()
     if not code:
         return JsonResponse({"status": "error", "message": "No QR Code received."}, status=400)
 
-    # Resolve student by admission_no or ID
-    student = Student.objects.filter(admission_no__iexact=code).select_related("current_class", "current_section").first()
-    if not student and code.isdigit():
-        student = Student.objects.filter(id=int(code)).select_related("current_class", "current_section").first()
+    # Clean prefix if any
+    clean_code = code
+    if "KMS-STUDENT:" in code.upper():
+        clean_code = code.split(":", 1)[1].strip()
+    elif " - " in clean_code:
+        clean_code = clean_code.split(" - ")[0].strip()
+
+    # Resolve student by admission_no or ID or Name
+    student = Student.objects.filter(
+        Q(admission_no__iexact=clean_code) |
+        Q(admission_no__iexact=code)
+    ).select_related("current_class", "current_section").first()
+
+    if not student and clean_code.isdigit():
+        student = Student.objects.filter(id=int(clean_code)).select_related("current_class", "current_section").first()
+
+    if not student:
+        student = Student.objects.filter(full_name__iexact=clean_code).select_related("current_class", "current_section").first()
 
     if not student:
         return JsonResponse({
@@ -1440,38 +1464,74 @@ def api_process_student_qr_scan(request):
         }, status=404)
 
     today = timezone.localtime(timezone.now()).date()
-    now_time = timezone.localtime(timezone.now()).time()
+    now_time = timezone.localtime(timezone.now()).time().replace(microsecond=0)
 
-    att, created = StudentAttendance.objects.get_or_create(
-        student=student,
-        date=today,
-        defaults={
-            "status": "Present",
-            "check_in": now_time,
-            "attendance_method": "QR Code",
-            "remarks": "Marked via QR Scan",
-        }
-    )
-
+    att = StudentAttendance.objects.filter(student=student, date=today).first()
+    action = "in"
     already_marked = False
-    if not created:
-        already_marked = True
-        scan_time_str = att.check_in.strftime("%I:%M:%S %p") if att.check_in else "Earlier Today"
-        msg = f"{student.full_name} was already marked {att.status} at {scan_time_str}."
+
+    if not att:
+        # First entry of the day
+        if scan_mode == "out":
+            att = StudentAttendance.objects.create(
+                student=student,
+                date=today,
+                status="Present",
+                check_in=now_time,
+                check_out=now_time,
+                attendance_method="QR Code",
+                remarks="Checked Out via QR Scan",
+            )
+            action = "out"
+            msg = f"SUCCESS: {student.full_name} marked Out ({now_time.strftime('%I:%M %p')})."
+        else:
+            att = StudentAttendance.objects.create(
+                student=student,
+                date=today,
+                status="Present",
+                check_in=now_time,
+                attendance_method="QR Code",
+                remarks="Morning Check-In via QR Scan",
+            )
+            action = "in"
+            msg = f"SUCCESS: {student.full_name} marked Present / Check-In ({now_time.strftime('%I:%M %p')})."
     else:
-        scan_time_str = now_time.strftime("%I:%M:%S %p")
-        msg = f"SUCCESS: {student.full_name} marked Present ({scan_time_str})."
+        # Existing record
+        if scan_mode == "out":
+            att.check_out = now_time
+            att.attendance_method = "QR Code"
+            att.save()
+            action = "out"
+            msg = f"SUCCESS: {student.full_name} Departure / Check-Out recorded ({now_time.strftime('%I:%M %p')})."
+        elif scan_mode == "in":
+            already_marked = True
+            in_str = att.check_in.strftime('%I:%M %p') if att.check_in else 'Earlier'
+            msg = f"{student.full_name} was already checked in at {in_str}."
+        else:
+            # Auto mode: if has check_in but no check_out, record check_out
+            if not att.check_out:
+                att.check_out = now_time
+                att.save()
+                action = "out"
+                msg = f"SUCCESS: {student.full_name} Departure / Check-Out recorded ({now_time.strftime('%I:%M %p')})."
+            else:
+                att.check_out = now_time
+                att.save()
+                action = "out"
+                msg = f"Check-Out updated for {student.full_name} at {now_time.strftime('%I:%M %p')}."
 
     # Summary counts for today
     today_all = StudentAttendance.objects.filter(date=today)
     tot_count = today_all.count()
     m_count = today_all.filter(student__gender="Male").count()
     f_count = today_all.filter(student__gender="Female").count()
+    out_count = today_all.filter(check_out__isnull=False).count()
 
     photo_url = student.profile_picture.url if student.profile_picture else ""
 
     return JsonResponse({
         "status": "warning" if already_marked else "success",
+        "action": action,
         "already_marked": already_marked,
         "message": msg,
         "student": {
@@ -1484,12 +1544,100 @@ def api_process_student_qr_scan(request):
             "section_name": student.current_section.name if student.current_section else "---",
             "photo_url": photo_url,
             "status": att.status,
-            "check_in": scan_time_str,
+            "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "---",
+            "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "---",
+            "attendance_method": att.attendance_method,
         },
         "stats": {
             "total_scanned": tot_count,
             "male_scanned": m_count,
             "female_scanned": f_count,
+            "total_out": out_count,
+        }
+    })
+
+
+@login_required
+def api_update_student_attendance(request):
+    """
+    Custom override API for Principal & Vice Principal to modify attendance status,
+    check_in, check_out, or remarks for any student on a given date.
+    """
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "POST required"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    student_id = data.get("student_id")
+    date_str = data.get("date")
+    new_status = data.get("status", "Present")
+    check_in_str = data.get("check_in", "").strip()
+    check_out_str = data.get("check_out", "").strip()
+    remarks = data.get("remarks", "").strip()
+
+    student = get_object_or_404(Student, pk=student_id)
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            target_date = timezone.localtime(timezone.now()).date()
+    else:
+        target_date = timezone.localtime(timezone.now()).date()
+
+    check_in_val = None
+    if check_in_str:
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+            try:
+                check_in_val = datetime.strptime(check_in_str, fmt).time()
+                break
+            except ValueError:
+                pass
+
+    check_out_val = None
+    if check_out_str:
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p", "%I:%M%p"):
+            try:
+                check_out_val = datetime.strptime(check_out_str, fmt).time()
+                break
+            except ValueError:
+                pass
+
+    att, _ = StudentAttendance.objects.get_or_create(
+        student=student,
+        date=target_date,
+        defaults={"attendance_method": "Manual"}
+    )
+    att.status = new_status
+    if check_in_val or check_in_str:
+        att.check_in = check_in_val
+    if check_out_val or check_out_str:
+        att.check_out = check_out_val
+    att.remarks = remarks or f"Modified by Principal/VP ({request.user.username})"
+    att.attendance_method = "Manual Override"
+    att.save()
+
+    # Recalculate stats
+    today_all = StudentAttendance.objects.filter(date=target_date)
+    return JsonResponse({
+        "status": "success",
+        "message": f"Updated attendance for {student.full_name} ({att.status}).",
+        "student": {
+            "id": student.id,
+            "admission_no": student.admission_no,
+            "name": student.full_name,
+            "status": att.status,
+            "check_in": att.check_in.strftime("%I:%M %p") if att.check_in else "---",
+            "check_out": att.check_out.strftime("%I:%M %p") if att.check_out else "---",
+            "remarks": att.remarks,
+        },
+        "stats": {
+            "total_scanned": today_all.count(),
+            "male_scanned": today_all.filter(student__gender="Male").count(),
+            "female_scanned": today_all.filter(student__gender="Female").count(),
+            "total_out": today_all.filter(check_out__isnull=False).count(),
         }
     })
 

@@ -12,4 +12,8 @@ urlpatterns = [
     path("classes/download-template/", views.download_class_template, name="download_class_template"),
     path("classes/import-excel/", views.import_classes_excel, name="import_classes_excel"),
     path("sections/add/", views.section_create, name="section_create"),
+
+    # Software License & Subscription Management (Vendor / Developer Portal)
+    path("license/expired/", views.license_expired, name="license_expired"),
+    path("license/portal/", views.license_developer_portal, name="license_developer_portal"),
 ]

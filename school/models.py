@@ -87,3 +87,76 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.class_level.name} - {self.name}"
+
+
+class SoftwareLicense(models.Model):
+    """
+    Standard Software License & Subscription Management:
+    Allows the software vendor/developer to issue time-limited trials or subscriptions
+    (minutes, hours, days, months, or years) to client schools. When expired, access
+    is paused to a contact & renewal screen until renewed with the Developer Master Key.
+    """
+    client_name = models.CharField(max_length=255, default="Kohisar Model School & College")
+    license_key = models.CharField(max_length=100, blank=True, default="KMS-LIC-STD-2026")
+    developer_name = models.CharField(max_length=150, default="Rashid Zada (Lead Software Engineer)")
+    developer_phone = models.CharField(max_length=50, default="+92 344 9631323")
+    developer_whatsapp = models.CharField(max_length=50, default="+92 344 9631323")
+    developer_email = models.EmailField(blank=True, default="developer@kms.edu.pk")
+    developer_master_pin = models.CharField(
+        max_length=100,
+        default="Rashid@9631",
+        help_text="Developer Master Key required to extend or reactivate software license",
+    )
+
+    is_active = models.BooleanField(default=True)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="License expiration date and time")
+
+    notes = models.TextField(blank=True, help_text="Developer private agreement terms / payment record")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Software License & Subscription"
+        verbose_name_plural = "Software Licenses & Subscriptions"
+
+    def __str__(self):
+        status = "Active" if self.is_valid() else "Expired"
+        return f"{self.client_name} - {status} (Expires: {self.expires_at})"
+
+    def is_valid(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return False
+        return timezone.now() <= self.expires_at
+
+    def time_remaining_display(self):
+        from django.utils import timezone
+        if not self.is_valid():
+            return "Expired"
+        diff = self.expires_at - timezone.now()
+        days = diff.days
+        hours = diff.seconds // 3600
+        mins = (diff.seconds % 3600) // 60
+        if days > 0:
+            return f"{days} days, {hours} hrs"
+        elif hours > 0:
+            return f"{hours} hrs, {mins} mins"
+        else:
+            return f"{max(0, mins)} mins"
+
+    @classmethod
+    def get_license(cls):
+        from django.utils import timezone
+        from datetime import timedelta
+        lic = cls.objects.first()
+        if not lic:
+            lic = cls.objects.create(
+                client_name="Kohisar Model School & College",
+                license_key="KMS-LIC-MASTER-2026",
+                developer_name="Rashid Zada (Lead Software Engineer)",
+                developer_phone="+92 344 9631323",
+                developer_whatsapp="+92 344 9631323",
+                developer_master_pin="Rashid@9631",
+                expires_at=timezone.now() + timedelta(days=365),
+            )
+        return lic

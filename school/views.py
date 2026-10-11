@@ -1,11 +1,12 @@
 import os
+from datetime import datetime, timedelta
 from decimal import Decimal
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -16,7 +17,7 @@ from .excel_utils import (
 )
 
 from .forms import AcademicSessionForm, ClassLevelForm, SchoolSettingForm, SectionForm
-from .models import AcademicSession, ClassLevel, SchoolSetting, Section
+from .models import AcademicSession, ClassLevel, SchoolSetting, Section, SoftwareLicense
 
 
 @login_required
@@ -395,4 +396,132 @@ def custom_server_error(request):
     Custom 500 handler for unexpected server errors.
     """
     return render(request, "500.html", status=500)
+
+
+def license_expired(request):
+    """
+    Subscription / License Expiration Notice:
+    Displayed when a school trial or subscription period has elapsed.
+    Presents client school status and developer contact channels (Phone & WhatsApp).
+    """
+    lic = SoftwareLicense.get_license()
+    if lic.is_valid():
+        return redirect("dashboard")
+    return render(request, "license/expired.html", {"license": lic})
+
+
+def license_developer_portal(request):
+    """
+    Secure Developer & Vendor License Management Console:
+    Protected by Developer Master Key / PIN.
+    Allows extending the license for custom intervals (minutes, hours, days, months, years)
+    and updating client school details.
+    """
+    lic = SoftwareLicense.get_license()
+    is_authenticated = request.session.get("dev_portal_auth", False) or (request.user.is_authenticated and request.user.is_superuser)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+
+        if action == "verify_pin":
+            entered_pin = request.POST.get("developer_pin", "").strip()
+            if entered_pin == lic.developer_master_pin or (request.user.is_authenticated and request.user.is_superuser):
+                request.session["dev_portal_auth"] = True
+                messages.success(request, "Developer Master Key verified successfully.")
+                return redirect("license_developer_portal")
+            else:
+                messages.error(request, "Invalid Developer Master Key. Access denied.")
+                return redirect("license_developer_portal")
+
+        if not is_authenticated:
+            messages.error(request, "Authentication required to modify license.")
+            return redirect("license_developer_portal")
+
+        if action == "logout_dev":
+            request.session.pop("dev_portal_auth", None)
+            messages.info(request, "Developer session closed.")
+            return redirect("license_developer_portal")
+
+        if action == "extend_preset":
+            preset = request.POST.get("preset", "")
+            now = timezone.now()
+            base_time = lic.expires_at if (lic.expires_at and lic.expires_at > now) else now
+
+            if preset == "15m":
+                lic.expires_at = base_time + timedelta(minutes=15)
+            elif preset == "1h":
+                lic.expires_at = base_time + timedelta(hours=1)
+            elif preset == "2h":
+                lic.expires_at = base_time + timedelta(hours=2)
+            elif preset == "1d":
+                lic.expires_at = base_time + timedelta(days=1)
+            elif preset == "7d":
+                lic.expires_at = base_time + timedelta(days=7)
+            elif preset == "30d":
+                lic.expires_at = base_time + timedelta(days=30)
+            elif preset == "90d":
+                lic.expires_at = base_time + timedelta(days=90)
+            elif preset == "180d":
+                lic.expires_at = base_time + timedelta(days=180)
+            elif preset == "365d":
+                lic.expires_at = base_time + timedelta(days=365)
+            elif preset == "730d":
+                lic.expires_at = base_time + timedelta(days=730)
+
+            lic.is_active = True
+            lic.save()
+            messages.success(request, f"License successfully extended! New expiry: {lic.expires_at.strftime('%d-%b-%Y %I:%M %p')}.")
+            return redirect("license_developer_portal")
+
+        if action == "save_custom":
+            custom_datetime_str = request.POST.get("custom_expires_at", "").strip()
+            client_name = request.POST.get("client_name", "").strip()
+            dev_phone = request.POST.get("developer_phone", "").strip()
+            dev_whatsapp = request.POST.get("developer_whatsapp", "").strip()
+            dev_email = request.POST.get("developer_email", "").strip()
+            new_pin = request.POST.get("new_developer_pin", "").strip()
+            notes = request.POST.get("notes", "").strip()
+
+            if custom_datetime_str:
+                for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+                    try:
+                        parsed_dt = datetime.strptime(custom_datetime_str, fmt)
+                        lic.expires_at = timezone.make_aware(parsed_dt) if timezone.is_naive(parsed_dt) else parsed_dt
+                        break
+                    except ValueError:
+                        pass
+
+            if client_name:
+                lic.client_name = client_name
+            if dev_phone:
+                lic.developer_phone = dev_phone
+            if dev_whatsapp:
+                lic.developer_whatsapp = dev_whatsapp
+            if dev_email:
+                lic.developer_email = dev_email
+            if new_pin:
+                lic.developer_master_pin = new_pin
+            if notes is not None:
+                lic.notes = notes
+
+            lic.is_active = True
+            lic.save()
+            messages.success(request, f"License settings updated. Active until {lic.expires_at.strftime('%d-%b-%Y %I:%M %p')}.")
+            return redirect("license_developer_portal")
+
+        if action == "lock_now":
+            lic.expires_at = timezone.now() - timedelta(minutes=1)
+            lic.save()
+            messages.warning(request, "Software license immediately locked for testing.")
+            return redirect("license_expired")
+
+    return render(
+        request,
+        "license/portal.html",
+        {
+            "license": lic,
+            "is_authenticated": is_authenticated,
+        },
+    )
+
 

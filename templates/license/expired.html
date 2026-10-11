@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Paused &bull; Contact Developer for Renewal</title>
+  <link rel="stylesheet" href="/static/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #091a3e 0%, #17387d 50%, #0c255b 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+    .lock-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+      max-width: 680px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .lock-header {
+      background: linear-gradient(135deg, #1e40af, #1d4ed8);
+      padding: 30px 24px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .lock-icon-circle {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      animation: pulseGlow 2.5s infinite;
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .contact-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+    .btn-whatsapp {
+      background: #25d366;
+      color: #ffffff !important;
+      font-weight: 700;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-whatsapp:hover {
+      background: #1eb956;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+    }
+    .btn-call {
+      background: #3b82f6;
+      color: #ffffff !important;
+      font-weight: 700;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-call:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lock-card">
+    <!-- Header -->
+    <div class="lock-header">
+      <div class="lock-icon-circle">
+        <i class="fas fa-shield-alt text-warning"></i>
+      </div>
+      <h3 class="fw-bold mb-1">Software Subscription / License Expired</h3>
+      <p class="mb-0 text-light opacity-75 small">
+        {{ license.client_name }} &bull; License Key: {{ license.license_key|default:"KMS-LIC-STD-2026" }}
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div class="p-4 p-md-5">
+      {% if messages %}
+        <div class="mb-3">
+          {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }} py-2 text-center small mb-2">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="text-center mb-4">
+        <h5 class="fw-bold text-white mb-2">Notice to School Administration & Staff</h5>
+        <p class="text-light opacity-75 small mb-0">
+          The software subscription period for this institution has concluded. All school records and database entries remain safe and securely preserved. To restore instant system access, please contact the software engineer below.
+        </p>
+      </div>
+
+      <!-- Developer Contact Information Card -->
+      <div class="contact-card mb-4">
+        <div class="d-flex align-items-center mb-3">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 50px; height: 50px; font-size: 1.4rem;">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div>
+            <div class="small text-uppercase text-info fw-bold">Official Software Developer & Vendor</div>
+            <h5 class="fw-bold text-white mb-0">{{ license.developer_name }}</h5>
+            <small class="text-light opacity-75">Systems Architect & Lead Developer</small>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-sm-6">
+            <div class="p-2 rounded bg-dark border border-secondary text-center">
+              <small class="text-muted d-block" style="font-size: 0.72rem;">DIRECT PHONE CALL</small>
+              <strong class="text-white font-monospace">{{ license.developer_phone }}</strong>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-2 rounded bg-dark border border-secondary text-center">
+              <small class="text-muted d-block" style="font-size: 0.72rem;">OFFICIAL WHATSAPP</small>
+              <strong class="text-success font-monospace">{{ license.developer_whatsapp }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          <a href="https://wa.me/{{ license.developer_whatsapp|cut:' '|cut:'+'|cut:'-' }}?text=Hello%20Developer,%20we%20want%20to%20renew%20and%20reactivate%20the%20School%20Management%20System%20subscription%20for%20{{ license.client_name|urlencode }}." 
+             target="_blank" 
+             class="btn btn-whatsapp px-4 py-2">
+            <i class="fab fa-whatsapp me-2 fs-5 align-middle"></i> Chat on WhatsApp Now
+          </a>
+          <a href="tel:{{ license.developer_phone }}" class="btn btn-call px-4 py-2">
+            <i class="fas fa-phone-alt me-2 fs-5 align-middle"></i> Call Developer
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom: Discreet Developer / Vendor Access Button -->
+      <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center">
+        <small class="text-muted">Status: Subscription Paused &bull; Database Secured</small>
+        <button type="button" class="btn btn-outline-secondary btn-sm text-light opacity-75" data-bs-toggle="modal" data-bs-target="#devUnlockModal">
+          <i class="fas fa-key me-1"></i> Developer Portal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Developer Unlock Prompt -->
+  <div class="modal fade" id="devUnlockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-secondary">
+        <div class="modal-header border-secondary py-2">
+          <h6 class="modal-title fw-bold">
+            <i class="fas fa-user-shield text-warning me-2"></i>Developer Master Key Authentication
+          </h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'license_developer_portal' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="verify_pin">
+          <div class="modal-body p-4">
+            <p class="small text-muted mb-3">
+              This area is strictly reserved for the authorized software engineer. Enter the Master Key to extend subscription intervals or reconfigure institutional settings.
+            </p>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Developer Master Key / PIN</label>
+              <input type="password" name="developer_pin" class="form-control form-control-lg bg-black text-white border-secondary font-monospace" placeholder="Enter Developer PIN..." required autofocus>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary py-2">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary fw-bold px-3">
+              <i class="fas fa-unlock me-1"></i> Verify & Enter Portal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

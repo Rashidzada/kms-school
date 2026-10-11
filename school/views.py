@@ -413,28 +413,69 @@ def license_expired(request):
 def license_developer_portal(request):
     """
     Secure Developer & Vendor License Management Console:
-    Protected by Developer Master Key / PIN.
-    Allows extending the license for custom intervals (minutes, hours, days, months, years)
-    and updating client school details.
+    Strictly protected by Developer Master Key / PIN.
+    Only the real software developer holding the exact Master Key can access and modify software licensing.
     """
+    import time
+    from django.contrib.auth.hashers import check_password, make_password
+
     lic = SoftwareLicense.get_license()
-    is_authenticated = request.session.get("dev_portal_auth", False) or (request.user.is_authenticated and request.user.is_superuser)
+    # Developer session MUST be specifically unlocked via Master PIN (no school superuser bypass)
+    is_authenticated = request.session.get("dev_portal_auth", False)
 
     if request.method == "POST":
         action = request.POST.get("action", "")
 
         if action == "verify_pin":
+            # Brute-force protection: rate limit invalid attempts
+            now_ts = int(time.time())
+            failed_attempts = request.session.get("dev_pin_failed_attempts", 0)
+            lockout_until = request.session.get("dev_pin_lockout_until", 0)
+
+            if now_ts < lockout_until:
+                remaining_wait = lockout_until - now_ts
+                messages.error(request, f"Too many incorrect attempts. Please wait {remaining_wait} seconds.")
+                return redirect("license_developer_portal")
+
             entered_pin = request.POST.get("developer_pin", "").strip()
-            if entered_pin == lic.developer_master_pin or (request.user.is_authenticated and request.user.is_superuser):
+
+            def verify_developer_pin(input_pin, stored_pin):
+                if not input_pin or not stored_pin:
+                    return False
+                # Direct match
+                if input_pin == stored_pin:
+                    return True
+                # Constant-time comparison
+                import hmac
+                if hmac.compare_digest(input_pin, stored_pin):
+                    return True
+                # If stored as Django password hash
+                try:
+                    if stored_pin.startswith(("pbkdf2_", "argon2", "bcrypt")):
+                        return check_password(input_pin, stored_pin)
+                except Exception:
+                    pass
+                return False
+
+            if verify_developer_pin(entered_pin, lic.developer_master_pin):
+                # Successful verification
                 request.session["dev_portal_auth"] = True
-                messages.success(request, "Developer Master Key verified successfully.")
+                request.session["dev_pin_failed_attempts"] = 0
+                request.session.pop("dev_pin_lockout_until", None)
+                messages.success(request, "Developer Master Key verified successfully. Access granted.")
                 return redirect("license_developer_portal")
             else:
-                messages.error(request, "Invalid Developer Master Key. Access denied.")
+                failed_attempts += 1
+                request.session["dev_pin_failed_attempts"] = failed_attempts
+                if failed_attempts >= 5:
+                    request.session["dev_pin_lockout_until"] = now_ts + 60  # 60s cooldown
+                    messages.error(request, "Incorrect Developer PIN! 5 failed attempts reached. Locked for 60 seconds.")
+                else:
+                    messages.error(request, f"Access Denied: Invalid Developer PIN ({5 - failed_attempts} attempts remaining).")
                 return redirect("license_developer_portal")
 
         if not is_authenticated:
-            messages.error(request, "Authentication required to modify license.")
+            messages.error(request, "Access Denied: Master Developer Authentication required.")
             return redirect("license_developer_portal")
 
         if action == "logout_dev":

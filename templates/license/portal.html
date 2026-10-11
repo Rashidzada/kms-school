@@ -92,10 +92,30 @@
                 <label class="form-label small fw-bold text-light">Developer Master Key / PIN</label>
                 <input type="password" name="developer_pin" class="form-control form-control-lg bg-black text-white border-secondary font-monospace" placeholder="Enter Developer PIN..." required autofocus>
               </div>
-              <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+              <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold mb-3">
                 <i class="fas fa-unlock me-2"></i> Unlock Control Center
               </button>
             </form>
+
+            <div class="border-top border-secondary pt-3 mt-2">
+              {% if license.is_valid %}
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-light w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
+                  <i class="fas fa-home fa-lg text-info"></i>
+                  <span>Return to School Dashboard (Home)</span>
+                </a>
+                <div class="text-muted small mt-2">
+                  <i class="fas fa-shield-alt text-success me-1"></i> License is currently <span class="text-success fw-bold">Active</span> ({{ license.time_remaining_display }})
+                </div>
+              {% else %}
+                <a href="{% url 'license_expired' %}" class="btn btn-warning text-dark w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
+                  <i class="fas fa-phone-alt fa-lg"></i>
+                  <span>Contact Developer to Renew License</span>
+                </a>
+                <div class="text-danger small mt-2">
+                  <i class="fas fa-exclamation-triangle me-1"></i> License is <span class="fw-bold">Expired</span>. Contact developer for reactivation.
+                </div>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>

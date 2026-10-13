@@ -1514,11 +1514,42 @@ def send_backup_email_now(is_auto=False):
     </div>
     """
 
+    def _candidate_passwords(raw_pw: str):
+        """
+        Generates candidate 16-char Google App Passwords.
+        Also auto-recovers if a 4-letter block has an accidental doubled keystroke (e.g. 'yycaq ntxj svjj xcig' -> 'ycaqntxjsvjjxcig').
+        """
+        cleaned = raw_pw.replace(" ", "").replace("-", "").strip()
+        candidates = [cleaned]
+        parts = [p.strip() for p in raw_pw.strip().split() if p.strip()]
+        if len(parts) == 4 and len(cleaned) == 17:
+            fixed_parts = []
+            for p in parts:
+                if len(p) == 5:
+                    # Remove accidental consecutive duplicate letter in the 5-char block
+                    dedup = p[0]
+                    removed = False
+                    for ch in p[1:]:
+                        if ch == dedup[-1] and not removed:
+                            removed = True
+                            continue
+                        dedup += ch
+                    fixed_parts.append(dedup[:4])
+                else:
+                    fixed_parts.append(p)
+            cand_16 = "".join(fixed_parts)
+            if len(cand_16) == 16 and cand_16 not in candidates:
+                candidates.insert(0, cand_16)
+        elif len(cleaned) == 17 and cleaned[0] == cleaned[1]:
+            cand_16 = cleaned[1:]
+            if cand_16 not in candidates:
+                candidates.insert(0, cand_16)
+        return candidates
+
     last_error = ""
     for sender_acc in sender_accounts:
         sender_email = sender_acc.email.strip()
-        # Strip spaces from 16-char Google App Password so both 'xxxx xxxx xxxx xxxx' and 'xxxxxxxxxxxxxxxx' work
-        clean_app_pass = sender_acc.app_password.replace(" ", "").strip()
+        pw_candidates = _candidate_passwords(sender_acc.app_password)
 
         msg = MIMEMultipart()
         msg["From"] = f"{school_name} Backup <{sender_email}>"
@@ -1540,16 +1571,50 @@ def send_backup_email_now(is_auto=False):
             part_xl.add_header("Content-Disposition", f'attachment; filename="{excel_filename}"')
             msg.attach(part_xl)
 
-        try:
-            with smtplib.SMTP("smtp.gmail.com", 587, timeout=25) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                server.login(sender_email, clean_app_pass)
-                server.sendmail(sender_email, recipient_list, msg.as_string())
+        sent_ok = False
+        used_pw = None
+        for cand_pw in pw_candidates:
+            for port, use_ssl in [(465, True), (587, False)]:
+                try:
+                    if use_ssl:
+                        with smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=25) as server:
+                            server.ehlo()
+                            server.login(sender_email, cand_pw)
+                            server.sendmail(sender_email, recipient_list, msg.as_string())
+                    else:
+                        with smtplib.SMTP("smtp.gmail.com", port, timeout=25) as server:
+                            server.ehlo()
+                            server.starttls()
+                            server.ehlo()
+                            server.login(sender_email, cand_pw)
+                            server.sendmail(sender_email, recipient_list, msg.as_string())
+                    sent_ok = True
+                    used_pw = cand_pw
+                    break
+                except smtplib.SMTPAuthenticationError:
+                    last_error = (
+                        f"{sender_email}: Invalid Gmail App Password "
+                        f"(must be a 16-letter Google App Password, e.g. 'xxxx xxxx xxxx xxxx')"
+                    )
+                    break
+                except smtplib.SMTPServerDisconnected:
+                    last_error = (
+                        f"{sender_email}: Gmail rejected the App Password "
+                        f"(entered {len(cand_pw)} letters; Google App Passwords must be exactly 16 letters)"
+                    )
+                    break
+                except Exception as e:
+                    last_error = f"{sender_email}: {str(e)}"
+                    continue
+            if sent_ok:
+                break
 
+        if sent_ok:
+            # Auto-save corrected 16-char formatted password if a 17-char typo was auto-corrected
+            formatted_16 = " ".join([used_pw[i:i + 4] for i in range(0, 16, 4)]) if used_pw and len(used_pw) == 16 else sender_acc.app_password
+            sender_acc.app_password = formatted_16
             sender_acc.last_used_at = timezone.now()
-            sender_acc.save(update_fields=["last_used_at"])
+            sender_acc.save(update_fields=["app_password", "last_used_at"])
 
             success_msg = (
                 f"Full Backup (.sql + .xlsx) sent via {sender_email} "
@@ -1574,9 +1639,6 @@ def send_backup_email_now(is_auto=False):
                 details=success_msg,
             )
             return True, success_msg
-        except Exception as e:
-            last_error = f"{sender_email}: {str(e)}"
-            continue
 
     fail_msg = f"Email sending failed ({last_error}). Local backup files were still saved in backups/ folder ({sql_filename}, {excel_filename})."
     setting.last_auto_backup_status = "Failed"

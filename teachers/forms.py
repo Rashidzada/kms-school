@@ -21,20 +21,24 @@ class TeacherForm(forms.ModelForm):
             "teacher_id",
             "full_name",
             "father_name",
+            "designation",
+            "assigned_section",
+            "contact_number",
+            "email",
             "cnic",
             "dob",
+            "joining_date",
+            "salary_scale",
             "qualification",
             "experience",
-            "contact_number",
             "address",
-            "joining_date",
-            "designation",
-            "salary_scale",
             "profile_picture",
             "status",
             "remarks",
         ]
         widgets = {
+            "teacher_id": forms.TextInput(attrs={"placeholder": "Leave blank to auto-generate (e.g. TCH-001)"}),
+            "assigned_section": forms.TextInput(attrs={"placeholder": "e.g. Class 10th - Section A (Optional)"}),
             "dob": forms.DateInput(attrs={"type": "date"}),
             "joining_date": forms.DateInput(attrs={"type": "date"}),
             "qualification": forms.Textarea(attrs={"rows": 2}),
@@ -42,6 +46,18 @@ class TeacherForm(forms.ModelForm):
             "address": forms.Textarea(attrs={"rows": 2}),
             "remarks": forms.Textarea(attrs={"rows": 2}),
         }
+        labels = {
+            "teacher_id": "Staff ID (Optional — Auto-generated if blank)",
+            "full_name": "Teacher Full Name *",
+            "father_name": "Father / Husband Name (Optional)",
+            "designation": "Designation / Role (e.g. Senior Science Teacher)",
+            "assigned_section": "Assigned Class / Section (Optional)",
+            "contact_number": "Contact / WhatsApp Number (Optional)",
+            "email": "Email Address (Optional)",
+            "cnic": "CNIC Number (Optional)",
+            "profile_picture": "Teacher Profile Picture / Photo (Optional)",
+        }
+
 
 
 from .models import MonthlySalaryBill, SalaryScale, Teacher, TeacherLoan, TeacherLoanRepayment

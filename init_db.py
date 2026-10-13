@@ -64,8 +64,33 @@ def ensure_superuser():
     else:
         print("[OK] Superuser account already exists.")
 
+def sync_sequences():
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "school_app.settings")
+    import django
+    django.setup()
+    from io import StringIO
+    from django.apps import apps
+    from django.core.management import call_command
+    from django.db import connection
+
+    if "postgresql" not in connection.settings_dict.get("ENGINE", ""):
+        return
+
+    app_labels = [app.label for app in apps.get_app_configs()]
+    out = StringIO()
+    call_command("sqlsequencereset", *app_labels, stdout=out, no_color=True)
+    sql = out.getvalue()
+    if sql.strip():
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+        print("[OK] PostgreSQL primary key sequences synchronized.")
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '--create-superuser':
         ensure_superuser()
+    elif len(sys.argv) > 1 and sys.argv[1] == '--sync-sequences':
+        sync_sequences()
     else:
         check_and_create_db()
+

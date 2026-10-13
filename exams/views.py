@@ -3182,6 +3182,135 @@ def print_student_exam_history(request, student_id):
     return render(request, "exams/print_student_exam_history.html", context)
 
 
+@login_required
+def export_all_exams_backup_excel(request):
+    """
+    Exports a real, complete multi-sheet Excel backup of ALL Examinations,
+    Subjects, Class Curriculum Mappings, Students, and ALL Student Exam Marks.
+    Can be restored directly via import_all_exams_backup_excel or Master Restore.
+    """
+    from school.backup_utils import _style_worksheet
+
+    school = SchoolSetting.objects.first()
+    school_name = school.name if school else "Kohisar Model School & College"
+    wb = Workbook()
+
+    # Sheet 1: Exam_Marks (All marks across all exams, classes, and subjects)
+    ws_mk = wb.active
+    ws_mk.title = "Exam_Marks"
+    mk_headers = [
+        "Exam Name",
+        "Session Name",
+        "Admission No",
+        "Student Full Name",
+        "Father Name",
+        "Class Name",
+        "Section Name",
+        "Subject Name",
+        "Subject Code",
+        "Total Marks",
+        "Obtained Marks",
+        "Is Absent",
+        "Remarks",
+    ]
+    mk_rows = []
+    for m in ExamMark.objects.select_related(
+        "exam", "exam__session", "student", "student__current_section", "class_level", "subject"
+    ).all():
+        mk_rows.append([
+            m.exam.name,
+            m.exam.session.name if (m.exam and m.exam.session) else "",
+            m.student.admission_no,
+            m.student.full_name,
+            m.student.father_name,
+            m.class_level.name if m.class_level else "",
+            m.student.current_section.name if (m.student and m.student.current_section) else "A",
+            m.subject.name,
+            m.subject.code,
+            float(m.total_marks),
+            float(m.obtained_marks),
+            "Yes" if m.is_absent else "No",
+            m.remarks,
+        ])
+    _style_worksheet(ws_mk, "Full Examination Marks Backup (All Terms & Classes)", mk_headers, mk_rows, school_name)
+
+    # Sheet 2: Exams_Curriculum
+    ws_ex = wb.create_sheet("Exams_Curriculum")
+    ex_headers = [
+        "Record Type",
+        "Name / Exam / Subject",
+        "Session / Class Name",
+        "Subject Code / Start Date",
+        "Total Marks / End Date",
+        "Passing Marks / Is Active",
+        "Order",
+    ]
+    ex_rows = []
+    for e in Exam.objects.select_related("session").all():
+        ex_rows.append([
+            "EXAM",
+            e.name,
+            e.session.name if e.session else "",
+            str(e.start_date) if e.start_date else "",
+            str(e.end_date) if e.end_date else "",
+            "Yes" if e.is_active else "No",
+            0,
+        ])
+    for sub in Subject.objects.all():
+        ex_rows.append([
+            "SUBJECT",
+            sub.name,
+            "",
+            sub.code,
+            "",
+            "Yes" if sub.is_active else "No",
+            sub.order,
+        ])
+    for cs in ClassSubject.objects.select_related("class_level", "subject").all():
+        ex_rows.append([
+            "CLASS_SUBJECT",
+            cs.subject.name,
+            cs.class_level.name,
+            cs.subject.code,
+            float(cs.total_marks),
+            float(cs.passing_marks),
+            cs.order,
+        ])
+    _style_worksheet(ws_ex, "Examinations & Curriculum Setup Backup", ex_headers, ex_rows, school_name)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    ts = timezone.localtime(timezone.now()).strftime("%Y%m%d_%H%M")
+    return excel_download_response(buf, f"KMS_Full_Exams_And_Marks_Backup_{ts}.xlsx")
+
+
+@login_required
+def import_all_exams_backup_excel(request):
+    """
+    Restores all Examinations, Subjects, Class Curriculum, and Student Exam Marks
+    from an uploaded Full Exams Backup (.xlsx) or Master Backup (.xlsx).
+    """
+    from school.backup_utils import restore_from_master_excel
+
+    if request.method != "POST" or "excel_file" not in request.FILES:
+        messages.error(request, "Please select a valid Exam Backup (.xlsx) file to restore.")
+        return redirect("exam_dashboard")
+
+    excel_file = request.FILES["excel_file"]
+    try:
+        ok, msg = restore_from_master_excel(excel_file)
+        if ok:
+            messages.success(request, msg)
+        else:
+            messages.error(request, msg)
+    except Exception as e:
+        messages.error(request, f"Exam Marks Backup Restore failed: {str(e)}")
+
+    return redirect("exam_dashboard")
+
+
+
 
 
 

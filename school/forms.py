@@ -15,6 +15,11 @@ class SchoolSettingForm(forms.ModelForm):
             "last_receipt_no",
             "passing_percentage",
             "passing_rule",
+            "auto_backup_enabled",
+            "auto_backup_interval_days",
+            "default_backup_email",
+            "backup_send_sql",
+            "backup_send_excel",
         ]
 
 
@@ -37,4 +42,9 @@ class ClassLevelForm(forms.ModelForm):
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
-        fields = ["class_level", "name", "class_teacher"]
+        fields = ["class_level", "name", "teacher", "class_teacher"]
+        labels = {
+            "teacher": "Select Section Teacher (From Staff Directory)",
+            "class_teacher": "Or Custom Teacher Name (Optional)",
+        }
+

@@ -118,6 +118,7 @@ echo     [OK] Database schema up to date.
 if exist "%PROJECT_DIR%\kms_initial_data.json" (
     echo     [*] Loading complete Kohisar Model School data ^& configuration...
     "%PROJECT_DIR%\venv\Scripts\python.exe" "%PROJECT_DIR%\manage.py" loaddata "%PROJECT_DIR%\kms_initial_data.json" >nul 2>&1
+    "%PROJECT_DIR%\venv\Scripts\python.exe" "%PROJECT_DIR%\init_db.py" --sync-sequences >nul 2>&1
     echo     [OK] School data, classes, teachers, and records loaded successfully.
 ) else (
     echo     [*] Ensuring default superuser exists...

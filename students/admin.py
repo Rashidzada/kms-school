@@ -6,6 +6,18 @@ from .models import FamilyHousehold, PromotionHistory, Student
 class FamilyHouseholdAdmin(admin.ModelAdmin):
     list_display = ("family_id", "father_guardian_name", "contact_number")
     search_fields = ("family_id", "father_guardian_name", "contact_number")
+    actions = ["delete_selected_safely"]
+
+    @admin.action(description="Delete selected families / households safely")
+    def delete_selected_safely(self, request, queryset):
+        from django.contrib import messages
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(
+            request,
+            f"Successfully deleted {count} family/household record(s).",
+            messages.SUCCESS,
+        )
 
 
 @admin.register(Student)

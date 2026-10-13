@@ -726,6 +726,42 @@
     </div>
   </div>
 
+  <!-- KMS Automated Daily Cloud Backup Splash Screen Modal -->
+  <div class="modal fade" id="kmsAutoBackupSplashModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 16px;">
+        <div class="p-4 text-white text-center" style="background: linear-gradient(135deg, #1a365d 0%, #0f2442 100%);">
+          <div class="mb-2">
+            <i id="kmsSplashIcon" class="fas fa-cloud-upload-alt fa-3x text-warning"></i>
+          </div>
+          <h5 class="fw-bold mb-1" id="kmsSplashTitle">Automated Daily Cloud Backup</h5>
+          <p class="small mb-0 text-white-50">
+            {{ school_setting.name|default:"Kohisar Model School & College" }} &bull; Full PostgreSQL (<code>.sql</code>) &amp; Master Excel (<code>.xlsx</code>)
+          </p>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <div id="kmsSplashStatusBadge" class="badge bg-primary-subtle text-primary px-3 py-2 mb-3 fs-6">
+            <i class="fas fa-wifi me-1"></i> Step 1/3: Checking Network Connection...
+          </div>
+          <p id="kmsSplashMessage" class="text-muted small mb-3">
+            Verifying internet &amp; mail server connectivity before sending full school data backup (Students, Teachers, Exam Marks, Fee Receipts &amp; Accounts)...
+          </p>
+          <div class="progress mb-3" style="height: 10px; border-radius: 8px;">
+            <div id="kmsSplashProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 25%"></div>
+          </div>
+          <div class="d-flex justify-content-center gap-2 mt-3" id="kmsSplashActions">
+            <button type="button" id="kmsSplashRetryBtn" class="btn btn-sm btn-primary fw-bold d-none" onclick="window.triggerKmsAutoBackupSplash(false)">
+              <i class="fas fa-sync-alt me-1"></i> Retry Network &amp; Send
+            </button>
+            <button type="button" id="kmsSplashCloseBtn" class="btn btn-sm btn-outline-secondary fw-bold" data-bs-dismiss="modal">
+              Continue Working / Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap 5 JS Bundle (Offline) -->
   <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <!-- jQuery (Offline) -->
@@ -734,7 +770,102 @@
     $('#sidebarToggle').on('click', function() {
       $('#sidebar').toggleClass('collapsed');
     });
+
+    window.triggerKmsAutoBackupSplash = function(isAuto) {
+      var modalEl = document.getElementById('kmsAutoBackupSplashModal');
+      if (!modalEl) return;
+      var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+
+      var badge = document.getElementById('kmsSplashStatusBadge');
+      var msg = document.getElementById('kmsSplashMessage');
+      var bar = document.getElementById('kmsSplashProgress');
+      var icon = document.getElementById('kmsSplashIcon');
+      var retryBtn = document.getElementById('kmsSplashRetryBtn');
+
+      retryBtn.classList.add('d-none');
+      icon.className = 'fas fa-satellite-dish fa-3x text-warning fa-spin';
+      badge.className = 'badge bg-primary-subtle text-primary px-3 py-2 mb-3 fs-6';
+      badge.innerHTML = '<i class="fas fa-wifi me-1"></i> Step 1/3: Checking Internet & Mail Network...';
+      msg.textContent = 'Testing live connection to mail server before packaging .sql and .xlsx backup files...';
+      bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
+      bar.style.width = '30%';
+
+      fetch("{% url 'api_check_backup_network' %}")
+        .then(function(r) { return r.json(); })
+        .then(function(netData) {
+          if (!netData.online) {
+            icon.className = 'fas fa-exclamation-triangle fa-3x text-warning';
+            badge.className = 'badge bg-warning text-dark px-3 py-2 mb-3 fs-6';
+            badge.innerHTML = '<i class="fas fa-plug me-1"></i> Network Offline — Backup Queued';
+            msg.textContent = netData.message + ' Automatic backup will wait and run when internet is connected.';
+            bar.className = 'progress-bar bg-warning';
+            bar.style.width = '100%';
+            retryBtn.classList.remove('d-none');
+            return;
+          }
+
+          // Step 2 & 3: Network is good -> Generate & Send .sql + .xlsx
+          icon.className = 'fas fa-cog fa-spin fa-3x text-info';
+          badge.className = 'badge bg-info text-dark px-3 py-2 mb-3 fs-6';
+          badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Step 2/3: Network Good! Sending Full .SQL & .XLSX Backup...';
+          msg.textContent = 'Generating full PostgreSQL (.sql) & 16-Sheet Master Excel (.xlsx) with all Marks, Payments, Students & Teachers and sending to configured emails...';
+          bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
+          bar.style.width = '75%';
+
+          var formData = new FormData();
+          formData.append('is_auto', isAuto ? '1' : '0');
+          formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+          return fetch("{% url 'api_run_email_backup' %}", {
+            method: 'POST',
+            body: formData
+          })
+          .then(function(r2) { return r2.json(); })
+          .then(function(resData) {
+            if (resData.success) {
+              icon.className = 'fas fa-check-circle fa-3x text-success';
+              badge.className = 'badge bg-success text-white px-3 py-2 mb-3 fs-6';
+              badge.innerHTML = '<i class="fas fa-check-double me-1"></i> Step 3/3: Full Backup Sent Successfully!';
+              msg.textContent = resData.message;
+              bar.className = 'progress-bar bg-success';
+              bar.style.width = '100%';
+              sessionStorage.setItem('kms_auto_backup_done_session', '1');
+              setTimeout(function() {
+                modal.hide();
+              }, 3800);
+            } else {
+              icon.className = 'fas fa-exclamation-circle fa-3x text-danger';
+              badge.className = 'badge bg-danger text-white px-3 py-2 mb-3 fs-6';
+              badge.innerHTML = '<i class="fas fa-times-circle me-1"></i> Backup Email Notice';
+              msg.textContent = resData.message;
+              bar.className = 'progress-bar bg-danger';
+              bar.style.width = '100%';
+              retryBtn.classList.remove('d-none');
+            }
+          });
+        })
+        .catch(function(err) {
+          icon.className = 'fas fa-exclamation-triangle fa-3x text-warning';
+          badge.className = 'badge bg-warning text-dark px-3 py-2 mb-3 fs-6';
+          badge.innerHTML = 'Network Check Failed';
+          msg.textContent = 'Could not reach server: ' + err;
+          retryBtn.classList.remove('d-none');
+        });
+    };
+
+    {% if auto_backup_due %}
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!sessionStorage.getItem('kms_auto_backup_checked_session')) {
+        sessionStorage.setItem('kms_auto_backup_checked_session', '1');
+        setTimeout(function() {
+          window.triggerKmsAutoBackupSplash(true);
+        }, 600);
+      }
+    });
+    {% endif %}
   </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>
+

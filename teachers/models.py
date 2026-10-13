@@ -46,17 +46,24 @@ class Teacher(models.Model):
         ("Inactive", "Inactive"),
     ]
 
-    teacher_id = models.CharField(max_length=20, unique=True)
+    teacher_id = models.CharField(max_length=20, unique=True, blank=True)
     full_name = models.CharField(max_length=255)
-    father_name = models.CharField(max_length=255, blank=True)
-    cnic = models.CharField(max_length=20, blank=True)
+    father_name = models.CharField(max_length=255, blank=True, default="")
+    cnic = models.CharField(max_length=25, blank=True, default="")
     dob = models.DateField(null=True, blank=True, default=timezone.now)
     qualification = models.TextField(blank=True, default="")
     experience = models.TextField(blank=True, default="")
-    contact_number = models.CharField(max_length=20, blank=True, default="")
+    contact_number = models.CharField(max_length=30, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
     address = models.TextField(blank=True, default="")
-    joining_date = models.DateField(default=timezone.now)
-    designation = models.CharField(max_length=100)
+    joining_date = models.DateField(null=True, blank=True, default=timezone.now)
+    designation = models.CharField(max_length=100, blank=True, default="Teacher")
+    assigned_section = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
+        help_text="Optional Assigned Class / Section (e.g. Class 10th - Section A)",
+    )
     salary_scale = models.ForeignKey(
         SalaryScale,
         on_delete=models.SET_NULL,
@@ -66,7 +73,7 @@ class Teacher(models.Model):
     )
     profile_picture = models.ImageField(upload_to="teachers/", blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Active")
-    remarks = models.TextField(blank=True)
+    remarks = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["teacher_id"]
@@ -75,6 +82,17 @@ class Teacher(models.Model):
 
     def __str__(self):
         return f"{self.teacher_id} - {self.full_name} ({self.designation})"
+
+    def save(self, *args, **kwargs):
+        if not self.teacher_id:
+            existing_ids = set(Teacher.objects.values_list("teacher_id", flat=True))
+            counter = Teacher.objects.count() + 1
+            while f"TCH-{counter:03d}" in existing_ids:
+                counter += 1
+            self.teacher_id = f"TCH-{counter:03d}"
+        if not self.designation:
+            self.designation = "Teacher"
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("teacher_detail", kwargs={"pk": self.pk})

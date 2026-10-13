@@ -297,16 +297,18 @@ def student_create(request):
         if form.is_valid():
             with transaction.atomic():
                 student = form.save()
-                active_session = AcademicSession.objects.filter(is_active=True).first()
+                active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+                if not active_session:
+                    active_session = AcademicSession.objects.create(name="2026-2027", is_active=True)
                 if active_session:
                     ledger, created = StudentFeeLedger.objects.get_or_create(
                         student=student, academic_session=active_session
                     )
-                    if created:
+                    if created or ledger.monthly_entries.count() < 12:
                         initialize_ledger_months(
                             ledger,
                             student,
-                            student.current_class.monthly_fee,
+                            student.current_class.monthly_fee if student.current_class else Decimal("0.00"),
                             admission_date=student.admission_date,
                         )
                 messages.success(
@@ -333,14 +335,27 @@ def student_detail(request, pk):
     promotions = student.promotions.select_related(
         "from_class", "to_class", "from_section", "to_section"
     ).all()
+
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    if not active_session:
+        active_session = AcademicSession.objects.create(name="2026-2027", is_active=True)
+
+    active_ledger = None
+    if active_session:
+        active_ledger, created = StudentFeeLedger.objects.get_or_create(
+            student=student, academic_session=active_session
+        )
+        if created or active_ledger.monthly_entries.count() < 12:
+            initialize_ledger_months(
+                active_ledger,
+                student,
+                student.current_class.monthly_fee if student.current_class else Decimal("0.00"),
+                admission_date=student.admission_date,
+            )
+
     ledgers = student.fee_ledgers.select_related("academic_session").prefetch_related(
         "monthly_entries"
     ).all()
-
-    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
-    active_ledger = None
-    if active_session:
-        active_ledger = ledgers.filter(academic_session=active_session).first()
 
     student_total_dues = Decimal("0.00")
     paid_months_list = []

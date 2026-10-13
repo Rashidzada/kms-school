@@ -82,11 +82,13 @@ def collect_fee(request, student_id):
     """
     student = get_object_or_404(Student, pk=student_id)
     active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    if not active_session:
+        active_session = AcademicSession.objects.create(name="2026-2027", is_active=True)
 
     ledger, created = StudentFeeLedger.objects.get_or_create(
         student=student, academic_session=active_session
     )
-    if created:
+    if created or ledger.monthly_entries.count() < 12:
         initialize_ledger_months(
             ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
         )
@@ -159,12 +161,13 @@ def collect_fee(request, student_id):
     family_siblings_summary = []
     if family and active_session:
         for sib in family.students.filter(status="Active").select_related("current_class", "current_section"):
-            sib_ledger = StudentFeeLedger.objects.filter(student=sib, academic_session=active_session).first()
-            if sib_ledger:
-                sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
-                sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
-            else:
-                sib_dues = Decimal("0.00")
+            sib_ledger, sib_created = StudentFeeLedger.objects.get_or_create(student=sib, academic_session=active_session)
+            if sib_created or sib_ledger.monthly_entries.count() < 12:
+                initialize_ledger_months(
+                    sib_ledger, sib, sib.current_class.monthly_fee if sib.current_class else Decimal("0.00")
+                )
+            sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
+            sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
             family_total_dues += sib_dues
             family_siblings_summary.append({
                 "student": sib,
@@ -193,6 +196,17 @@ def family_payment(request, household_id):
     """
     family = get_object_or_404(FamilyHousehold, pk=household_id)
     active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    if not active_session:
+        active_session = AcademicSession.objects.create(name="2026-2027", is_active=True)
+
+    for sib in family.students.filter(status="Active").select_related("current_class"):
+        sib_ledger, sib_created = StudentFeeLedger.objects.get_or_create(
+            student=sib, academic_session=active_session
+        )
+        if sib_created or sib_ledger.monthly_entries.count() < 12:
+            initialize_ledger_months(
+                sib_ledger, sib, sib.current_class.monthly_fee if sib.current_class else Decimal("0.00")
+            )
 
     if request.method == "POST":
         form = FamilyFeePaymentForm(family, active_session, request.POST)
@@ -274,8 +288,16 @@ def fee_adjust(request, student_id):
     """
     student = get_object_or_404(Student, pk=student_id)
     active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    if not active_session:
+        active_session = AcademicSession.objects.create(name="2026-2027", is_active=True)
 
-    ledger = get_object_or_404(StudentFeeLedger, student=student, academic_session=active_session)
+    ledger, created = StudentFeeLedger.objects.get_or_create(
+        student=student, academic_session=active_session
+    )
+    if created or ledger.monthly_entries.count() < 12:
+        initialize_ledger_months(
+            ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
+        )
 
     if request.method == "POST":
         form = FeeAdjustmentForm(request.POST)

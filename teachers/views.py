@@ -46,18 +46,22 @@ from school.whatsapp_utils import build_teacher_salary_slip_msg
 @login_required
 def teacher_list(request):
     """
-    Teacher / Staff list (FR-6.3).
+    Teacher / Staff list (FR-6.3) showing full teacher bio, father name, contact, photo (optional),
+    designation, assigned class/section, qualification, CNIC, and salary scale.
     """
-    teachers = Teacher.objects.select_related("salary_scale").all()
+    teachers = Teacher.objects.select_related("salary_scale").prefetch_related("managed_sections__class_level").all()
     query = request.GET.get("q", "").strip()
     status = request.GET.get("status", "")
 
     if query:
         teachers = teachers.filter(
             Q(full_name__icontains=query)
+            | Q(father_name__icontains=query)
             | Q(teacher_id__icontains=query)
             | Q(designation__icontains=query)
+            | Q(assigned_section__icontains=query)
             | Q(contact_number__icontains=query)
+            | Q(cnic__icontains=query)
         )
     if status:
         teachers = teachers.filter(status=status)
@@ -713,9 +717,11 @@ def export_teachers_excel(request):
         "Full Name",
         "Father / Husband Name",
         "Designation",
+        "Assigned Class / Section",
         "CNIC",
         "Date of Birth",
         "Contact Number",
+        "Email",
         "Address",
         "Qualification",
         "Experience",
@@ -724,22 +730,28 @@ def export_teachers_excel(request):
         "Basic Pay (PKR)",
         "Gross Salary (PKR)",
         "Status",
+        "Remarks",
+        "Profile Picture Path",
     ]
 
     rows = []
-    for t in teachers:
+    for t in teachers.prefetch_related("managed_sections__class_level"):
         scale_name = t.salary_scale.name if t.salary_scale else "-"
         basic_pay = float(t.salary_scale.basic_pay) if t.salary_scale else 0.0
         gross_salary = float(t.salary_scale.gross_salary) if t.salary_scale else 0.0
+        managed_secs = ", ".join([f"{s.class_level.name}-{s.name}" for s in t.managed_sections.all()])
+        sec_display = t.assigned_section or managed_secs or "-"
 
         rows.append([
             t.teacher_id,
             t.full_name,
             t.father_name or "-",
             t.designation or "Teacher",
+            sec_display,
             t.cnic or "-",
             str(t.dob) if t.dob else "-",
             t.contact_number or "-",
+            t.email or "-",
             t.address or "-",
             t.qualification or "-",
             t.experience or "-",
@@ -748,36 +760,42 @@ def export_teachers_excel(request):
             basic_pay,
             gross_salary,
             t.status,
+            t.remarks or "",
+            t.profile_picture.name if t.profile_picture else "",
         ])
 
     timestamp = timezone.now().strftime("%Y%m%d_%H%M")
-    filename = f"Teachers_Staff_Export_{timestamp}.xlsx"
-    buffer = create_styled_workbook("Teachers & Staff Directory", headers, rows, school_name=school_name)
+    filename = f"Teachers_Staff_Full_Directory_{timestamp}.xlsx"
+    buffer = create_styled_workbook("Full Teachers & Staff Directory", headers, rows, school_name=school_name)
     return excel_download_response(buffer, filename)
 
 
 @login_required
 def download_teacher_template(request):
     """
-    Downloads a pre-formatted Excel template with sample teacher records.
+    Downloads a pre-formatted Excel template with full teacher fields (optional fields clearly marked).
     """
     school = SchoolSetting.objects.first()
     school_name = school.name if school else "Kohisar Model School & College (KMS)"
 
     headers = [
-        "Staff ID *",
+        "Staff ID (Optional)",
         "Full Name *",
         "Father / Husband Name",
-        "Designation *",
+        "Designation",
+        "Assigned Class / Section",
         "CNIC",
-        "Date of Birth (YYYY-MM-DD) *",
-        "Contact Number *",
+        "Date of Birth (YYYY-MM-DD)",
+        "Contact Number",
+        "Email",
         "Address",
         "Qualification",
         "Experience",
         "Joining Date (YYYY-MM-DD)",
         "Salary Scale Name",
+        "Basic Pay (PKR)",
         "Status (Active/Inactive)",
+        "Remarks",
     ]
 
     sample_rows = [
@@ -786,30 +804,38 @@ def download_teacher_template(request):
             "Muhammad Tariq",
             "Abdul Rashid",
             "Senior Science Teacher",
+            "Class 10th - A",
             "15602-1234567-1",
             "1990-05-15",
             "0345-9876543",
+            "tariq@kms.edu.pk",
             "Barikot, Swat",
             "M.Sc Physics, B.Ed",
             "5 Years teaching experience in High School",
             "2021-08-01",
             "BPS-16",
+            30000,
             "Active",
+            "In-charge Science Lab",
         ],
         [
             "TCH-002",
             "Fatima Bibi",
             "Muhammad Ishaq",
             "Junior English Teacher",
+            "Class 5th - A",
             "15602-7654321-2",
             "1995-10-20",
             "0300-5554321",
+            "",
             "Qalagay, Swat",
             "M.A English",
             "3 Years at Primary Level",
             "2023-03-01",
             "BPS-14",
+            25000,
             "Active",
+            "",
         ],
     ]
 
@@ -820,8 +846,8 @@ def download_teacher_template(request):
 @login_required
 def import_teachers_excel(request):
     """
-    Imports teachers/staff from an uploaded Excel file.
-    Auto-links or creates salary scales, handles duplicate staff IDs gracefully.
+    Imports or updates teachers/staff from an uploaded Excel file.
+    Auto-links or creates salary scales, updates existing staff by Staff ID, and links sections.
     """
     if request.method != "POST" or "excel_file" not in request.FILES:
         messages.error(request, "Please choose a valid Excel (.xlsx) file to upload.")
@@ -843,84 +869,102 @@ def import_teachers_excel(request):
     row_errors = []
 
     def parse_date(val):
-        if not val:
+        if not val or str(val).strip() == "-":
             return None
         if isinstance(val, (datetime, date)):
             return val if isinstance(val, date) else val.date()
         val_str = str(val).strip()
         for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
             try:
-                return datetime.strptime(val_str, fmt).date()
+                return datetime.strptime(val_str[:10], fmt).date()
             except ValueError:
                 continue
         return None
 
-    existing_ids = set(Teacher.objects.values_list("teacher_id", flat=True))
-    id_counter = 1
+    def clean_str(val):
+        s = str(val or "").strip()
+        return "" if s == "-" else s
 
     try:
         with transaction.atomic():
             for r in records:
                 row_num = r.get("_row_number", "?")
-                full_name = str(r.get("full_name__", "") or r.get("full_name", "")).strip()
+                full_name = clean_str(r.get("full_name__", "") or r.get("full_name", ""))
 
                 if not full_name:
                     row_errors.append(f"Row {row_num}: Missing Full Name.")
                     continue
 
-                staff_id = str(r.get("staff_id__", "") or r.get("staff_id", "") or r.get("teacher_id", "")).strip()
-                if not staff_id or staff_id in existing_ids:
-                    while f"TCH-{id_counter:03d}" in existing_ids:
-                        id_counter += 1
-                    staff_id = f"TCH-{id_counter:03d}"
-                    id_counter += 1
-                existing_ids.add(staff_id)
+                staff_id = clean_str(
+                    r.get("staff_id__optional_", "")
+                    or r.get("staff_id__", "")
+                    or r.get("staff_id", "")
+                    or r.get("teacher_id", "")
+                )
+                father_name = clean_str(r.get("father___husband_name", "") or r.get("father_name", ""))
+                designation = clean_str(r.get("designation__", "") or r.get("designation", "Teacher")) or "Teacher"
+                assigned_sec = clean_str(r.get("assigned_class___section", "") or r.get("assigned_section", ""))
+                cnic = clean_str(r.get("cnic", ""))
+                contact = clean_str(r.get("contact_number__", "") or r.get("contact_number", ""))
+                email = clean_str(r.get("email", ""))
+                address = clean_str(r.get("address", ""))
+                qualification = clean_str(r.get("qualification", ""))
+                experience = clean_str(r.get("experience", ""))
+                remarks = clean_str(r.get("remarks", ""))
+                pic_path = clean_str(r.get("profile_picture_path", ""))
 
-                father_name = str(r.get("father___husband_name", "") or r.get("father_name", "")).strip()
-                designation = str(r.get("designation__", "") or r.get("designation", "Teacher")).strip() or "Teacher"
-                cnic = str(r.get("cnic", "") or "").strip()
-                contact = str(r.get("contact_number__", "") or r.get("contact_number", "")).strip()
-                address = str(r.get("address", "") or "").strip()
-                qualification = str(r.get("qualification", "") or "").strip()
-                experience = str(r.get("experience", "") or "").strip()
+                dob = parse_date(r.get("date_of_birth__yyyy_mm_dd____") or r.get("date_of_birth__yyyy_mm_dd_") or r.get("date_of_birth")) or date(1990, 1, 1)
+                joining_date = parse_date(r.get("joining_date__yyyy_mm_dd_") or r.get("joining_date")) or timezone.now().date()
 
-                dob = parse_date(r.get("date_of_birth__yyyy_mm_dd____", None) or r.get("date_of_birth", None)) or date(1990, 1, 1)
-                joining_date = parse_date(r.get("joining_date__yyyy_mm_dd_", None) or r.get("joining_date", None)) or timezone.now().date()
+                status_raw = clean_str(r.get("status__active_inactive_", "") or r.get("status", "Active")).lower()
+                status = "Inactive" if "inactive" in status_raw else "Active"
 
-                status_raw = str(r.get("status__active_inactive_", "") or r.get("status", "Active")).strip().capitalize()
-                status = "Inactive" if "inactive" in status_raw.lower() else "Active"
+                scale_name = clean_str(r.get("salary_scale_name", "") or r.get("salary_scale", ""))
+                basic_pay_raw = r.get("basic_pay__pkr_", None) or r.get("basic_pay", None)
+                try:
+                    basic_pay_val = Decimal(str(basic_pay_raw).replace(",", "").strip()) if basic_pay_raw else Decimal("25000.00")
+                except Exception:
+                    basic_pay_val = Decimal("25000.00")
 
-                scale_name = str(r.get("salary_scale_name", "") or r.get("salary_scale", "")).strip()
                 salary_scale = None
-                if scale_name and scale_name != "-":
+                if scale_name:
                     salary_scale = SalaryScale.objects.filter(name__iexact=scale_name).first()
                     if not salary_scale:
                         salary_scale = SalaryScale.objects.create(
                             name=scale_name,
-                            basic_pay=Decimal("25000.00"),
+                            basic_pay=basic_pay_val if basic_pay_val > 0 else Decimal("25000.00"),
                             medical_allowance=Decimal("2000.00"),
                             conveyance_allowance=Decimal("3000.00"),
                         )
 
-                Teacher.objects.create(
-                    teacher_id=staff_id,
-                    full_name=full_name,
-                    father_name=father_name,
-                    designation=designation,
-                    cnic=cnic,
-                    dob=dob,
-                    contact_number=contact,
-                    address=address,
-                    qualification=qualification,
-                    experience=experience,
-                    joining_date=joining_date,
-                    salary_scale=salary_scale,
-                    status=status,
-                )
+                defaults = {
+                    "full_name": full_name,
+                    "father_name": father_name,
+                    "designation": designation,
+                    "assigned_section": assigned_sec,
+                    "cnic": cnic,
+                    "dob": dob,
+                    "contact_number": contact,
+                    "email": email,
+                    "address": address,
+                    "qualification": qualification,
+                    "experience": experience,
+                    "joining_date": joining_date,
+                    "salary_scale": salary_scale,
+                    "status": status,
+                    "remarks": remarks,
+                }
+                if pic_path:
+                    defaults["profile_picture"] = pic_path
+
+                if staff_id:
+                    Teacher.objects.update_or_create(teacher_id=staff_id, defaults=defaults)
+                else:
+                    Teacher.objects.create(**defaults)
                 success_count += 1
 
         if success_count > 0:
-            messages.success(request, f"Excel Import Completed! Successfully imported {success_count} staff / teacher records.")
+            messages.success(request, f"Excel Import Completed! Successfully imported/updated {success_count} staff / teacher records.")
         if row_errors:
             messages.warning(request, f"Some rows were skipped: {'; '.join(row_errors[:5])}")
     except Exception as e:

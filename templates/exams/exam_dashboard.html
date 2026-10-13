@@ -7,28 +7,85 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h3 class="fw-bold mb-0 text-dark">
-      <i class="fas fa-graduation-cap me-2 text-primary"></i> Examinations & Results Hub
+      <i class="fas fa-graduation-cap me-2 text-primary"></i> Examinations &amp; Results Hub
     </h3>
     <p class="text-muted small mb-0">
-      Manage institutional exams, dynamic class subjects, teacher award lists, and master class result sheets.
+      Manage institutional exams, dynamic class subjects, teacher award lists, master class result sheets, and real full exam marks backups.
     </p>
   </div>
   <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'export_all_exams_backup_excel' %}" class="btn btn-success fw-bold shadow-sm" title="Download Complete Backup of All Exams, Subjects & Student Marks (.xlsx)">
+      <i class="fas fa-download me-1"></i> Full Exam Marks Backup (.XLSX)
+    </a>
+    <button type="button" class="btn btn-outline-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#restoreAllExamsModal">
+      <i class="fas fa-upload me-1"></i> Restore Exam Marks (.XLSX)
+    </button>
+    <a href="{% url 'download_db_backup' %}" class="btn btn-warning text-dark fw-bold shadow-sm" title="Download Complete PostgreSQL Database Backup (.sql) including all marks">
+      <i class="fas fa-database me-1"></i> Full .SQL Backup
+    </a>
     <a href="{% url 'wing_result_book' %}" class="btn btn-primary fw-bold shadow-sm">
       <i class="fas fa-book-open me-1"></i> Wing Result Books
     </a>
-    <a href="{% url 'consolidated_annual_result' %}" class="btn btn-info text-dark fw-bold shadow-sm">
-      <i class="fas fa-layer-group me-1"></i> Consolidated Annual Gazette
-    </a>
-    <a href="{% url 'student_exam_history' %}" class="btn btn-outline-dark fw-bold shadow-sm">
-      <i class="fas fa-history me-1"></i> Student Exam History
-    </a>
-    <a href="{% url 'class_marks_entry_grid' %}" class="btn btn-warning text-dark fw-bold shadow-sm">
+    <a href="{% url 'class_marks_entry_grid' %}" class="btn btn-info text-dark fw-bold shadow-sm">
       <i class="fas fa-edit me-1"></i> Enter Marks Grid
     </a>
     <a href="{% url 'exam_create' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
       <i class="fas fa-plus me-1"></i> New Exam
     </a>
+  </div>
+</div>
+
+<!-- Real Full Exam Marks Backup & Restore Banner -->
+<div class="card border-0 shadow-sm bg-success-subtle border-start border-success border-4 mb-4">
+  <div class="card-body py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <h6 class="fw-bold text-success mb-1">
+        <i class="fas fa-shield-alt me-1"></i> Real Full Examination &amp; Student Marks Backup (All Terms, Subjects &amp; Classes)
+      </h6>
+      <p class="small text-dark mb-0">
+        Export or restore <strong>all {{ total_marks_recorded }} recorded student marks</strong> across all {{ total_exams }} exam terms and {{ total_subjects }} subjects in a single click — or use <a href="{% url 'school_settings' %}" class="fw-bold text-success">Cloud Email Auto-Backup (.SQL + .XLSX)</a>.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'export_all_exams_backup_excel' %}" class="btn btn-sm btn-success fw-bold">
+        <i class="fas fa-file-excel me-1"></i> Download All Marks Backup (.XLSX)
+      </a>
+      <button type="button" class="btn btn-sm btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#restoreAllExamsModal">
+        <i class="fas fa-cloud-upload-alt me-1"></i> Restore Marks from Backup
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Restore All Exams Modal -->
+<div class="modal fade" id="restoreAllExamsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_all_exams_backup_excel' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="fas fa-cloud-upload-alt me-2"></i> Restore Full Examination Marks &amp; Curriculum (.xlsx)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            Upload a <strong>KMS Full Exams &amp; Marks Backup (<code>.xlsx</code>)</strong> or a <strong>KMS Full Master Backup (<code>.xlsx</code>)</strong> to restore all Exam Terms, Subjects, Class Curriculum mappings, and every Student's Obtained Marks.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Exam Backup (.xlsx) File *</label>
+            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success fw-bold">
+            <i class="fas fa-upload me-1"></i> Restore All Exam Marks Now
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 

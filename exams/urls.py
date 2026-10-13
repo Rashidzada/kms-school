@@ -40,4 +40,9 @@ urlpatterns = [
     path("student-history/", views.student_exam_history, name="student_exam_history"),
     path("student-history/<int:student_id>/", views.student_exam_history, name="student_exam_history_detail"),
     path("student-history/<int:student_id>/print/", views.print_student_exam_history, name="print_student_exam_history"),
+
+    # Full Exam Marks & Curriculum Real Backup & Restore (.xlsx)
+    path("backup/export-excel/", views.export_all_exams_backup_excel, name="export_all_exams_backup_excel"),
+    path("backup/import-excel/", views.import_all_exams_backup_excel, name="import_all_exams_backup_excel"),
 ]
+

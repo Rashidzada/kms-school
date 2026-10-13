@@ -1,22 +1,298 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}School Profile & Settings{% endblock %}
+{% block title %}School Profile, Cloud Email Backup & Restore Settings{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h3 class="fw-bold mb-0 text-dark">
+      <i class="fas fa-cogs me-2 text-primary"></i> School Profile, Cloud Email Backup &amp; Full Restore Center
+    </h3>
+    <p class="text-muted small mb-0">
+      Configure school settings, 3-option Gmail + App Password automatic daily backups (.sql &amp; Master .xlsx), and 1-click full database restoration.
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'download_db_backup' %}" class="btn btn-warning text-dark fw-bold shadow-sm">
+      <i class="fas fa-database me-1"></i> Download Full .SQL Backup
+    </a>
+    <a href="{% url 'download_master_excel_backup' %}" class="btn btn-success fw-bold shadow-sm">
+      <i class="fas fa-file-excel me-1"></i> Download Full Master .XLSX Backup
+    </a>
+    <button type="button" class="btn btn-primary fw-bold shadow-sm" onclick="window.triggerKmsAutoBackupSplash(false)">
+      <i class="fas fa-paper-plane me-1"></i> Test / Send Backup to Email Now
+    </button>
+  </div>
+</div>
+
+<!-- 1. AUTOMATED CLOUD EMAIL BACKUP & 3-EMAIL ACCOUNTS TABLE -->
+<div class="card shadow-sm border-top border-primary border-4 mb-4">
+  <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="fas fa-envelope-open-text me-2 text-primary"></i> Automated Daily Cloud Email Backup Setup (3 Email Options)
+      </h5>
+      <small class="text-muted">
+        Enter <strong>Email Address</strong> &amp; <strong>16-Character Google App Password</strong> in the table below, and check which email(s) should <strong>Send</strong> and/or <strong>Receive</strong> the Full <code>.sql</code> &amp; Master <code>.xlsx</code> backup files.
+      </small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      {% if setting.last_auto_backup_at %}
+        <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+          <i class="fas fa-check-circle me-1"></i> Last Backup: {{ setting.last_auto_backup_at|date:"d M Y, h:i A" }} ({{ setting.last_auto_backup_status }})
+        </span>
+      {% else %}
+        <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2">
+          <i class="fas fa-clock me-1"></i> Status: {{ setting.last_auto_backup_status|default:"Pending First Run" }}
+        </span>
+      {% endif %}
+      <a href="/admin/school/backupemailaccount/" target="_blank" class="btn btn-sm btn-outline-dark fw-bold">
+        <i class="fas fa-shield-alt me-1"></i> Open in Django Admin Table
+      </a>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_email_table">
+
+      <!-- Auto-Backup Schedule & Attachment Options Banner -->
+      <div class="row g-3 align-items-center bg-light p-3 rounded border mb-4">
+        <div class="col-md-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="id_auto_backup_enabled" name="auto_backup_enabled" {% if setting.auto_backup_enabled %}checked{% endif %}>
+            <label class="form-check-label fw-bold text-dark" for="id_auto_backup_enabled">
+              <i class="fas fa-bolt text-warning me-1"></i> Auto Daily Backup Splash Screen
+            </label>
+          </div>
+          <div class="small text-muted mt-1">
+            Automatically checks network &amp; emails backup after 1 day when system opens.
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold mb-1">Auto Timer (Days)</label>
+          <div class="input-group input-group-sm">
+            <input type="number" name="auto_backup_interval_days" value="{{ setting.auto_backup_interval_days|default:1 }}" min="1" max="30" class="form-control fw-bold">
+            <span class="input-group-text">Day(s)</span>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-bold mb-1">Default Extra Receiver Email (Optional)</label>
+          <input type="email" name="default_backup_email" value="{{ setting.default_backup_email }}" class="form-control form-control-sm" placeholder="e.g. backup@gmail.com">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-bold mb-1 d-block">Files to Attach in Email:</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chk_sql" name="backup_send_sql" {% if setting.backup_send_sql %}checked{% endif %}>
+              <label class="form-check-label small fw-bold text-primary" for="chk_sql">Full <code>.sql</code></label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chk_excel" name="backup_send_excel" {% if setting.backup_send_excel %}checked{% endif %}>
+              <label class="form-check-label small fw-bold text-success" for="chk_excel">Master <code>.xlsx</code></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Email Accounts Table -->
+      <div class="table-responsive mb-3">
+        <table class="table table-bordered align-middle mb-0">
+          <thead class="table-dark small">
+            <tr>
+              <th style="width: 65px;" class="text-center">Option</th>
+              <th style="width: 210px;">Account Label</th>
+              <th>Email Address (Sender / Receiver) *</th>
+              <th>App Password (16-Char Gmail App Password)</th>
+              <th class="text-center" style="width: 135px;">Can Send Backup?</th>
+              <th class="text-center" style="width: 155px;">Receive Backup Data?</th>
+              <th class="text-center" style="width: 90px;">Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for acc in email_accounts %}
+            <tr>
+              <td class="text-center fw-bold bg-light">
+                <span class="badge bg-primary">#{{ acc.slot_number }}</span>
+              </td>
+              <td>
+                <input type="text" name="acc_{{ acc.slot_number }}_label" value="{{ acc.account_label }}" class="form-control form-control-sm fw-semibold">
+              </td>
+              <td>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white"><i class="fas fa-envelope text-primary"></i></span>
+                  <input type="email" name="acc_{{ acc.slot_number }}_email" value="{{ acc.email }}" class="form-control" placeholder="example{{ acc.slot_number }}@gmail.com">
+                </div>
+              </td>
+              <td>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white"><i class="fas fa-key text-warning"></i></span>
+                  <input type="password" id="pass_slot_{{ acc.slot_number }}" name="acc_{{ acc.slot_number }}_app_password" value="{{ acc.app_password }}" class="form-control font-monospace" placeholder="xxxx xxxx xxxx xxxx (16-char App Password)">
+                  <button class="btn btn-outline-secondary" type="button" onclick="const el=document.getElementById('pass_slot_{{ acc.slot_number }}'); el.type = (el.type==='password'?'text':'password');" title="Show / Hide App Password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                {% if acc.app_password %}
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="badge bg-success-subtle text-success small"><i class="fas fa-check me-1"></i>App Password Saved</span>
+                    <label class="small text-danger" style="cursor:pointer;">
+                      <input type="checkbox" name="acc_{{ acc.slot_number }}_clear_pass" value="1" class="form-check-input me-1">Clear
+                    </label>
+                  </div>
+                {% else %}
+                  <div class="small text-muted mt-1">Required only if this email sends backups</div>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" name="acc_{{ acc.slot_number }}_use_as_sender" {% if acc.use_as_sender %}checked{% endif %} style="transform: scale(1.25);">
+                </div>
+                <div class="small text-muted">Sender</div>
+              </td>
+              <td class="text-center bg-success-subtle bg-opacity-25">
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" name="acc_{{ acc.slot_number }}_receive_backup" {% if acc.receive_backup %}checked{% endif %} style="transform: scale(1.25);">
+                </div>
+                <div class="small fw-bold text-success">Receive .SQL &amp; .XLSX</div>
+              </td>
+              <td class="text-center">
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" name="acc_{{ acc.slot_number }}_is_active" {% if acc.is_active %}checked{% endif %} style="transform: scale(1.2);">
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if setting.last_auto_backup_message %}
+      <div class="alert alert-info py-2 small mb-3">
+        <i class="fas fa-info-circle me-1"></i> <strong>Last Cloud Backup Report:</strong> {{ setting.last_auto_backup_message }}
+      </div>
+      {% endif %}
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="small text-muted">
+          <i class="fas fa-lightbulb text-warning me-1"></i>
+          <strong>Tip:</strong> To get a Google App Password, open your Google Account &rarr; <em>Security</em> &rarr; <em>2-Step Verification</em> &rarr; <em>App Passwords</em>.
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary fw-bold px-4">
+            <i class="fas fa-save me-1"></i> Save Email &amp; Timer Table
+          </button>
+          <button type="submit" name="send_now" value="1" class="btn btn-success fw-bold px-4">
+            <i class="fas fa-paper-plane me-1"></i> Save &amp; Send Backup Email Now
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. ONE-CLICK FULL DATABASE RESTORE (.SQL / .XLSX / .JSON) & PROFILE SETTINGS -->
+<div class="row g-4">
+  <div class="col-lg-6">
+    <!-- Full Restore Card -->
+    <div class="card shadow-sm border-top border-success border-4 mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-dark">
+          <i class="fas fa-cloud-upload-alt me-2 text-success"></i> One-Click Full Database Restore (PostgreSQL <code>.sql</code> or Master <code>.xlsx</code>)
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <p class="text-muted small">
+          Upload any <strong>KMS Full PostgreSQL Backup (<code>.sql</code>)</strong> or <strong>Full 16-Sheet Master Excel Backup (<code>.xlsx</code>)</strong> to restore <strong>100% of your school data</strong>:
+          all Classes, Sections, Students, Teachers, <strong>All Exam Marks</strong>, <strong>Fee Ledgers &amp; Payment Receipts</strong>, Salary Bills, Loans, and Expenses.
+        </p>
+        <form method="post" action="{% url 'restore_full_database' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'school_settings' %}">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Select Backup File (<code>.sql</code>, <code>.xlsx</code>, or <code>.json</code>) *</label>
+            <input type="file" name="backup_file" class="form-control" accept=".sql,.xlsx,.xls,.json" required>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success fw-bold" onclick="return confirm('Restore full database from the selected backup file? All records (students, teachers, marks, fee receipts, salaries) will be restored and sequences synced.');">
+              <i class="fas fa-sync-alt me-1"></i> Upload &amp; Restore Full Database Now
+            </button>
+          </div>
+        </form>
+        <hr>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{% url 'download_db_backup' %}" class="btn btn-sm btn-outline-dark flex-grow-1 fw-bold">
+            <i class="fas fa-download me-1 text-warning"></i> Download Full .SQL
+          </a>
+          <a href="{% url 'download_master_excel_backup' %}" class="btn btn-sm btn-outline-success flex-grow-1 fw-bold">
+            <i class="fas fa-file-excel me-1"></i> Download Full Master .XLSX
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backup History Logs -->
     <div class="card shadow-sm">
       <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0"><i class="fas fa-school me-2 text-primary"></i> School Profile & Configuration</h5>
+        <h6 class="fw-bold mb-0"><i class="fas fa-history me-2 text-secondary"></i> Recent Backup &amp; Restore Activity</h6>
+        <a href="/admin/school/backuphistorylog/" target="_blank" class="small text-decoration-none">View All in Admin</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>Date / Time</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Recipients / File</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in backup_logs %}
+            <tr>
+              <td class="text-nowrap">{{ log.created_at|date:"d M, h:i A" }}</td>
+              <td class="fw-semibold">{{ log.backup_type }}</td>
+              <td>
+                {% if log.status == "Success" %}
+                  <span class="badge bg-success">Success</span>
+                {% elif log.status == "Offline" %}
+                  <span class="badge bg-warning text-dark">Offline</span>
+                {% else %}
+                  <span class="badge bg-danger">{{ log.status }}</span>
+                {% endif %}
+              </td>
+              <td class="text-truncate" style="max-width: 220px;" title="{{ log.details }}">
+                {{ log.recipient_emails|default:log.sql_filename|default:log.excel_filename|default:log.details }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No backup logs recorded yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- School Profile Configuration Form -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="fas fa-school me-2 text-primary"></i> School Profile &amp; Examination Rules</h5>
       </div>
       <div class="card-body p-4">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
+          <input type="hidden" name="action" value="save_profile">
           {{ form|crispy }}
           <div class="mt-4 text-end">
             <button type="submit" class="btn btn-primary px-4 fw-bold">
-              <i class="fas fa-save me-2"></i> Save Changes
+              <i class="fas fa-save me-2"></i> Save School Profile
             </button>
           </div>
         </form>

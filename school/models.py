@@ -26,12 +26,149 @@ class SchoolSetting(models.Model):
         help_text="Passing evaluation criteria",
     )
 
+    # Automated Daily Cloud Email Backup Settings (.sql + Master .xlsx)
+    auto_backup_enabled = models.BooleanField(
+        default=True,
+        help_text="Automatically trigger daily full backup (after 1 day) with Splash Screen & Network Check",
+    )
+    auto_backup_interval_days = models.IntegerField(
+        default=1,
+        help_text="Interval in days for automatic backup (Default: 1 Day / 24 Hours)",
+    )
+    default_backup_email = models.EmailField(
+        blank=True,
+        default="",
+        help_text="Optional Default Receiver Email to always receive Full .sql & .xlsx Backups",
+    )
+    backup_send_sql = models.BooleanField(
+        default=True,
+        help_text="Send Full PostgreSQL Database Dump (.sql) attachment in backup emails",
+    )
+    backup_send_excel = models.BooleanField(
+        default=True,
+        help_text="Send Full Master Excel Workbook (.xlsx) attachment in backup emails",
+    )
+    last_auto_backup_at = models.DateTimeField(null=True, blank=True)
+    last_auto_backup_status = models.CharField(max_length=50, blank=True, default="Pending")
+    last_auto_backup_message = models.TextField(blank=True, default="")
+
     class Meta:
         verbose_name = "School Setting"
         verbose_name_plural = "School Settings"
 
     def __str__(self):
         return self.name
+
+
+class BackupEmailAccount(models.Model):
+    """
+    Email & App Password Table for Automated & Manual Cloud Backups (.sql + .xlsx).
+    Supports 3 (or more) configurable Email Accounts where the admin provides only:
+      1. Email Address
+      2. App Password (16-digit Gmail App Password for sending)
+      3. Checkboxes for whether this email Can Send and/or Should Receive the backup data.
+    """
+    slot_number = models.IntegerField(default=1, help_text="Account Slot (1, 2, 3)")
+    account_label = models.CharField(
+        max_length=100,
+        blank=True,
+        default="Backup Email Account",
+        help_text="Friendly label (e.g. Option 1 - Primary Admin, Option 2 - Principal, Option 3 - Developer/Backup)",
+    )
+    email = models.EmailField(
+        blank=True,
+        default="",
+        verbose_name="Email Address (Gmail)",
+        help_text="Enter Gmail address (e.g. yourschool@gmail.com)",
+    )
+    app_password = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        verbose_name="App Password (16-char)",
+        help_text="Enter 16-letter Google App Password (only required if this email sends backups)",
+    )
+    use_as_sender = models.BooleanField(
+        default=True,
+        verbose_name="Use to Send Backup?",
+        help_text="If checked and App Password is provided, system can use this account to send backup emails",
+    )
+    receive_backup = models.BooleanField(
+        default=True,
+        verbose_name="Receive Backup Data (.sql & .xlsx)?",
+        help_text="Check this box if this email address should receive the Full SQL & Excel backup files",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Active",
+    )
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["slot_number", "id"]
+        verbose_name = "Backup Email & App Password Account"
+        verbose_name_plural = "Backup Email & App Password Accounts (3 Options)"
+
+    def __str__(self):
+        email_str = self.email if self.email else "Not Configured"
+        roles = []
+        if self.use_as_sender and self.app_password:
+            roles.append("Sender")
+        if self.receive_backup:
+            roles.append("Receiver")
+        role_str = "/".join(roles) if roles else "Inactive"
+        return f"Option {self.slot_number}: {email_str} ({role_str})"
+
+    @classmethod
+    def ensure_three_slots(cls):
+        defaults = [
+            (1, "Option 1 - Primary School / Admin Email"),
+            (2, "Option 2 - Principal / Secondary Email"),
+            (3, "Option 3 - Backup / Cloud Archive Email"),
+        ]
+        accounts = []
+        for slot, label in defaults:
+            obj = cls.objects.filter(slot_number=slot).first()
+            if not obj:
+                obj = cls.objects.create(
+                    slot_number=slot,
+                    account_label=label,
+                    use_as_sender=True,
+                    receive_backup=True,
+                    is_active=True,
+                )
+            accounts.append(obj)
+        return accounts
+
+
+class BackupHistoryLog(models.Model):
+    """
+    Stores history of automated daily backups, manual email backups, and database restores.
+    """
+    backup_type = models.CharField(
+        max_length=50,
+        default="Auto Daily Email Backup",
+        help_text="e.g. Auto Daily Email Backup, Manual Email Backup, SQL Download, Full Restore",
+    )
+    status = models.CharField(
+        max_length=30,
+        default="Success",
+        choices=[("Success", "Success"), ("Failed", "Failed"), ("Offline", "Skipped - Offline")],
+    )
+    sender_email = models.CharField(max_length=150, blank=True, default="")
+    recipient_emails = models.TextField(blank=True, default="")
+    sql_filename = models.CharField(max_length=255, blank=True, default="")
+    excel_filename = models.CharField(max_length=255, blank=True, default="")
+    details = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Backup & Restore Log"
+        verbose_name_plural = "Backup & Restore Logs"
+
+    def __str__(self):
+        return f"{self.backup_type} - {self.status} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
 
 
 class AcademicSession(models.Model):
@@ -78,6 +215,14 @@ class Section(models.Model):
     )
     name = models.CharField(max_length=10)
     class_teacher = models.CharField(max_length=255, blank=True)
+    teacher = models.ForeignKey(
+        "teachers.Teacher",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="managed_sections",
+        help_text="Select Class / Section Teacher from Staff Directory (optional)",
+    )
 
     class Meta:
         unique_together = ("class_level", "name")
@@ -87,6 +232,11 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.class_level.name} - {self.name}"
+
+    def save(self, *args, **kwargs):
+        if self.teacher and not self.class_teacher:
+            self.class_teacher = self.teacher.full_name
+        super().save(*args, **kwargs)
 
 
 class SoftwareLicense(models.Model):

@@ -2,16 +2,19 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 
-{% block title %}Classes & Sections{% endblock %}
+{% block title %}Classes, Sections & Assigned Teachers{% endblock %}
 
 {% block content %}
 <div class="row g-4">
-  <div class="col-lg-7">
+  <div class="col-lg-8">
     <div class="card shadow-sm h-100">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0"><i class="fas fa-chalkboard me-2 text-primary"></i> Classes & Sections</h5>
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h5 class="fw-bold mb-0"><i class="fas fa-chalkboard me-2 text-primary"></i> Classes, Sections &amp; Section Teachers</h5>
+          <small class="text-muted">View each class section with its assigned teacher's Full Name, Father Name, Contact &amp; Photo</small>
+        </div>
         <div class="d-flex gap-2">
-          <a href="{% url 'export_classes_excel' %}" class="btn btn-sm btn-success" title="Export Classes to Excel">
+          <a href="{% url 'export_classes_excel' %}" class="btn btn-sm btn-success fw-bold" title="Export Classes & Section Teachers to Excel">
             <i class="fas fa-file-excel me-1"></i> Export Excel
           </a>
           <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#importClassModal">
@@ -20,26 +23,96 @@
         </div>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover table-bordered align-middle mb-0">
           <thead class="table-light small">
             <tr>
               <th>Class Name</th>
-              <th>Category Level</th>
-              <th>Default Monthly Fee</th>
-              <th>Sections</th>
+              <th>Level</th>
+              <th>Monthly Fee</th>
+              <th>Sections &amp; Full Class Teacher Details (Name, Father, Contact, Photo)</th>
             </tr>
           </thead>
           <tbody>
             {% for c in classes %}
               <tr>
-                <td class="fw-bold">{{ c.name }}</td>
+                <td class="fw-bold text-primary">{{ c.name }}</td>
                 <td><span class="badge bg-light text-dark border">{{ c.level }}</span></td>
-                <td class="fw-bold text-success">PKR {{ c.monthly_fee|floatformat:2|intcomma }}</td>
+                <td class="fw-bold text-success text-nowrap">PKR {{ c.monthly_fee|floatformat:0|intcomma }}</td>
                 <td>
                   {% for sec in c.sections.all %}
-                    <span class="badge bg-info text-dark me-1" title="Teacher: {{ sec.class_teacher|default:'Unassigned' }}">
-                      {{ sec.name }}
-                    </span>
+                    <div class="d-flex align-items-center justify-content-between p-2 mb-2 rounded border bg-light">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary px-2 py-1">Sec {{ sec.name }}</span>
+                        {% if sec.teacher %}
+                          {% if sec.teacher.profile_picture %}
+                            <img src="{{ sec.teacher.profile_picture.url }}" alt="{{ sec.teacher.full_name }}" class="rounded-circle border" style="width: 34px; height: 34px; object-fit: cover;">
+                          {% else %}
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 0.8rem; font-weight: bold;">
+                              {{ sec.teacher.full_name|slice:":1" }}
+                            </div>
+                          {% endif %}
+                          <div class="small lh-sm">
+                            <a href="{% url 'teacher_detail' sec.teacher.pk %}" class="fw-bold text-dark text-decoration-none">
+                              {{ sec.teacher.full_name }}
+                            </a>
+                            <span class="text-muted">({{ sec.teacher.teacher_id }})</span>
+                            <div class="text-muted" style="font-size: 0.78rem;">
+                              {% if sec.teacher.father_name %}<strong>F/Name:</strong> {{ sec.teacher.father_name }} &bull; {% endif %}
+                              {% if sec.teacher.contact_number %}<i class="fas fa-phone-alt text-success"></i> {{ sec.teacher.contact_number }}{% endif %}
+                              {% if sec.teacher.qualification %} &bull; {{ sec.teacher.qualification }}{% endif %}
+                            </div>
+                          </div>
+                        {% elif sec.class_teacher %}
+                          <div class="small">
+                            <i class="fas fa-user-tie text-secondary me-1"></i>
+                            <strong>{{ sec.class_teacher }}</strong>
+                          </div>
+                        {% else %}
+                          <span class="text-muted small fst-italic">No Class Teacher Assigned</span>
+                        {% endif %}
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#assignSecTeacherModal{{ sec.pk }}" title="Assign / Edit Section Teacher">
+                        <i class="fas fa-user-edit"></i>
+                      </button>
+                    </div>
+
+                    <!-- Modal to Assign/Update Teacher for this Section -->
+                    <div class="modal fade" id="assignSecTeacherModal{{ sec.pk }}" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <form method="post" action="{% url 'section_update_teacher' sec.pk %}">
+                            {% csrf_token %}
+                            <div class="modal-header bg-primary text-white">
+                              <h6 class="modal-title fw-bold">
+                                <i class="fas fa-chalkboard-teacher me-1"></i> Assign Class Teacher — {{ c.name }} (Section {{ sec.name }})
+                              </h6>
+                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label class="form-label fw-bold small">Select Teacher from Staff Directory (Shows Full Bio &amp; Contact)</label>
+                                <select name="teacher_id" class="form-select">
+                                  <option value="">-- Select Teacher (Optional) --</option>
+                                  {% for t in all_teachers %}
+                                    <option value="{{ t.pk }}" {% if sec.teacher_id == t.pk %}selected{% endif %}>
+                                      {{ t.teacher_id }} — {{ t.full_name }} {% if t.father_name %}(S/D/O {{ t.father_name }}){% endif %} {% if t.contact_number %}[{{ t.contact_number }}]{% endif %}
+                                    </option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                              <div class="mb-2">
+                                <label class="form-label fw-bold small">Or Enter Custom Teacher Name (Optional)</label>
+                                <input type="text" name="class_teacher" value="{{ sec.class_teacher }}" class="form-control" placeholder="Leave blank to use selected teacher's name">
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                              <button type="submit" class="btn btn-primary btn-sm fw-bold">Save Section Teacher</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
                   {% empty %}
                     <span class="text-muted small">No sections yet</span>
                   {% endfor %}
@@ -56,7 +129,7 @@
     </div>
   </div>
 
-  <div class="col-lg-5">
+  <div class="col-lg-4">
     <!-- Add Class Form -->
     <div class="card shadow-sm mb-4">
       <div class="card-header bg-white py-3">
@@ -76,7 +149,7 @@
     <!-- Add Section Form -->
     <div class="card shadow-sm">
       <div class="card-header bg-white py-3">
-        <h6 class="fw-bold mb-0 text-success"><i class="fas fa-plus-circle me-1"></i> Create Section under Class</h6>
+        <h6 class="fw-bold mb-0 text-success"><i class="fas fa-plus-circle me-1"></i> Create Section &amp; Assign Teacher</h6>
       </div>
       <div class="card-body p-3">
         <form action="{% url 'section_create' %}" method="post">
@@ -99,7 +172,7 @@
         {% csrf_token %}
         <div class="modal-header bg-success text-white">
           <h5 class="modal-title" id="importClassModalLabel">
-            <i class="fas fa-file-excel me-2"></i> Bulk Import Classes & Sections (.xlsx)
+            <i class="fas fa-file-excel me-2"></i> Bulk Import Classes &amp; Sections (.xlsx)
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -124,7 +197,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-success">
-            <i class="fas fa-upload me-1"></i> Upload & Import Classes
+            <i class="fas fa-upload me-1"></i> Upload &amp; Import Classes
           </button>
         </div>
       </form>

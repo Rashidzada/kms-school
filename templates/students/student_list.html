@@ -434,6 +434,15 @@
                 {% endif %}
               </td>
               <td>
+                {% if s.is_fee_free %}
+                  <div class="mb-1">
+                    <span class="badge bg-success bg-opacity-75"><i class="fas fa-gift me-1"></i> 100% Free / Scholarship</span>
+                  </div>
+                {% elif s.custom_monthly_fee is not None %}
+                  <div class="mb-1">
+                    <span class="badge bg-primary bg-opacity-75"><i class="fas fa-tag me-1"></i> Custom: PKR {{ s.custom_monthly_fee|floatformat:0|intcomma }}</span>
+                  </div>
+                {% endif %}
                 {% if s.has_dues %}
                   <div class="d-flex align-items-center gap-2 mb-1">
                     <span class="badge bg-danger px-2 py-1">

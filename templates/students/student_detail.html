@@ -258,14 +258,24 @@
     <!-- Fee Ledgers -->
     {% for ledger in ledgers %}
       <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-          <span class="fw-bold text-dark">
-            <i class="fas fa-receipt me-2 text-success"></i> 
-            12-Month Fee Ledger (Session: {{ ledger.academic_session.name }})
-          </span>
-          <a href="{% url 'collect_fee' student.pk %}" class="btn btn-sm btn-success py-1">
-            <i class="fas fa-plus me-1"></i> Pay Fee
-          </a>
+        <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-dark fs-6">
+              <i class="fas fa-receipt me-1 text-success"></i> 
+              12-Month Fee Ledger (Session: {{ ledger.academic_session.name }})
+            </span>
+            <span class="badge {% if student.is_fee_free %}bg-success{% elif student.custom_monthly_fee is not None %}bg-primary{% else %}bg-secondary{% endif %}">
+              {{ student.fee_status_display }}
+            </span>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'fee_adjust' student.pk %}" class="btn btn-sm btn-outline-warning text-dark fw-bold py-1">
+              <i class="fas fa-sliders-h me-1"></i> Adjust / Customize Fee
+            </a>
+            <a href="{% url 'collect_fee' student.pk %}" class="btn btn-sm btn-success fw-bold py-1 px-3">
+              <i class="fas fa-plus me-1"></i> Pay Fee
+            </a>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered text-center align-middle mb-0 small">
@@ -273,9 +283,10 @@
               <tr>
                 <th>Month</th>
                 <th>Arrears</th>
-                <th>Monthly Fee</th>
-                <th>Exam Fee</th>
-                <th>Other</th>
+                <th>Monthly Tuition</th>
+                <th>Fine / Punishment</th>
+                <th>Extra / Exam</th>
+                <th>Concession</th>
                 <th>Total Due</th>
                 <th>Paid</th>
                 <th>Balance</th>
@@ -286,11 +297,42 @@
             <tbody>
               {% for entry in ledger.monthly_entries.all %}
                 <tr {% if entry.balance > 0 %}class="table-warning bg-opacity-25"{% endif %}>
-                  <td class="fw-bold">{{ entry.get_month_display }}</td>
+                  <td class="fw-bold text-start ps-3">{{ entry.get_month_display }}</td>
                   <td>{{ entry.arrears|floatformat:0|intcomma }}</td>
-                  <td>{{ entry.monthly_fee|floatformat:0|intcomma }}</td>
-                  <td>{{ entry.exam_fee|floatformat:0|intcomma }}</td>
-                  <td>{{ entry.other_charges|floatformat:0|intcomma }}</td>
+                  <td>
+                    {% if entry.monthly_fee == 0 %}
+                      <span class="badge bg-success">Free (0)</span>
+                    {% else %}
+                      {{ entry.monthly_fee|floatformat:0|intcomma }}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.fine_punishment > 0 %}
+                      <span class="badge bg-danger" title="{{ entry.fine_reason|default:'Fine' }}">
+                        {{ entry.fine_punishment|floatformat:0|intcomma }}
+                        {% if entry.fine_reason %}<small class="d-block fst-italic">({{ entry.fine_reason }})</small>{% endif %}
+                      </span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.other_charges > 0 or entry.exam_fee > 0 %}
+                      <span class="badge bg-info text-dark" title="{{ entry.other_charges_label|default:'Extra' }}">
+                        {{ entry.other_charges|add:entry.exam_fee|floatformat:0|intcomma }}
+                        {% if entry.other_charges_label %}<small class="d-block fst-italic">({{ entry.other_charges_label }})</small>{% endif %}
+                      </span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.discount_concession > 0 %}
+                      <span class="badge bg-success">-{{ entry.discount_concession|floatformat:0|intcomma }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
                   <td class="fw-bold">{{ entry.total_amount|floatformat:0|intcomma }}</td>
                   <td class="text-success">{{ entry.paid_amount|floatformat:0|intcomma }}</td>
                   <td class="fw-bold {% if entry.balance > 0 %}text-danger{% else %}text-success{% endif %}">

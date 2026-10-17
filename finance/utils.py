@@ -12,9 +12,13 @@ def initialize_ledger_months(
     """
     if class_monthly_fee is None:
         class_monthly_fee = (
-            student.current_class.monthly_fee
-            if student.current_class
-            else Decimal("0.00")
+            student.effective_monthly_fee
+            if hasattr(student, "effective_monthly_fee")
+            else (
+                student.current_class.monthly_fee
+                if student.current_class
+                else Decimal("0.00")
+            )
         )
 
     admission_month = admission_date.month if admission_date else None

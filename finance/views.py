@@ -45,7 +45,7 @@ def fee_register(request):
             )
             if created:
                 initialize_ledger_months(
-                    ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
+                    ledger, student, student.effective_monthly_fee
                 )
             entries = {e.month: e for e in ledger.monthly_entries.all()}
             total_due = sum(e.total_amount for e in entries.values())
@@ -90,59 +90,157 @@ def collect_fee(request, student_id):
     )
     if created or ledger.monthly_entries.count() < 12:
         initialize_ledger_months(
-            ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
+            ledger, student, student.effective_monthly_fee
         )
 
     if request.method == "POST":
-        form = FeeCollectForm(ledger, request.POST)
-        if form.is_valid():
-            selected_months = list(form.cleaned_data["selected_months"].order_by("month"))
-            amount_paid = form.cleaned_data["amount_paid"]
-            payment_date = form.cleaned_data["payment_date"]
-            remarks = form.cleaned_data["remarks"]
+        # 1. Quick Add / Adjust Extra Charges, Fines, or Custom Tuition Fee
+        if request.POST.get("action") == "add_charge_or_adjust":
+            try:
+                target_month = int(request.POST.get("target_month", 1))
+                entry = ledger.monthly_entries.filter(month=target_month).first()
+                if entry:
+                    fine_val = request.POST.get("fine_punishment")
+                    if fine_val is not None and fine_val.strip() != "":
+                        entry.fine_punishment = max(Decimal("0.00"), Decimal(fine_val.strip()))
+                    fine_reason = request.POST.get("fine_reason")
+                    if fine_reason is not None:
+                        entry.fine_reason = fine_reason.strip()
 
-            total_outstanding = sum(m.balance for m in selected_months)
+                    other_val = request.POST.get("other_charges")
+                    if other_val is not None and other_val.strip() != "":
+                        entry.other_charges = max(Decimal("0.00"), Decimal(other_val.strip()))
+                    other_label = request.POST.get("other_charges_label")
+                    if other_label is not None and other_label.strip() != "":
+                        entry.other_charges_label = other_label.strip()
 
-            if amount_paid <= 0:
-                messages.error(request, "Amount paid must be greater than zero.")
-            elif amount_paid > total_outstanding:
-                messages.error(
-                    request,
-                    f"Amount paid ({amount_paid}) cannot exceed total outstanding balance of selected months ({total_outstanding}).",
-                )
-            else:
-                try:
-                    with transaction.atomic():
-                        receipt = FeePaymentReceipt.objects.create(
-                            payment_date=payment_date,
-                            amount_paid=amount_paid,
-                            student=student,
-                            remarks=remarks,
-                        )
+                    month_fee_val = request.POST.get("month_tuition_fee")
+                    if month_fee_val is not None and month_fee_val.strip() != "":
+                        entry.monthly_fee = max(Decimal("0.00"), Decimal(month_fee_val.strip()))
 
-                        remaining = amount_paid
-                        for entry in selected_months:
-                            if remaining <= 0:
-                                break
-                            due = entry.balance
-                            pay = min(due, remaining)
-                            entry.paid_amount += pay
-                            entry.last_payment_date = payment_date
-                            entry.last_receipt_no = receipt.receipt_no
-                            entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
-                            receipt.month_entries.add(entry)
-                            remaining -= pay
+                    exam_fee_val = request.POST.get("exam_fee")
+                    if exam_fee_val is not None and exam_fee_val.strip() != "":
+                        entry.exam_fee = max(Decimal("0.00"), Decimal(exam_fee_val.strip()))
 
-                        if remaining > 0:
-                            receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
-                            receipt.save(update_fields=["remarks"])
+                    discount_val = request.POST.get("discount_concession")
+                    if discount_val is not None and discount_val.strip() != "":
+                        entry.discount_concession = max(Decimal("0.00"), Decimal(discount_val.strip()))
 
-                        recalculate_ledger_arrears(ledger)
+                    entry.save(update_fields=[
+                        "fine_punishment", "fine_reason", "other_charges",
+                        "other_charges_label", "monthly_fee", "exam_fee", "discount_concession"
+                    ])
 
-                    messages.success(request, f"Fee payment recorded with Receipt No. {receipt.receipt_no}.")
-                    return redirect("fee_receipt", pk=receipt.pk)
-                except Exception as e:
-                    messages.error(request, f"Unable to record fee payment: {str(e)}. Please check details and try again.")
+                    if request.POST.get("set_permanent_custom"):
+                        if entry.monthly_fee == Decimal("0.00"):
+                            student.is_fee_free = True
+                            student.custom_monthly_fee = Decimal("0.00")
+                        else:
+                            student.is_fee_free = False
+                            student.custom_monthly_fee = entry.monthly_fee
+                        student.save(update_fields=["is_fee_free", "custom_monthly_fee"])
+                        ledger.monthly_entries.filter(month__gte=target_month, paid_amount=Decimal("0.00")).update(monthly_fee=entry.monthly_fee)
+
+                    recalculate_ledger_arrears(ledger)
+                    messages.success(request, f"Successfully customized charges & fee for {entry.get_month_display()}!")
+                    return redirect("collect_fee", student_id=student.id)
+            except Exception as e:
+                messages.error(request, f"Error saving charge adjustment: {e}")
+
+        # 2. Flexible Per-Month Typing Payment Submission
+        has_per_month_inputs = False
+        per_month_payments = []
+        unpaid_all = list(ledger.monthly_entries.filter(is_paid=False).order_by("month"))
+        for entry in unpaid_all:
+            key = f"pay_month_{entry.id}"
+            if key in request.POST:
+                raw_val = request.POST.get(key, "").strip()
+                if raw_val:
+                    try:
+                        amt = Decimal(raw_val)
+                        if amt > 0:
+                            has_per_month_inputs = True
+                            pay_amt = min(amt, entry.balance)
+                            per_month_payments.append((entry, pay_amt))
+                    except Exception:
+                        pass
+
+        payment_date = request.POST.get("payment_date") or timezone.now().date()
+        remarks = request.POST.get("remarks", "").strip()
+
+        if has_per_month_inputs and per_month_payments:
+            total_pay = sum(amt for _, amt in per_month_payments)
+            try:
+                with transaction.atomic():
+                    receipt = FeePaymentReceipt.objects.create(
+                        payment_date=payment_date,
+                        amount_paid=total_pay,
+                        student=student,
+                        remarks=remarks,
+                    )
+                    for entry, pay in per_month_payments:
+                        entry.paid_amount += pay
+                        entry.last_payment_date = payment_date
+                        entry.last_receipt_no = receipt.receipt_no
+                        entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
+                        receipt.month_entries.add(entry)
+
+                    recalculate_ledger_arrears(ledger)
+
+                messages.success(request, f"Fee payment of PKR {total_pay:,.0f} recorded with Receipt No. {receipt.receipt_no}.")
+                return redirect("fee_receipt", pk=receipt.pk)
+            except Exception as e:
+                messages.error(request, f"Unable to record fee payment: {str(e)}.")
+        else:
+            form = FeeCollectForm(ledger, request.POST)
+            if form.is_valid():
+                selected_months = list(form.cleaned_data["selected_months"].order_by("month"))
+                amount_paid = form.cleaned_data["amount_paid"]
+                payment_date = form.cleaned_data["payment_date"]
+                remarks = form.cleaned_data["remarks"]
+
+                total_outstanding = sum(m.balance for m in selected_months)
+
+                if amount_paid <= 0:
+                    messages.error(request, "Amount paid must be greater than zero.")
+                elif amount_paid > total_outstanding:
+                    messages.error(
+                        request,
+                        f"Amount paid ({amount_paid}) cannot exceed total outstanding balance of selected months ({total_outstanding}).",
+                    )
+                else:
+                    try:
+                        with transaction.atomic():
+                            receipt = FeePaymentReceipt.objects.create(
+                                payment_date=payment_date,
+                                amount_paid=amount_paid,
+                                student=student,
+                                remarks=remarks,
+                            )
+
+                            remaining = amount_paid
+                            for entry in selected_months:
+                                if remaining <= 0:
+                                    break
+                                due = entry.balance
+                                pay = min(due, remaining)
+                                entry.paid_amount += pay
+                                entry.last_payment_date = payment_date
+                                entry.last_receipt_no = receipt.receipt_no
+                                entry.save(update_fields=["paid_amount", "last_payment_date", "last_receipt_no"])
+                                receipt.month_entries.add(entry)
+                                remaining -= pay
+
+                            if remaining > 0:
+                                receipt.remarks = f"{receipt.remarks} [Unallocated: {remaining}]".strip()
+                                receipt.save(update_fields=["remarks"])
+
+                            recalculate_ledger_arrears(ledger)
+
+                        messages.success(request, f"Fee payment recorded with Receipt No. {receipt.receipt_no}.")
+                        return redirect("fee_receipt", pk=receipt.pk)
+                    except Exception as e:
+                        messages.error(request, f"Unable to record fee payment: {str(e)}. Please check details and try again.")
     else:
         form = FeeCollectForm(
             ledger,
@@ -164,7 +262,7 @@ def collect_fee(request, student_id):
             sib_ledger, sib_created = StudentFeeLedger.objects.get_or_create(student=sib, academic_session=active_session)
             if sib_created or sib_ledger.monthly_entries.count() < 12:
                 initialize_ledger_months(
-                    sib_ledger, sib, sib.current_class.monthly_fee if sib.current_class else Decimal("0.00")
+                    sib_ledger, sib, sib.effective_monthly_fee
                 )
             sib_entries = list(sib_ledger.monthly_entries.order_by("month"))
             sib_dues = max(Decimal("0.00"), sib_entries[-1].balance if sib_entries else Decimal("0.00"))
@@ -175,11 +273,22 @@ def collect_fee(request, student_id):
                 "is_current": (sib.id == student.id),
             })
 
+    all_entries = list(ledger.monthly_entries.order_by("month"))
+    paid_entries = [e for e in all_entries if e.is_paid or (e.paid_amount and e.paid_amount > Decimal("0.00"))]
+    recent_receipts = (
+        FeePaymentReceipt.objects.filter(student=student)
+        .prefetch_related("month_entries")
+        .order_by("-payment_date", "-id")[:15]
+    )
+
     context = {
         "student": student,
         "ledger": ledger,
         "form": form,
         "unpaid_entries": unpaid_entries,
+        "all_entries": all_entries,
+        "paid_entries": paid_entries,
+        "recent_receipts": recent_receipts,
         "student_total_dues": student_total_dues,
         "family": family,
         "family_total_dues": family_total_dues,
@@ -205,7 +314,7 @@ def family_payment(request, household_id):
         )
         if sib_created or sib_ledger.monthly_entries.count() < 12:
             initialize_ledger_months(
-                sib_ledger, sib, sib.current_class.monthly_fee if sib.current_class else Decimal("0.00")
+                sib_ledger, sib, sib.effective_monthly_fee
             )
 
     if request.method == "POST":
@@ -284,7 +393,7 @@ def family_payment(request, household_id):
 def fee_adjust(request, student_id):
     """
     Fee Adjustment screen per student (FR-5.10):
-    Allows changing monthly fee going forward, and/or editing exam fee / other charges for a month.
+    Allows changing monthly fee going forward, setting permanent student custom fee, and/or adding fines and extra charges.
     """
     student = get_object_or_404(Student, pk=student_id)
     active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
@@ -296,7 +405,7 @@ def fee_adjust(request, student_id):
     )
     if created or ledger.monthly_entries.count() < 12:
         initialize_ledger_months(
-            ledger, student, student.current_class.monthly_fee if student.current_class else Decimal("0.00")
+            ledger, student, student.effective_monthly_fee
         )
 
     if request.method == "POST":
@@ -306,28 +415,56 @@ def fee_adjust(request, student_id):
             new_fee = form.cleaned_data.get("new_monthly_fee")
             single_month = form.cleaned_data.get("single_month")
             exam_fee = form.cleaned_data.get("exam_fee") or Decimal("0.00")
+            fine_punishment = form.cleaned_data.get("fine_punishment") or Decimal("0.00")
+            fine_reason = form.cleaned_data.get("fine_reason") or ""
             other_charges = form.cleaned_data.get("other_charges") or Decimal("0.00")
+            other_charges_label = form.cleaned_data.get("other_charges_label") or "Other Charges"
+            discount_concession = form.cleaned_data.get("discount_concession") or Decimal("0.00")
+            student_custom_fee = form.cleaned_data.get("student_custom_fee")
+            is_student_free = form.cleaned_data.get("is_student_free", False)
 
             with transaction.atomic():
-                # Apply new monthly fee to from_month and subsequent months
-                if new_fee is not None:
-                    ledger.monthly_entries.filter(month__gte=from_month).update(monthly_fee=new_fee)
+                # Permanent student custom fee / free scholarship
+                if is_student_free:
+                    student.is_fee_free = True
+                    student.custom_monthly_fee = Decimal("0.00")
+                    student.save(update_fields=["is_fee_free", "custom_monthly_fee"])
+                    ledger.monthly_entries.filter(month__gte=from_month, paid_amount=Decimal("0.00")).update(monthly_fee=Decimal("0.00"))
+                elif student_custom_fee is not None:
+                    student.is_fee_free = False
+                    student.custom_monthly_fee = student_custom_fee
+                    student.save(update_fields=["is_fee_free", "custom_monthly_fee"])
+                    ledger.monthly_entries.filter(month__gte=from_month, paid_amount=Decimal("0.00")).update(monthly_fee=student_custom_fee)
+                elif new_fee is not None:
+                    ledger.monthly_entries.filter(month__gte=from_month, paid_amount=Decimal("0.00")).update(monthly_fee=new_fee)
 
-                # Edit exam fee / other charges for single specific month
+                # Edit exam fee / fines / other charges for single specific month
                 if single_month:
                     target_m = int(single_month)
                     entry = ledger.monthly_entries.filter(month=target_m).first()
                     if entry:
                         entry.exam_fee = exam_fee
+                        entry.fine_punishment = fine_punishment
+                        entry.fine_reason = fine_reason
                         entry.other_charges = other_charges
-                        entry.save(update_fields=["exam_fee", "other_charges"])
+                        entry.other_charges_label = other_charges_label
+                        entry.discount_concession = discount_concession
+                        entry.save(update_fields=[
+                            "exam_fee", "fine_punishment", "fine_reason",
+                            "other_charges", "other_charges_label", "discount_concession"
+                        ])
 
                 recalculate_ledger_arrears(ledger)
 
             messages.success(request, f"Fee adjustments applied for {student.full_name}.")
             return redirect("student_detail", pk=student.pk)
     else:
-        form = FeeAdjustmentForm()
+        initial_data = {}
+        if student.custom_monthly_fee is not None:
+            initial_data["student_custom_fee"] = student.custom_monthly_fee
+        if student.is_fee_free:
+            initial_data["is_student_free"] = True
+        form = FeeAdjustmentForm(initial=initial_data)
 
     return render(
         request,
@@ -340,7 +477,8 @@ def fee_adjust(request, student_id):
 def fee_receipt(request, pk):
     """
     Printable Fee Receipt view (FR-5.9, FR-8.4) with Month Balance Left,
-    Student Total Remaining Dues, and Full Family Household Dues Breakdown.
+    Student Total Remaining Dues, Full Family Household Dues Breakdown,
+    and Itemized Fine / Punishment & Extra Charges.
     """
     receipt = get_object_or_404(
         FeePaymentReceipt.objects.select_related(
@@ -391,7 +529,15 @@ def fee_receipt(request, pk):
     # 4. Aggregated particulars for the voucher table
     tuition_fee_sum = sum((m.monthly_fee or Decimal("0.00")) for m in month_entries)
     exam_fee_sum = sum((m.exam_fee or Decimal("0.00")) for m in month_entries)
+    fine_punishment_sum = sum((m.fine_punishment or Decimal("0.00")) for m in month_entries)
+    fine_reasons = [m.fine_reason.strip() for m in month_entries if (m.fine_punishment or Decimal("0.00")) > 0 and m.fine_reason]
+    fine_reasons_str = ", ".join(list(dict.fromkeys(fine_reasons))) if fine_reasons else ""
+    
     other_charges_sum = sum((m.other_charges or Decimal("0.00")) for m in month_entries)
+    other_labels = [m.other_charges_label.strip() for m in month_entries if (m.other_charges or Decimal("0.00")) > 0 and m.other_charges_label]
+    other_labels_str = ", ".join(list(dict.fromkeys(other_labels))) if other_labels else "Fund / Other Charges"
+    
+    discount_concession_sum = sum((m.discount_concession or Decimal("0.00")) for m in month_entries)
     arrears_sum = sum((m.arrears or Decimal("0.00")) for m in month_entries)
     total_billed_sum = sum((m.total_amount or Decimal("0.00")) for m in month_entries)
     months_covered_names = ", ".join([m.get_month_display() for m in month_entries])
@@ -406,6 +552,11 @@ def fee_receipt(request, pk):
         student_total_dues_left=student_total_dues_left,
         family_total_dues_left=family_total_dues_left,
         family_count=len(family_siblings_summary),
+        fine_punishment_sum=fine_punishment_sum,
+        fine_reasons_str=fine_reasons_str,
+        other_charges_sum=other_charges_sum,
+        other_labels_str=other_labels_str,
+        discount_concession_sum=discount_concession_sum,
         principal_name="Dr. Farman Ali",
         principal_contact="+92 344 9631323",
         vp_name="Umar Saeed",
@@ -424,7 +575,11 @@ def fee_receipt(request, pk):
         "active_session": active_session,
         "tuition_fee_sum": tuition_fee_sum,
         "exam_fee_sum": exam_fee_sum,
+        "fine_punishment_sum": fine_punishment_sum,
+        "fine_reasons_str": fine_reasons_str,
         "other_charges_sum": other_charges_sum,
+        "other_labels_str": other_labels_str,
+        "discount_concession_sum": discount_concession_sum,
         "arrears_sum": arrears_sum,
         "total_billed_sum": total_billed_sum,
         "months_covered_names": months_covered_names,
@@ -440,6 +595,130 @@ def fee_receipt(request, pk):
         "whatsapp_data": whatsapp_data,
     }
     return render(request, "finance/fee_receipt.html", context)
+
+
+@login_required
+def void_fee_receipt(request, pk):
+    """
+    Void / Return a Fee Payment Receipt.
+    Rolls back paid amounts and receipt metadata on all linked month entries,
+    recalculates arrears for the student's ledger, and deletes the receipt.
+    """
+    receipt = get_object_or_404(
+        FeePaymentReceipt.objects.prefetch_related("month_entries", "student"),
+        pk=pk,
+    )
+    student = receipt.student
+    receipt_no = receipt.receipt_no
+    amount = receipt.amount_paid
+
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                entries = list(receipt.month_entries.select_related("ledger"))
+                ledgers_to_update = set()
+                for entry in entries:
+                    ledgers_to_update.add(entry.ledger)
+                    # Reset month paid status
+                    entry.paid_amount = Decimal("0.00")
+                    entry.is_paid = False
+                    entry.last_receipt_no = ""
+                    entry.last_payment_date = None
+                    entry.save(update_fields=["paid_amount", "is_paid", "last_receipt_no", "last_payment_date"])
+
+                # Delete the receipt
+                receipt.delete()
+
+                # Recalculate arrears on affected ledgers
+                for ledg in ledgers_to_update:
+                    recalculate_ledger_arrears(ledg)
+
+            messages.success(
+                request,
+                f"Receipt {receipt_no} (PKR {amount:,.0f}) was successfully voided/returned! Outstanding dues have been restored."
+            )
+        except Exception as e:
+            messages.error(request, f"Error voiding receipt: {e}")
+        return redirect("collect_fee", student_id=student.pk)
+
+    return redirect("collect_fee", student_id=student.pk)
+
+
+@login_required
+def reset_month_fee(request, entry_id):
+    """
+    Reset / Return payment for a single specific month entry.
+    Clears paid amount and marks it unpaid, then recalculates arrears.
+    """
+    entry = get_object_or_404(StudentFeeMonthEntry.objects.select_related("ledger", "ledger__student"), pk=entry_id)
+    student = entry.ledger.student
+    month_name = entry.get_month_display()
+
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                entry.paid_amount = Decimal("0.00")
+                entry.is_paid = False
+                entry.last_receipt_no = ""
+                entry.last_payment_date = None
+                entry.save(update_fields=["paid_amount", "is_paid", "last_receipt_no", "last_payment_date"])
+                recalculate_ledger_arrears(entry.ledger)
+
+            messages.success(
+                request,
+                f"Payment for {month_name} has been returned and reset to unpaid for {student.full_name}."
+            )
+        except Exception as e:
+            messages.error(request, f"Error resetting month: {e}")
+        return redirect("collect_fee", student_id=student.pk)
+
+    return redirect("collect_fee", student_id=student.pk)
+
+
+@login_required
+def reset_student_ledger(request, student_id):
+    """
+    Reset / Return all months in the active session for a student back to unpaid.
+    Used when full-year payment was made by mistake or needs a complete reversal.
+    """
+    student = get_object_or_404(Student, pk=student_id)
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    ledger = StudentFeeLedger.objects.filter(student=student, academic_session=active_session).first()
+    if not ledger:
+        ledger = StudentFeeLedger.objects.filter(student=student).first()
+
+    if request.method == "POST":
+        if ledger:
+            try:
+                with transaction.atomic():
+                    # 1. Reset all month entries
+                    for entry in ledger.monthly_entries.all():
+                        entry.paid_amount = Decimal("0.00")
+                        entry.is_paid = False
+                        entry.last_receipt_no = ""
+                        entry.last_payment_date = None
+                        entry.save(update_fields=["paid_amount", "is_paid", "last_receipt_no", "last_payment_date"])
+
+                    # 2. Also void receipts associated with this student's months
+                    void_receipts = request.POST.get("void_receipts", "1")
+                    if void_receipts == "1":
+                        receipts = FeePaymentReceipt.objects.filter(student=student, month_entries__in=ledger.monthly_entries.all()).distinct()
+                        receipts.delete()
+
+                    # 3. Recalculate arrears
+                    recalculate_ledger_arrears(ledger)
+
+                messages.success(
+                    request,
+                    f"Full session ledger for {student.full_name} has been completely reset to unpaid! All 12 months dues are restored."
+                )
+            except Exception as e:
+                messages.error(request, f"Error resetting ledger: {e}")
+        else:
+            messages.warning(request, "No fee ledger found for this student.")
+        return redirect("collect_fee", student_id=student.pk)
+
+    return redirect("collect_fee", student_id=student.pk)
 
 
 @login_required

@@ -308,7 +308,7 @@ def student_create(request):
                         initialize_ledger_months(
                             ledger,
                             student,
-                            student.current_class.monthly_fee if student.current_class else Decimal("0.00"),
+                            student.effective_monthly_fee,
                             admission_date=student.admission_date,
                         )
                 messages.success(
@@ -349,7 +349,7 @@ def student_detail(request, pk):
             initialize_ledger_months(
                 active_ledger,
                 student,
-                student.current_class.monthly_fee if student.current_class else Decimal("0.00"),
+                student.effective_monthly_fee,
                 admission_date=student.admission_date,
             )
 
@@ -444,6 +444,17 @@ def student_update(request, pk):
                     updated_student.inactive_date = inactive_date
                     updated_student.save(update_fields=["inactive_date"])
                     apply_withdrawal_stop(updated_student, inactive_date)
+
+                # Sync customized/free fee to unpaid entries in active session ledger
+                active_sess = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+                if active_sess:
+                    st_ledger = StudentFeeLedger.objects.filter(student=updated_student, academic_session=active_sess).first()
+                    if st_ledger:
+                        new_fee = updated_student.effective_monthly_fee
+                        unpaid_entries = st_ledger.monthly_entries.filter(paid_amount=Decimal("0.00"))
+                        if unpaid_entries.exists():
+                            unpaid_entries.update(monthly_fee=new_fee)
+                            recalculate_ledger_arrears(st_ledger)
 
                 messages.success(request, f"Student {updated_student.full_name} updated successfully.")
                 return redirect("student_detail", pk=updated_student.pk)
@@ -2254,4 +2265,184 @@ def export_student_yearly_attendance_excel(request):
     title = f"Annual Attendance {selected_class.name if selected_class else ''} - {year}"
     buf = create_styled_workbook(title, headers, rows)
     return excel_download_response(buf, f"Annual_Attendance_{year}.xlsx")
+
+
+@login_required
+def student_fee_collection_list(request):
+    """
+    Simple Student Fee & Exam Fee Collection Register:
+    - Filter by Class, Section, Academic Session
+    - Customizable Fee Name (e.g. Examination Fee, Paper Money, Sports Fund)
+    - Default Fee Amount (e.g. Rs. 500)
+    - Clean columns: S#, Roll/Adm No, Student Name, Father Name, Class & Section, Fee Amount, Paid, Balance, Date & Signature
+    - 1-Click Print Layout (Office Printer Ready) & Excel Export
+    """
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    school_setting = SchoolSetting.objects.first()
+
+    class_id = request.GET.get("class_id", "").strip()
+    section_id = request.GET.get("section_id", "").strip()
+    fee_title = request.GET.get("fee_title", "Examination Fee Collection").strip()
+    if not fee_title:
+        fee_title = "Examination Fee Collection"
+    try:
+        default_fee = Decimal(request.GET.get("fee_amount", "500").strip() or "500")
+    except Exception:
+        default_fee = Decimal("500")
+
+    classes = ClassLevel.objects.all()
+    sections = Section.objects.all()
+
+    students = Student.objects.filter(status="Active")
+    selected_class = None
+    selected_section = None
+
+    if class_id:
+        selected_class = ClassLevel.objects.filter(id=class_id).first()
+        if selected_class:
+            students = students.filter(current_class=selected_class)
+            sections = sections.filter(class_level=selected_class)
+
+    if section_id:
+        selected_section = Section.objects.filter(id=section_id).first()
+        if selected_section:
+            students = students.filter(current_section=selected_section)
+
+    students = list(students.order_by("admission_no"))
+    total_students = len(students)
+    total_amount = total_students * default_fee
+
+    is_print = request.GET.get("print") == "1"
+
+    context = {
+        "classes": classes,
+        "sections": sections,
+        "selected_class": selected_class,
+        "selected_section": selected_section,
+        "students": students,
+        "active_session": active_session,
+        "school_setting": school_setting,
+        "fee_title": fee_title,
+        "default_fee": default_fee,
+        "total_students": total_students,
+        "total_amount": total_amount,
+        "is_print": is_print,
+    }
+
+    if is_print:
+        return render(request, "students/fee_collection_print.html", context)
+    return render(request, "students/fee_collection_list.html", context)
+
+
+@login_required
+def export_student_fee_collection_excel(request):
+    """
+    Exports clean, styled Excel workbook for Exam Fee or Student Fee Collection.
+    """
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
+    active_session = AcademicSession.objects.filter(is_active=True).first() or AcademicSession.objects.first()
+    school_setting = SchoolSetting.objects.first()
+
+    class_id = request.GET.get("class_id", "").strip()
+    section_id = request.GET.get("section_id", "").strip()
+    fee_title = request.GET.get("fee_title", "Examination Fee Collection").strip() or "Examination Fee Collection"
+    try:
+        default_fee = Decimal(request.GET.get("fee_amount", "500").strip() or "500")
+    except Exception:
+        default_fee = Decimal("500")
+
+    students = Student.objects.filter(status="Active")
+    selected_class = None
+    if class_id:
+        selected_class = ClassLevel.objects.filter(id=class_id).first()
+        if selected_class:
+            students = students.filter(current_class=selected_class)
+    if section_id:
+        sec = Section.objects.filter(id=section_id).first()
+        if sec:
+            students = students.filter(current_section=sec)
+
+    students = list(students.order_by("admission_no"))
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Fee Collection"
+
+    school_name = school_setting.name if school_setting else "School Management"
+
+    # Title Block
+    ws.merge_cells("A1:J1")
+    ws["A1"] = school_name
+    ws["A1"].font = Font(name="Calibri", size=16, bold=True, color="1E3A8A")
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws.merge_cells("A2:J2")
+    ws["A2"] = f"{fee_title.upper()} REGISTER — {selected_class.name if selected_class else 'ALL CLASSES'} ({active_session.name if active_session else ''})"
+    ws["A2"].font = Font(name="Calibri", size=12, bold=True, color="334155")
+    ws["A2"].alignment = Alignment(horizontal="center", vertical="center")
+
+    headers = [
+        "S#", "Adm #", "Student Name", "Father Name", "Class & Section",
+        "Payable (PKR)", "Paid Amount", "Balance Due", "Payment Date", "Signature / Remarks"
+    ]
+
+    header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    thin_border = Border(
+        left=Side(style="thin", color="CBD5E1"),
+        right=Side(style="thin", color="CBD5E1"),
+        top=Side(style="thin", color="CBD5E1"),
+        bottom=Side(style="thin", color="CBD5E1"),
+    )
+
+    ws.row_dimensions[4].height = 24
+    for col_idx, h in enumerate(headers, start=1):
+        cell = ws.cell(row=4, column=col_idx, value=h)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+
+    current_row = 5
+    for idx, s in enumerate(students, start=1):
+        ws.row_dimensions[current_row].height = 20
+        cls_sec = f"{s.current_class.name if s.current_class else ''} - {s.section.name if s.section else ''}".strip(" -")
+        vals = [idx, s.admission_no, s.full_name, s.father_name, cls_sec, float(default_fee), "", "", "", ""]
+        for c_idx, val in enumerate(vals, start=1):
+            cell = ws.cell(row=current_row, column=c_idx, value=val)
+            cell.font = Font(name="Calibri", size=10)
+            cell.border = thin_border
+            if c_idx in [1, 2, 6]:
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif c_idx in [3, 4, 5]:
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+        current_row += 1
+
+    # Total Row
+    ws.merge_cells(f"A{current_row}:E{current_row}")
+    tot_cell = ws.cell(row=current_row, column=1, value=f"TOTAL ENROLLED STUDENTS: {len(students)}")
+    tot_cell.font = Font(name="Calibri", size=11, bold=True)
+    tot_cell.alignment = Alignment(horizontal="right", vertical="center")
+    
+    tot_fee = ws.cell(row=current_row, column=6, value=float(len(students) * default_fee))
+    tot_fee.font = Font(name="Calibri", size=11, bold=True, color="1E3A8A")
+    tot_fee.alignment = Alignment(horizontal="center", vertical="center")
+
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        col_letter = get_column_letter(col[0].column)
+        ws.column_dimensions[col_letter].width = max(max_len + 3, 11)
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    filename = f"Fee_Collection_{selected_class.name if selected_class else 'All'}_{fee_title.replace(' ', '_')}.xlsx"
+    resp = HttpResponse(out.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
 

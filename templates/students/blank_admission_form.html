@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blank Admission Form | {{ school_setting.name|default:"Kohisar Model School & College" }}</title>
+  <title>Blank Admission Form | {{ school_setting.name|default:"School Management System" }}</title>
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
   <style>
@@ -410,7 +410,7 @@
             {% endif %}
           </td>
           <td style="text-align: center; vertical-align: middle;">
-            <div class="school-title">{{ school_setting.name|default:"KOHISAR MODEL SCHOOL & COLLEGE" }}</div>
+            <div class="school-title">{{ school_setting.name|upper|default:"SCHOOL MANAGEMENT SYSTEM" }}</div>
             <div class="school-address">{{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa" }}</div>
             <div class="school-contact">Phone / WhatsApp: {{ school_setting.contact|default:"+92 344 9631323 / +92 345 3407095" }}</div>
             <div>
@@ -627,7 +627,7 @@
       </div>
 
       <div class="undertaking-text">
-        "I hereby solemnly affirm that the particulars provided in this admission form are true and accurate to the best of my knowledge. I undertake that my child will strictly abide by all rules, regulations, code of conduct, and discipline of Kohisar Model School & College. I also agree to pay all monthly school fees and institutional charges in advance by the due date specified on the fee voucher. In case of any violation, the decision of the School Administration/Principal shall be final and binding."
+        "I hereby solemnly affirm that the particulars provided in this admission form are true and accurate to the best of my knowledge. I undertake that my child will strictly abide by all rules, regulations, code of conduct, and discipline of {{ school_setting.name }}. I also agree to pay all monthly school fees and institutional charges in advance by the due date specified on the fee voucher. In case of any violation, the decision of the School Administration/Principal shall be final and binding."
       </div>
 
       <div class="sign-row">

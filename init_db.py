@@ -68,22 +68,12 @@ def sync_sequences():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "school_app.settings")
     import django
     django.setup()
-    from io import StringIO
-    from django.apps import apps
-    from django.core.management import call_command
-    from django.db import connection
-
-    if "postgresql" not in connection.settings_dict.get("ENGINE", ""):
-        return
-
-    app_labels = [app.label for app in apps.get_app_configs()]
-    out = StringIO()
-    call_command("sqlsequencereset", *app_labels, stdout=out, no_color=True)
-    sql = out.getvalue()
-    if sql.strip():
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
+    try:
+        from school.backup_utils import sync_all_postgresql_sequences
+        sync_all_postgresql_sequences()
         print("[OK] PostgreSQL primary key sequences synchronized.")
+    except Exception as e:
+        print(f"[!] Sequence synchronization note: {e}")
 
 
 if __name__ == '__main__':

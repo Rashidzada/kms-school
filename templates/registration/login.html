@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login | {{ school_setting.name }}</title>
-  <link rel="icon" type="image/png" href="{% static 'dist/img/favicon.png' %}">
+  <title>Login | {{ school_setting.name|default:"School Management System" }}</title>
+  <link rel="icon" type="image/png" href="{% if school_setting.logo %}{{ school_setting.logo.url }}{% else %}{% static 'dist/img/favicon.png' %}{% endif %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
   <style>
@@ -96,12 +96,12 @@
         </div>
 
         <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
-          <i class="fas fa-sign-in-alt me-2"></i> Sign In to KMS
+          <i class="fas fa-sign-in-alt me-2"></i> Sign In to {{ school_setting.short_name|default:"Portal" }}
         </button>
       </form>
     </div>
     <div class="card-footer text-center bg-light py-2 border-top">
-      <small class="text-muted">Student Information, Fee & Payroll Management System</small>
+      <small class="text-muted">{{ school_setting.tagline|default:"Student Information, Fee & Payroll Management System" }}</small>
     </div>
   </div>
 </body>

@@ -174,7 +174,7 @@
           {% endif %}
         </td>
         <td style="text-align: center;">
-          <h1 class="school-title">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h1>
+          <h1 class="school-title">{{ data.school_setting.name|default:"School Management System" }}</h1>
           <div class="school-sub">{{ data.school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }} &bull; Ph: {{ data.school_setting.contact }}</div>
           <div class="sheet-title">{{ data.wing_label }} — EXAMINATION RESULT REGISTER & MASTER GAZETTE</div>
           <div style="font-size: 11px; font-weight: 700; margin-top: 2px;">
@@ -298,7 +298,7 @@
           {% endif %}
         </td>
         <td style="text-align: center;">
-          <h2 class="school-title" style="font-size: 16px;">{{ data.school_setting.name|default:"Kohisar Model School & College" }}</h2>
+          <h2 class="school-title" style="font-size: 16px;">{{ data.school_setting.name|default:"School Management System" }}</h2>
           <div class="sheet-title" style="font-size: 13px;">{{ cr.class_level.name }} — OFFICIAL RESULT SHEET</div>
           <div style="font-size: 10px; font-weight: bold;">
             Term: {{ selected_exam.name }} &bull; Session: {{ selected_exam.session.name }} &bull; Max Marks: {{ cr.grand_total_max|floatformat:0 }}

@@ -1,0 +1,366 @@
+{% load static month_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ wing_title }} — {{ school_setting.name|default:"School Timetable" }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 6mm 8mm;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 10px;
+    }
+
+    .print-sheet {
+      background: #ffffff;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    .header-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 2px solid #1e3a8a;
+      padding: 2px;
+    }
+
+    .school-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      line-height: 1.15;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .school-subtitle {
+      font-size: 0.85rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .badge-wing {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 4px 14px;
+      border-radius: 4px;
+      display: inline-block;
+      text-transform: uppercase;
+    }
+
+    .theme-pink .badge-wing {
+      background-color: #f43f5e;
+      color: #ffffff;
+    }
+    .theme-green .badge-wing {
+      background-color: #15803d;
+      color: #ffffff;
+    }
+    .theme-default .badge-wing {
+      background-color: #1e3a8a;
+      color: #ffffff;
+    }
+
+    .tt-print-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin-top: 10px;
+    }
+
+    .tt-print-table th, .tt-print-table td {
+      border: 1.5px solid #334155;
+      padding: 5px 3px;
+      text-align: center;
+      vertical-align: middle;
+      word-wrap: break-word;
+    }
+
+    .theme-pink .tt-print-table th {
+      background-color: #f43f5e !important;
+      color: #ffffff !important;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .theme-green .tt-print-table th {
+      background-color: #15803d !important;
+      color: #ffffff !important;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .theme-default .tt-print-table th {
+      background-color: #1e3a8a !important;
+      color: #ffffff !important;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .col-period-hdr {
+      width: 80px;
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+    }
+
+    .cell-period {
+      background-color: #f1f5f9;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #0f172a;
+    }
+    .period-time {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #475569;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .break-row td {
+      background-color: #fef08a !important;
+      color: #854d0e !important;
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-size: 0.85rem;
+      padding: 4px !important;
+      text-transform: uppercase;
+      border: 1.5px solid #334155;
+    }
+
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 50px;
+    }
+
+    .subj-name {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #0f172a;
+      line-height: 1.15;
+    }
+
+    .teacher-name {
+      font-size: 0.70rem;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 2px;
+      line-height: 1.1;
+      background: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .signature-row {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 30px;
+    }
+
+    .sig-block {
+      text-align: center;
+      width: 200px;
+    }
+    .sig-line {
+      border-top: 1.5px solid #0f172a;
+      margin-bottom: 4px;
+    }
+    .sig-text {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1e293b;
+      text-transform: uppercase;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-sheet {
+        border: none;
+        padding: 0;
+      }
+      .break-row td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .tt-print-table th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body class="{{ theme_class }}">
+
+  <!-- Floating Print Toolbar (Hidden on Paper) -->
+  <div class="no-print d-flex justify-content-between align-items-center bg-dark text-white p-2 px-3 mb-2 rounded shadow">
+    <div class="small">
+      <i class="fas fa-print text-warning me-1"></i>
+      <strong>School Office Print Mode (Landscape):</strong> Click "Print Now" to output directly to your printer or save as PDF.
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-success btn-sm fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print Now (A4 Landscape)
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-light btn-sm">
+        Close Window
+      </button>
+    </div>
+  </div>
+
+  <div class="print-sheet">
+    <!-- School Letterhead Header -->
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+      <div style="width: 80px;">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" class="header-logo">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="header-logo">
+        {% endif %}
+      </div>
+      <div class="text-center flex-grow-1 px-2">
+        <div class="school-title">{{ school_setting.name|default:"School Management System" }}</div>
+        <div class="school-subtitle">{{ school_setting.address|default:"" }} | Contact: {{ school_setting.contact|default:"" }}</div>
+        <div class="mt-1">
+          <span class="badge-wing">{{ wing_title }}</span>
+          <span class="ms-2 small text-dark fw-bold border px-2 py-1 rounded bg-light">
+            Session: {{ active_session.name|default:"2025-2026" }}
+          </span>
+        </div>
+      </div>
+      <div style="width: 80px; text-align: right;" class="small text-muted">
+        <span class="badge bg-light text-dark border">6-Day Week</span><br>
+        <span style="font-size: 0.65rem;">Mon – Sat</span>
+      </div>
+    </div>
+
+    {% if selected_teacher %}
+    <!-- Individual Teacher Slip Banner -->
+    <div class="alert alert-info py-1 px-3 text-center mb-2 fw-bold">
+      Teacher: {{ selected_teacher.full_name }} | Designation: {{ selected_teacher.designation|default:"Faculty Teacher" }}
+    </div>
+    <table class="tt-print-table">
+      <thead>
+        <tr>
+          <th style="width: 100px;">Period</th>
+          <th style="width: 140px;">Timing</th>
+          <th>Assigned Class &amp; Subject</th>
+          <th style="width: 140px;">Workload Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in teacher_schedule %}
+        <tr {% if item.period.is_break %}class="break-row"{% endif %}>
+          <td class="cell-period">{{ item.period.name }}</td>
+          <td class="period-time">{{ item.period.start_time }} – {{ item.period.end_time }}</td>
+          <td>
+            {% if item.period.is_break %}
+              RECESS / TIFFIN INTERVAL
+            {% elif item.entries %}
+              {% for e in item.entries %}
+                <div class="fw-bold">{{ e.class_level.name }}: <span style="color: #1e3a8a;">{{ e.get_subject_name }}</span></div>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted fst-italic">Free / Off Period (Staff Room)</span>
+            {% endif %}
+          </td>
+          <td class="small fw-bold">
+            {% if item.period.is_break %}
+              Break
+            {% elif item.entries %}
+              Assigned (Teaching)
+            {% else %}
+              Free Period
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <!-- Section / Master Timetable Matrix -->
+    <table class="tt-print-table">
+      <thead>
+        <tr>
+          <th class="col-period-hdr">Period</th>
+          {% for cl in classes %}
+          <th>{{ cl.name }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in periods %}
+          {% if p.is_break %}
+          <tr class="break-row">
+            <td class="cell-period" style="background-color: #fef08a !important; color: #854d0e;">{{ p.name }}</td>
+            <td colspan="{{ classes|length }}">
+              RECESS / TIFFIN BREAK ({{ p.start_time }} – {{ p.end_time }})
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td class="cell-period">
+              <div>{{ p.name }}</div>
+              <div class="period-time">{{ p.start_time }}</div>
+            </td>
+            {% for cl in classes %}
+              {% with entry=grid|dict_lookup:p.id|dict_lookup:cl.id %}
+              <td>
+                <div class="cell-content">
+                  <span class="subj-name">{{ entry.get_subject_name|default:"—" }}</span>
+                  {% if entry.get_teacher_name %}
+                    <span class="teacher-name">{{ entry.get_teacher_name }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {% endwith %}
+            {% endfor %}
+          </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Institutional Signatures -->
+    <div class="signature-row">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Timetable Incharge</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Vice Principal</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Principal / Headmaster</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

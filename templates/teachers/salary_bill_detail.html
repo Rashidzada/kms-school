@@ -427,11 +427,11 @@
     <table class="info-grid">
       <tr>
         <td style="width: 50%;"><strong>Designation:</strong> {{ bill.teacher.designation|upper }}</td>
-        <td style="width: 50%; text-align: right;"><strong>80726194-KOHISAR MODEL SCHOOL & COLLEGE</strong></td>
+        <td style="width: 50%; text-align: right;"><strong>{{ school_setting.short_name|default:"SMS" }}-{{ school_setting.name|upper }}</strong></td>
       </tr>
       <tr>
-        <td><strong>School DDO Code:</strong> KMS6427-Kohisar Model School & College Kabal Swat</td>
-        <td style="text-align: right;"><strong>Campus:</strong> Qalagay Swat</td>
+        <td><strong>School / Inst:</strong> {{ school_setting.name }}</td>
+        <td style="text-align: right;"><strong>Campus:</strong> {{ school_setting.address|default:"Main Campus" }}</td>
       </tr>
       <tr>
         <td><strong>Payroll Section:</strong> 001</td>
@@ -693,7 +693,7 @@
     <div class="payee-box">
       <div><strong>Payee Name:</strong> {{ bill.teacher.full_name|upper }}</div>
       <div><strong>Account / Voucher Reference:</strong> SAL-{{ bill.id }}{% if bill.voucher_no %} &nbsp;|&nbsp; Voucher Ref: {{ bill.voucher_no }}{% endif %}</div>
-      <div><strong>Bank Details:</strong> HABIB BANK LIMITED (HBL) KABAL SWAT / CASH COUNTER KOHISAR MODEL SCHOOL & COLLEGE</div>
+      <div><strong>Payment Channel:</strong> CASH COUNTER / ACCOUNTS OFFICE {{ school_setting.name|upper }}</div>
     </div>
 
     <!-- 10. Leaves & Attendance Strip -->

@@ -56,6 +56,11 @@ def build_student_fee_receipt_msg(
     student_total_dues_left,
     family_total_dues_left=Decimal("0.00"),
     family_count=0,
+    fine_punishment_sum=Decimal("0.00"),
+    fine_reasons_str="",
+    other_charges_sum=Decimal("0.00"),
+    other_labels_str="",
+    discount_concession_sum=Decimal("0.00"),
     principal_name=PRINCIPAL_NAME,
     principal_contact=PRINCIPAL_CONTACT,
     vp_name=VP_NAME,
@@ -70,6 +75,16 @@ def build_student_fee_receipt_msg(
     family_line = ""
     if family_total_dues_left and family_total_dues_left > 0:
         family_line = f"• *Family Total Dues ({family_count} siblings):* Rs. {family_total_dues_left:,.0f}\n"
+
+    extra_breakdown = ""
+    if fine_punishment_sum and fine_punishment_sum > 0:
+        reason_txt = f" ({fine_reasons_str})" if fine_reasons_str else ""
+        extra_breakdown += f"• *Fine / Punishment:* Rs. {fine_punishment_sum:,.0f}{reason_txt}\n"
+    if other_charges_sum and other_charges_sum > 0:
+        label_txt = other_labels_str if other_labels_str else "Other Charges"
+        extra_breakdown += f"• *{label_txt}:* Rs. {other_charges_sum:,.0f}\n"
+    if discount_concession_sum and discount_concession_sum > 0:
+        extra_breakdown += f"• *Special Discount:* -Rs. {discount_concession_sum:,.0f}\n"
 
     date_str = receipt.payment_date.strftime("%d-%b-%Y") if receipt.payment_date else ""
 
@@ -91,6 +106,7 @@ def build_student_fee_receipt_msg(
         "💳 *PAYMENT & DUES SUMMARY*\n"
         "━━━━━━━━━━━━━━━━━━━━━\n"
         f"• *Total Billed:* Rs. {total_billed_sum:,.0f}\n"
+        f"{extra_breakdown}"
         f"• *Amount Paid:* Rs. {receipt.amount_paid:,.0f} ✅\n"
         f"• *This Month Remaining Dues:* Rs. {this_receipt_months_dues_left:,.0f}\n"
         f"• *Student Total Outstanding Dues:* Rs. {student_total_dues_left:,.0f}\n"

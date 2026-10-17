@@ -1,15 +1,21 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | KMS Administration{% endblock %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ school_setting.name|default:"School Administration" }}{% endblock %}
 
 {% block branding %}
 <div id="site-name" style="display: flex; align-items: center; gap: 14px; padding: 4px 0;">
   <a href="{% url 'admin:index' %}" style="display: flex; align-items: center; gap: 12px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 1.15rem; letter-spacing: 0.3px;">
-    <img src="{% static 'dist/img/logo.png' %}" alt="KMS Logo" style="height: 42px; width: 42px; border-radius: 50%; background: #ffffff; padding: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+    {% if school_setting.logo %}
+      <img src="{{ school_setting.logo.url }}" alt="{{ school_setting.name }}" style="height: 42px; width: 42px; border-radius: 50%; background: #ffffff; padding: 2px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+    {% else %}
+      <img src="{% static 'dist/img/logo.png' %}" alt="Logo" style="height: 42px; width: 42px; border-radius: 50%; background: #ffffff; padding: 2px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">
+    {% endif %}
     <div>
-      <div style="line-height: 1.2;">Kohisar Model School &amp; College</div>
-      <div style="font-size: 0.75rem; font-weight: 500; color: #f6e05e; letter-spacing: 0.5px; text-transform: uppercase;">KMS Master Administration Portal</div>
+      <div style="line-height: 1.2;">{{ school_setting.name|default:"School Management System" }}</div>
+      <div style="font-size: 0.75rem; font-weight: 500; color: #f6e05e; letter-spacing: 0.5px; text-transform: uppercase;">
+        {{ school_setting.short_name|default:"SMS" }} Master Administration Portal
+      </div>
     </div>
   </a>
 </div>
@@ -25,7 +31,7 @@
 
 {% block extrahead %}
 {{ block.super }}
-<link rel="icon" type="image/png" href="{% static 'dist/img/favicon.png' %}">
+<link rel="icon" type="image/png" href="{% if school_setting.logo %}{{ school_setting.logo.url }}{% else %}{% static 'dist/img/favicon.png' %}{% endif %}">
 <style>
   :root {
     --primary: #1a365d !important;

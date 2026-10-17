@@ -106,8 +106,8 @@
     {% else %}
       <img src="{% static 'dist/img/logo.png' %}" alt="" class="logo">
     {% endif %}
-    <div class="inst-title">{{ school_setting.name|default:"KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT" }}</div>
-    <div class="inst-sub">Tehsil Kabal, District Swat, Khyber Pakhtunkhwa</div>
+    <div class="inst-title">{{ school_setting.name|upper|default:"SCHOOL MANAGEMENT SYSTEM" }}</div>
+    <div class="inst-sub">{{ school_setting.address|default:"Campus Address" }}</div>
     <div class="sheet-title">DAILY CLASS ATTENDANCE REGISTER</div>
   </div>
 

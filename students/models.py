@@ -77,11 +77,45 @@ class Student(models.Model):
     arrears_at_withdrawal = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00
     )
+    # Custom / Free Fee per Student (Overrides fixed class monthly fee)
+    custom_monthly_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Custom monthly tuition fee for this student (PKR). Leave empty to use Class default. Enter 0 for Free / Scholarship.",
+    )
+    is_fee_free = models.BooleanField(
+        default=False,
+        help_text="Check if this student is 100% Free / Full Scholarship concession.",
+    )
 
     class Meta:
         ordering = ["admission_no"]
         verbose_name = "Student"
         verbose_name_plural = "Students"
+
+    @property
+    def effective_monthly_fee(self):
+        from decimal import Decimal
+        if self.is_fee_free:
+            return Decimal("0.00")
+        if self.custom_monthly_fee is not None:
+            return self.custom_monthly_fee
+        if self.current_class and self.current_class.monthly_fee is not None:
+            return self.current_class.monthly_fee
+        return Decimal("0.00")
+
+    @property
+    def fee_status_display(self):
+        from decimal import Decimal
+        if self.is_fee_free or (self.custom_monthly_fee is not None and self.custom_monthly_fee == Decimal("0.00")):
+            return "100% Free / Scholarship"
+        if self.custom_monthly_fee is not None:
+            return f"Custom Fee: PKR {self.custom_monthly_fee:,.0f}"
+        if self.current_class:
+            return f"Class Fee: PKR {self.current_class.monthly_fee:,.0f}"
+        return "Standard Fee"
 
     def __str__(self):
         return f"{self.admission_no} - {self.full_name}"

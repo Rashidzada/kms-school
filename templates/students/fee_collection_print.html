@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ fee_title|upper }} REGISTER — {{ selected_class.name|default:"ALL CLASSES" }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 10px;
+    }
+
+    .print-sheet {
+      background: #ffffff;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .header-logo {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 2px solid #1e3a8a;
+      padding: 2px;
+    }
+
+    .school-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      line-height: 1.15;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .school-subtitle {
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    .register-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      background: #f1f5f9;
+      border: 1.5px solid #0f172a;
+      padding: 4px 12px;
+      display: inline-block;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .meta-bar {
+      font-size: 0.85rem;
+      border-top: 1px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 6px 0;
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .collection-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .collection-table th, .collection-table td {
+      border: 1.5px solid #334155;
+      padding: 5px 6px;
+      font-size: 0.82rem;
+      vertical-align: middle;
+    }
+
+    .collection-table th {
+      background-color: #1e3a8a !important;
+      color: #ffffff !important;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    .signature-row {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 20px;
+    }
+
+    .sig-block {
+      text-align: center;
+      width: 180px;
+    }
+    .sig-line {
+      border-top: 1.5px solid #0f172a;
+      margin-bottom: 4px;
+    }
+    .sig-text {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1e293b;
+      text-transform: uppercase;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-sheet {
+        border: none;
+        padding: 0;
+      }
+      .collection-table th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Toolbar -->
+  <div class="no-print d-flex justify-content-between align-items-center bg-dark text-white p-2 px-3 mb-2 rounded shadow">
+    <div class="small">
+      <i class="fas fa-print text-warning me-1"></i>
+      <strong>School Office Print Mode (Portrait):</strong> Ready to print on official paper.
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="window.print()" class="btn btn-success btn-sm fw-bold px-3">
+        <i class="fas fa-print me-1"></i> Print Collection Sheet
+      </button>
+      <button onclick="window.close()" class="btn btn-outline-light btn-sm">
+        Close Window
+      </button>
+    </div>
+  </div>
+
+  <div class="print-sheet">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+      <div style="width: 80px;">
+        {% if school_setting.logo %}
+          <img src="{{ school_setting.logo.url }}" alt="Logo" class="header-logo">
+        {% else %}
+          <img src="{% static 'dist/img/logo.png' %}" alt="Logo" class="header-logo">
+        {% endif %}
+      </div>
+      <div class="text-center flex-grow-1 px-2">
+        <div class="school-title">{{ school_setting.name|default:"School Management System" }}</div>
+        <div class="school-subtitle">{{ school_setting.address|default:"" }} | Contact: {{ school_setting.contact|default:"" }}</div>
+        <div>
+          <span class="register-title">{{ fee_title|upper }} REGISTER</span>
+        </div>
+      </div>
+      <div style="width: 80px; text-align: right;" class="small text-muted">
+        <div>Date: <strong>{% now "d-m-Y" %}</strong></div>
+      </div>
+    </div>
+
+    <!-- Metadata Bar -->
+    <div class="meta-bar">
+      <div>Class: <strong>{{ selected_class.name|default:"All Classes" }} {% if selected_section %}(Section: {{ selected_section.name }}){% endif %}</strong></div>
+      <div>Session: <strong>{{ active_session.name|default:"2025-2026" }}</strong></div>
+      <div>Enrolled Students: <strong>{{ total_students }}</strong></div>
+      <div>Fee Per Student: <strong>Rs. {{ default_fee }}</strong></div>
+      <div>Target Total: <strong>Rs. {{ total_amount|floatformat:0 }}</strong></div>
+    </div>
+
+    <!-- Student Register Table -->
+    <table class="collection-table">
+      <thead>
+        <tr>
+          <th style="width: 35px;">S#</th>
+          <th style="width: 75px;">Adm #</th>
+          <th>Student Full Name</th>
+          <th>Father Name</th>
+          <th style="width: 100px;">Class / Sec</th>
+          <th style="width: 85px;">Payable</th>
+          <th style="width: 85px;">Paid</th>
+          <th style="width: 85px;">Due</th>
+          <th style="width: 130px;">Signature / Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="text-center fw-bold">{{ forloop.counter }}</td>
+          <td class="text-center font-monospace">{{ s.admission_no }}</td>
+          <td class="fw-bold">{{ s.full_name }}</td>
+          <td>{{ s.father_name|default:"—" }}</td>
+          <td class="text-center">{{ s.current_class.name|default:"" }} {% if s.section %}- {{ s.section.name }}{% endif %}</td>
+          <td class="text-center fw-bold">Rs. {{ default_fee }}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center" style="color: #94a3b8; font-size: 0.7rem;">_________________</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background-color: #f1f5f9; font-weight: bold;">
+          <td colspan="5" class="text-end pe-2">TOTALS:</td>
+          <td class="text-center">Rs. {{ total_amount|floatformat:0 }}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Institutional Signatures -->
+    <div class="signature-row">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Class Incharge / Teacher</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Accountant / Fee Incharge</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-text">Principal / Headmaster</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

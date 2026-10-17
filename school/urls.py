@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import timetable_views, views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -21,5 +21,11 @@ urlpatterns = [
     # Software License & Subscription Management (Vendor / Developer Portal)
     path("license/expired/", views.license_expired, name="license_expired"),
     path("license/portal/", views.license_developer_portal, name="license_developer_portal"),
+
+    # School & Teacher Timetable Management (Landscape Print & Conflict Detection)
+    path("timetable/", timetable_views.timetable_dashboard, name="timetable_dashboard"),
+    path("timetable/print/", timetable_views.timetable_print_view, name="timetable_print_view"),
+    path("timetable/api/update-cell/", timetable_views.api_update_timetable_cell, name="api_update_timetable_cell"),
+    path("timetable/reset-default/", timetable_views.api_reset_default_timetable, name="api_reset_default_timetable"),
 ]
 

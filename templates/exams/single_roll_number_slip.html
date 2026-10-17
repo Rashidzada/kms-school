@@ -279,7 +279,7 @@
         {% endif %}
       </div>
       <div class="col-10 text-center">
-        <h4 class="slip-title">KOHISAR MODEL SCHOOL & COLLEGE</h4>
+        <h4 class="slip-title">{{ school_setting.name|upper }}</h4>
         <div class="small text-muted" style="font-size: 0.78rem; line-height: 1.2;">
           {{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa" }}
         </div>
@@ -317,7 +317,7 @@
           <tr>
             <td class="fw-bold text-secondary">EXAM VENUE:</td>
             <td colspan="3" class="small text-muted">
-              Kohisar Model School & College Examination Hall, Main Campus Qalagay
+              {{ school_setting.name }} Examination Hall
             </td>
           </tr>
         </table>

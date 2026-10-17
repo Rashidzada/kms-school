@@ -87,7 +87,7 @@ class FeeAdjustmentForm(forms.Form):
     )
     single_month = forms.ChoiceField(
         choices=MONTH_CHOICES,
-        label="Target Specific Month for Charges",
+        label="Target Specific Month for Charges / Fines",
         required=False,
     )
     exam_fee = forms.DecimalField(
@@ -97,10 +97,49 @@ class FeeAdjustmentForm(forms.Form):
         initial=Decimal("0.00"),
         label="Exam Fee (Single Month)",
     )
+    fine_punishment = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=Decimal("0.00"),
+        label="Fine / Punishment Amount (PKR)",
+    )
+    fine_reason = forms.CharField(
+        max_length=255,
+        required=False,
+        label="Fine / Punishment Reason",
+        widget=forms.TextInput(attrs={"placeholder": "e.g. Late coming, Discipline, Uniform, Absent fine"}),
+    )
     other_charges = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
         initial=Decimal("0.00"),
-        label="Other Charges (Single Month)",
+        label="Extra / Other Charges Amount (PKR)",
+    )
+    other_charges_label = forms.CharField(
+        max_length=255,
+        required=False,
+        initial="Other Charges",
+        label="Extra Charges Description",
+        widget=forms.TextInput(attrs={"placeholder": "e.g. Annual Sports Fund, ID Card, Books, Paper Charges"}),
+    )
+    discount_concession = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=Decimal("0.00"),
+        label="Special Concession / Discount (PKR)",
+    )
+    student_custom_fee = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        label="Set Permanent Student Custom Monthly Fee (PKR)",
+        help_text="Overrides class fee permanently across all future months.",
+    )
+    is_student_free = forms.BooleanField(
+        required=False,
+        label="Mark Student as 100% Free / Full Scholarship",
+        help_text="Tuition fee becomes Rs. 0 for all months.",
     )

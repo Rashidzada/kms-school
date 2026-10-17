@@ -49,26 +49,51 @@ ERP_TABLES_IN_ORDER = [
     "exams_subject",
     "exams_classsubject",
     "exams_exammark",
+    "school_timetableperiod",
+    "school_timetableentry",
 ]
 
 
 def sync_all_postgresql_sequences():
     """
-    Synchronizes all PostgreSQL auto-increment primary key sequences across all apps
-    so that nextval() never collides with existing IDs after a restore or import.
+    Synchronizes all PostgreSQL auto-increment primary key sequences across ALL tables in the database
+    (including django_admin_log, accounts_expense, students, finance, auth, etc.) so that nextval()
+    never collides with existing IDs after any restore, import, or admin action.
     """
     if "postgresql" not in connection.settings_dict.get("ENGINE", ""):
         return
     try:
-        app_labels = [app.label for app in apps.get_app_configs()]
-        out = io.StringIO()
-        call_command("sqlsequencereset", *app_labels, stdout=out, no_color=True)
-        sql = out.getvalue()
-        if sql.strip():
-            with connection.cursor() as cursor:
-                cursor.execute(sql)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    quote_ident(table_schema) || '.' || quote_ident(table_name) AS full_table,
+                    quote_ident(column_name) AS col_name,
+                    pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) AS seq_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' 
+                  AND pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) IS NOT NULL;
+            """)
+            rows = cursor.fetchall()
+            for full_table, col_name, seq_name in rows:
+                if seq_name:
+                    cursor.execute(f"""
+                        SELECT setval(
+                            '{seq_name}', 
+                            COALESCE((SELECT MAX({col_name}) FROM {full_table}), 1), 
+                            (SELECT MAX({col_name}) FROM {full_table}) IS NOT NULL
+                        );
+                    """)
     except Exception:
-        pass
+        try:
+            app_labels = [app.label for app in apps.get_app_configs()]
+            out = io.StringIO()
+            call_command("sqlsequencereset", *app_labels, stdout=out, no_color=True)
+            sql = out.getvalue()
+            if sql.strip():
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+        except Exception:
+            pass
 
 
 def _sql_literal(val):
@@ -148,14 +173,32 @@ def generate_full_sql_dump():
                 lines.append(f'INSERT INTO "{table_name}" ({quoted_cols}) VALUES ({vals_sql});')
             lines.append("")
 
-        # 3. Reset all primary key sequences
-        lines.append("-- Synchronize PostgreSQL Auto-Increment Sequences")
-        for table_name in ERP_TABLES_IN_ORDER:
-            lines.append(
-                f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"', 'id'), "
-                f"COALESCE((SELECT MAX(\"id\") FROM \"{table_name}\"), 1), "
-                f"(SELECT MAX(\"id\") FROM \"{table_name}\") IS NOT NULL);"
-            )
+        # 3. Reset all primary key sequences across all tables
+        lines.append("-- Synchronize All PostgreSQL Auto-Increment Sequences")
+        try:
+            cursor.execute("""
+                SELECT 
+                    quote_ident(table_schema) || '.' || quote_ident(table_name) AS full_table,
+                    quote_ident(column_name) AS col_name,
+                    pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) AS seq_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' 
+                  AND pg_get_serial_sequence(quote_ident(table_schema) || '.' || quote_ident(table_name), column_name) IS NOT NULL;
+            """)
+            for full_table, col_name, seq_name in cursor.fetchall():
+                if seq_name:
+                    lines.append(
+                        f"SELECT setval('{seq_name}', "
+                        f"COALESCE((SELECT MAX({col_name}) FROM {full_table}), 1), "
+                        f"(SELECT MAX({col_name}) FROM {full_table}) IS NOT NULL);"
+                    )
+        except Exception:
+            for table_name in ERP_TABLES_IN_ORDER:
+                lines.append(
+                    f"SELECT setval(pg_get_serial_sequence('\"{table_name}\"', 'id'), "
+                    f"COALESCE((SELECT MAX(\"id\") FROM \"{table_name}\"), 1), "
+                    f"(SELECT MAX(\"id\") FROM \"{table_name}\") IS NOT NULL);"
+                )
 
     lines.append("")
     lines.append("COMMIT;")
@@ -231,6 +274,32 @@ def restore_from_sql_bytes(sql_bytes):
         with connection.cursor() as cursor:
             cursor.execute(executable_sql)
         sync_all_postgresql_sequences()
+
+    # Normalize settings in case legacy or older backup dump had NULL in newly added columns
+    from school.models import SchoolSetting
+    setting = SchoolSetting.objects.first()
+    if setting:
+        updated = False
+        if not setting.safe_backup_folder:
+            setting.safe_backup_folder = "D:\\School_Backups"
+            updated = True
+        if not setting.auto_backup_mode:
+            setting.auto_backup_mode = "background"
+            updated = True
+        if not setting.short_name:
+            setting.short_name = "KMS"
+            updated = True
+        if not setting.tagline:
+            setting.tagline = "Student Information, Fee & Payroll Management System"
+            updated = True
+        if not setting.email_provider:
+            setting.email_provider = "gmail_smtp"
+            updated = True
+        if not setting.https_api_provider:
+            setting.https_api_provider = "resend"
+            updated = True
+        if updated:
+            setting.save()
 
     from students.models import Student
     from teachers.models import Teacher
@@ -433,6 +502,8 @@ def generate_full_master_excel():
         "Withdrawal Date",
         "Class at Withdrawal",
         "Arrears at Withdrawal",
+        "Custom Monthly Fee (PKR)",
+        "Is Fee Free",
         "Remarks",
         "Profile Picture Path",
     ]
@@ -457,6 +528,8 @@ def generate_full_master_excel():
             str(st.withdrawal_date) if st.withdrawal_date else "",
             st.class_at_withdrawal,
             float(st.arrears_at_withdrawal or 0),
+            float(st.custom_monthly_fee) if st.custom_monthly_fee is not None else "",
+            "Yes" if st.is_fee_free else "No",
             st.remarks,
             st.profile_picture.name if st.profile_picture else "",
         ])
@@ -629,7 +702,11 @@ def generate_full_master_excel():
         "Arrears (PKR)",
         "Monthly Fee (PKR)",
         "Exam Fee (PKR)",
+        "Fine / Punishment (PKR)",
+        "Fine Reason",
         "Other Charges (PKR)",
+        "Other Charges Label",
+        "Discount Concession (PKR)",
         "Paid Amount (PKR)",
         "Balance (PKR)",
         "Is Paid",
@@ -651,7 +728,11 @@ def generate_full_master_excel():
             float(me.arrears or 0),
             float(me.monthly_fee or 0),
             float(me.exam_fee or 0),
+            float(me.fine_punishment or 0),
+            me.fine_reason or "",
             float(me.other_charges or 0),
+            me.other_charges_label or "Other Charges",
+            float(me.discount_concession or 0),
             float(me.paid_amount or 0),
             float(me.balance or 0),
             "Yes" if me.is_paid else "No",
@@ -1093,6 +1174,8 @@ def restore_from_master_excel(excel_file):
                     "withdrawal_date": _parse_date_safe(r.get("Withdrawal Date")),
                     "class_at_withdrawal": str(r.get("Class at Withdrawal", "") or "").strip(),
                     "arrears_at_withdrawal": _parse_dec_safe(r.get("Arrears at Withdrawal")),
+                    "custom_monthly_fee": _parse_dec_safe(r.get("Custom Monthly Fee (PKR)")) if r.get("Custom Monthly Fee (PKR)") not in (None, "", "None") else None,
+                    "is_fee_free": str(r.get("Is Fee Free", "No")).strip().lower() in ("yes", "true", "1"),
                     "remarks": str(r.get("Remarks", "") or "").strip(),
                 }
                 pic_path = str(r.get("Profile Picture Path", "") or "").strip()
@@ -1229,7 +1312,11 @@ def restore_from_master_excel(excel_file):
                         "arrears": _parse_dec_safe(r.get("Arrears (PKR)")),
                         "monthly_fee": _parse_dec_safe(r.get("Monthly Fee (PKR)")),
                         "exam_fee": _parse_dec_safe(r.get("Exam Fee (PKR)")),
+                        "fine_punishment": _parse_dec_safe(r.get("Fine / Punishment (PKR)")),
+                        "fine_reason": str(r.get("Fine Reason", "") or "").strip(),
                         "other_charges": _parse_dec_safe(r.get("Other Charges (PKR)")),
+                        "other_charges_label": str(r.get("Other Charges Label", "Other Charges") or "Other Charges").strip(),
+                        "discount_concession": _parse_dec_safe(r.get("Discount Concession (PKR)")),
                         "paid_amount": _parse_dec_safe(r.get("Paid Amount (PKR)")),
                         "is_paid": str(r.get("Is Paid", "No")).strip().lower() in ("yes", "true", "1"),
                         "last_payment_date": _parse_date_safe(r.get("Last Payment Date")),
@@ -1367,18 +1454,40 @@ def check_network_connection():
     Returns (is_online: bool, detail_msg: str).
     """
     targets = [
-        ("smtp.gmail.com", 587),
+        ("www.google.com", 443),
         ("8.8.8.8", 53),
         ("1.1.1.1", 53),
     ]
+    is_online = False
+    connected_target = ""
     for host, port in targets:
         try:
-            sock = socket.create_connection((host, port), timeout=3.0)
+            sock = socket.create_connection((host, port), timeout=2.5)
             sock.close()
-            return True, f"Online (Connected to {host}:{port})"
+            is_online = True
+            connected_target = f"{host}:{port}"
+            break
         except Exception:
             continue
-    return False, "No active internet / SMTP network connection detected."
+
+    if not is_online:
+        return False, "No active internet connection detected. Backup will automatically retry when connected."
+
+    # Check if standard Gmail SMTP ports are open on this network
+    smtp_open = False
+    for port in (465, 587):
+        try:
+            s = socket.create_connection(("smtp.gmail.com", port), timeout=2.0)
+            s.close()
+            smtp_open = True
+            break
+        except Exception:
+            pass
+
+    if smtp_open:
+        return True, f"Online (Connected to {connected_target}, SMTP ports ready)"
+    else:
+        return True, f"Online (Connected via {connected_target}. Note: Wi-Fi ISP blocks SMTP ports 465/587)"
 
 
 def send_backup_email_now(is_auto=False):
@@ -1432,28 +1541,7 @@ def send_backup_email_now(is_auto=False):
     if not recipient_list and sender_accounts:
         recipient_list.append(sender_accounts[0].email.strip())
 
-    if not sender_accounts:
-        msg = "No Sender Email & App Password configured yet. Please enter an Email and 16-digit Google App Password in Settings or Admin."
-        setting.last_auto_backup_status = "Failed (No Credentials)"
-        setting.last_auto_backup_message = msg
-        setting.save(update_fields=["last_auto_backup_status", "last_auto_backup_message"])
-        return False, msg
-
-    # 1. Check Network Connectivity first
-    is_online, net_msg = check_network_connection()
-    if not is_online:
-        msg = f"Network Offline: {net_msg} Backup will automatically retry when connected."
-        setting.last_auto_backup_status = "Waiting for Network"
-        setting.last_auto_backup_message = msg
-        setting.save(update_fields=["last_auto_backup_status", "last_auto_backup_message"])
-        BackupHistoryLog.objects.create(
-            backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
-            status="Offline",
-            details=msg,
-        )
-        return False, msg
-
-    # 2. Generate Full SQL (.sql) & Full Master Excel (.xlsx)
+    # 1. ALWAYS Generate Full SQL (.sql) & Full Master Excel (.xlsx) First
     now_local = timezone.localtime(timezone.now())
     ts = now_local.strftime("%Y%m%d_%H%M")
     date_readable = now_local.strftime("%d %b %Y, %I:%M %p")
@@ -1462,10 +1550,13 @@ def send_backup_email_now(is_auto=False):
     excel_buf = generate_full_master_excel()
     excel_bytes = excel_buf.getvalue()
 
-    sql_filename = f"KMS_Full_PostgreSQL_Backup_{ts}.sql"
-    excel_filename = f"KMS_Full_Master_Backup_{ts}.xlsx"
+    school_prefix = re.sub(r'[^a-zA-Z0-9_-]', '_', (setting.short_name or setting.name or 'School').strip())
+    if not school_prefix:
+        school_prefix = "School"
+    sql_filename = f"{school_prefix}_Full_PostgreSQL_Backup_{ts}.sql"
+    excel_filename = f"{school_prefix}_Full_Master_Backup_{ts}.xlsx"
 
-    # Also save local copies in project's backups/ folder
+    # Save to local project backups/ folder
     backups_dir = os.path.join(settings.BASE_DIR, "backups")
     os.makedirs(backups_dir, exist_ok=True)
     try:
@@ -1475,6 +1566,58 @@ def send_backup_email_now(is_auto=False):
             f_xl.write(excel_bytes)
     except Exception:
         pass
+
+    # Save to user-defined safe drive folder (e.g. D:\School_Backups or E:\School_Backups)
+    safe_folder_saved = False
+    safe_folder_path = (getattr(setting, "safe_backup_folder", None) or "D:\\School_Backups").strip()
+    if safe_folder_path:
+        try:
+            os.makedirs(safe_folder_path, exist_ok=True)
+            with open(os.path.join(safe_folder_path, sql_filename), "wb") as f_safe_sql:
+                f_safe_sql.write(sql_bytes)
+            with open(os.path.join(safe_folder_path, excel_filename), "wb") as f_safe_xl:
+                f_safe_xl.write(excel_bytes)
+            safe_folder_saved = True
+        except Exception:
+            pass
+
+    safe_dest_msg = f"{safe_folder_path}" if safe_folder_saved else f"backups/"
+
+    # If no sender email is configured, complete the offline save successfully
+    if not sender_accounts:
+        success_offline_msg = f"Full Backup successfully generated and saved offline to {safe_dest_msg} ({sql_filename}, {excel_filename})."
+        setting.last_auto_backup_at = timezone.now()
+        setting.last_auto_backup_status = "Saved Locally & Safe Drive"
+        setting.last_auto_backup_message = success_offline_msg
+        setting.save(update_fields=["last_auto_backup_at", "last_auto_backup_status", "last_auto_backup_message"])
+        BackupHistoryLog.objects.create(
+            backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
+            status="Saved Locally",
+            sender_email="",
+            recipient_emails="",
+            sql_filename=sql_filename,
+            excel_filename=excel_filename,
+            details=success_offline_msg,
+        )
+        return True, success_offline_msg
+
+    # 2. Check Network Connectivity for optional Cloud Email
+    is_online, net_msg = check_network_connection()
+    if not is_online:
+        msg = f"Network Offline: {net_msg}. Full backup was safely saved offline to {safe_dest_msg} ({sql_filename}, {excel_filename})."
+        setting.last_auto_backup_at = timezone.now()
+        setting.last_auto_backup_status = "Saved Locally (Offline)"
+        setting.last_auto_backup_message = msg
+        setting.save(update_fields=["last_auto_backup_at", "last_auto_backup_status", "last_auto_backup_message"])
+        BackupHistoryLog.objects.create(
+            backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
+            status="Saved Locally",
+            details=msg,
+            sql_filename=sql_filename,
+            excel_filename=excel_filename,
+        )
+        # If it's an automated daily run, offline save is considered a success so user isn't interrupted
+        return True if is_auto else False, msg
 
     # 3. Compose Email with both .sql and .xlsx attachments
     school_name = setting.name or "Kohisar Model School & College"
@@ -1547,110 +1690,204 @@ def send_backup_email_now(is_auto=False):
         return candidates
 
     last_error = ""
-    for sender_acc in sender_accounts:
-        sender_email = sender_acc.email.strip()
-        pw_candidates = _candidate_passwords(sender_acc.app_password)
+    sent_ok = False
+    success_msg = ""
 
-        msg = MIMEMultipart()
-        msg["From"] = f"{school_name} Backup <{sender_email}>"
-        msg["To"] = ", ".join(recipient_list)
-        msg["Subject"] = subject
-        msg.attach(MIMEText(html_body, "html", "utf-8"))
+    # Option A: Send via Cloud HTTPS API (Resend / Brevo) if configured
+    if getattr(setting, "https_api_key", None) and setting.https_api_key.strip():
+        try:
+            import base64
+            import json
+            import urllib.request
 
-        if setting.backup_send_sql:
-            part_sql = MIMEBase("application", "sql")
-            part_sql.set_payload(sql_bytes)
-            encoders.encode_base64(part_sql)
-            part_sql.add_header("Content-Disposition", f'attachment; filename="{sql_filename}"')
-            msg.attach(part_sql)
+            provider = getattr(setting, "https_api_provider", "resend") or "resend"
+            api_key = setting.https_api_key.strip()
+            attachments = []
+            if setting.backup_send_sql and sql_bytes:
+                attachments.append({
+                    "filename": sql_filename,
+                    "content": base64.b64encode(sql_bytes).decode("ascii"),
+                })
+            if setting.backup_send_excel and excel_bytes:
+                attachments.append({
+                    "filename": excel_filename,
+                    "content": base64.b64encode(excel_bytes).decode("ascii"),
+                })
 
-        if setting.backup_send_excel:
-            part_xl = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            part_xl.set_payload(excel_bytes)
-            encoders.encode_base64(part_xl)
-            part_xl.add_header("Content-Disposition", f'attachment; filename="{excel_filename}"')
-            msg.attach(part_xl)
+            if provider == "brevo":
+                url = "https://api.brevo.com/v3/smtp/email"
+                headers = {
+                    "api-key": api_key,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+                s_email = sender_accounts[0].email.strip() if sender_accounts else "backup@school.local"
+                payload = {
+                    "sender": {"name": school_name, "email": s_email},
+                    "to": [{"email": r} for r in recipient_list],
+                    "subject": subject,
+                    "htmlContent": html_body,
+                    "attachment": [{"name": a["filename"], "content": a["content"]} for a in attachments],
+                }
+            else:  # resend
+                url = "https://api.resend.com/emails"
+                headers = {
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                }
+                payload = {
+                    "from": f"{school_name} Backup <onboarding@resend.dev>",
+                    "to": recipient_list,
+                    "subject": subject,
+                    "html": html_body,
+                    "attachments": attachments,
+                }
 
-        sent_ok = False
-        used_pw = None
-        for cand_pw in pw_candidates:
-            for port, use_ssl in [(465, True), (587, False)]:
-                try:
-                    if use_ssl:
-                        with smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=25) as server:
-                            server.ehlo()
-                            server.login(sender_email, cand_pw)
-                            server.sendmail(sender_email, recipient_list, msg.as_string())
-                    else:
-                        with smtplib.SMTP("smtp.gmail.com", port, timeout=25) as server:
-                            server.ehlo()
-                            server.starttls()
-                            server.ehlo()
-                            server.login(sender_email, cand_pw)
-                            server.sendmail(sender_email, recipient_list, msg.as_string())
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers,
+            )
+            with urllib.request.urlopen(req, timeout=35) as resp:
+                if resp.status in (200, 201, 202):
                     sent_ok = True
-                    used_pw = cand_pw
-                    break
-                except smtplib.SMTPAuthenticationError:
-                    last_error = (
-                        f"{sender_email}: Invalid Gmail App Password "
-                        f"(must be a 16-letter Google App Password, e.g. 'xxxx xxxx xxxx xxxx')"
+                    success_msg = (
+                        f"Full Backup (.sql + .xlsx) sent via {provider.upper()} Cloud HTTPS API (Port 443) "
+                        f"to: {', '.join(recipient_list)}"
+                    )
+        except Exception as e_https:
+            last_error = f"Cloud HTTPS API error: {e_https}"
+
+    # Option B: Standard Gmail SMTP if HTTPS wasn't used or succeeded
+    if not sent_ok:
+        # Quick pre-flight check: Are SMTP ports reachable on this network?
+        available_smtp_ports = []
+        for port, use_ssl in [(465, True), (587, False)]:
+            try:
+                s_test = socket.create_connection(("smtp.gmail.com", port), timeout=2.5)
+                s_test.close()
+                available_smtp_ports.append((port, use_ssl))
+            except Exception:
+                pass
+
+        if not available_smtp_ports:
+            last_error = (
+                "Wi-Fi/ISP Network Block: Outbound mail ports (465 & 587) are blocked by your internet service provider or router firewall. "
+                "Local backup files (.sql & .xlsx) have been safely generated and saved to your project's 'backups/' directory. "
+                "To email backups directly, connect to a mobile data hotspot (4G) or enter a free HTTPS Mail API key in Settings."
+            )
+        else:
+            for sender_acc in sender_accounts:
+                sender_email = sender_acc.email.strip()
+                pw_candidates = _candidate_passwords(sender_acc.app_password)
+
+                msg = MIMEMultipart()
+                msg["From"] = f"{school_name} Backup <{sender_email}>"
+                msg["To"] = ", ".join(recipient_list)
+                msg["Subject"] = subject
+                msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+                if setting.backup_send_sql:
+                    part_sql = MIMEBase("application", "sql")
+                    part_sql.set_payload(sql_bytes)
+                    encoders.encode_base64(part_sql)
+                    part_sql.add_header("Content-Disposition", f'attachment; filename="{sql_filename}"')
+                    msg.attach(part_sql)
+
+                if setting.backup_send_excel:
+                    part_xl = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    part_xl.set_payload(excel_bytes)
+                    encoders.encode_base64(part_xl)
+                    part_xl.add_header("Content-Disposition", f'attachment; filename="{excel_filename}"')
+                    msg.attach(part_xl)
+
+                used_pw = None
+                for cand_pw in pw_candidates:
+                    for port, use_ssl in available_smtp_ports:
+                        try:
+                            if use_ssl:
+                                with smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=15) as server:
+                                    server.ehlo()
+                                    server.login(sender_email, cand_pw)
+                                    server.sendmail(sender_email, recipient_list, msg.as_string())
+                            else:
+                                with smtplib.SMTP("smtp.gmail.com", port, timeout=15) as server:
+                                    server.ehlo()
+                                    server.starttls()
+                                    server.ehlo()
+                                    server.login(sender_email, cand_pw)
+                                    server.sendmail(sender_email, recipient_list, msg.as_string())
+                            sent_ok = True
+                            used_pw = cand_pw
+                            break
+                        except smtplib.SMTPAuthenticationError:
+                            last_error = (
+                                f"{sender_email}: Invalid Gmail App Password "
+                                f"(must be a 16-letter Google App Password, e.g. 'xxxx xxxx xxxx xxxx')"
+                            )
+                            break
+                        except smtplib.SMTPServerDisconnected:
+                            last_error = (
+                                f"{sender_email}: Gmail rejected the App Password "
+                                f"(entered {len(cand_pw)} letters; Google App Passwords must be exactly 16 letters)"
+                            )
+                            break
+                        except Exception as e:
+                            last_error = f"{sender_email}: {str(e)}"
+                            continue
+                    if sent_ok:
+                        break
+
+                if sent_ok:
+                    formatted_16 = " ".join([used_pw[i:i + 4] for i in range(0, 16, 4)]) if used_pw and len(used_pw) == 16 else sender_acc.app_password
+                    sender_acc.app_password = formatted_16
+                    sender_acc.last_used_at = timezone.now()
+                    sender_acc.save(update_fields=["app_password", "last_used_at"])
+                    success_msg = (
+                        f"Full Backup (.sql + .xlsx) sent via {sender_email} "
+                        f"to: {', '.join(recipient_list)}"
                     )
                     break
-                except smtplib.SMTPServerDisconnected:
-                    last_error = (
-                        f"{sender_email}: Gmail rejected the App Password "
-                        f"(entered {len(cand_pw)} letters; Google App Passwords must be exactly 16 letters)"
-                    )
-                    break
-                except Exception as e:
-                    last_error = f"{sender_email}: {str(e)}"
-                    continue
-            if sent_ok:
-                break
 
-        if sent_ok:
-            # Auto-save corrected 16-char formatted password if a 17-char typo was auto-corrected
-            formatted_16 = " ".join([used_pw[i:i + 4] for i in range(0, 16, 4)]) if used_pw and len(used_pw) == 16 else sender_acc.app_password
-            sender_acc.app_password = formatted_16
-            sender_acc.last_used_at = timezone.now()
-            sender_acc.save(update_fields=["app_password", "last_used_at"])
+    if sent_ok:
+        setting.last_auto_backup_at = timezone.now()
+        setting.last_auto_backup_status = "Success"
+        setting.last_auto_backup_message = success_msg
+        setting.save(update_fields=[
+            "last_auto_backup_at",
+            "last_auto_backup_status",
+            "last_auto_backup_message",
+        ])
 
-            success_msg = (
-                f"Full Backup (.sql + .xlsx) sent via {sender_email} "
-                f"to: {', '.join(recipient_list)}"
-            )
-            setting.last_auto_backup_at = timezone.now()
-            setting.last_auto_backup_status = "Success"
-            setting.last_auto_backup_message = success_msg
-            setting.save(update_fields=[
-                "last_auto_backup_at",
-                "last_auto_backup_status",
-                "last_auto_backup_message",
-            ])
+        BackupHistoryLog.objects.create(
+            backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
+            status="Success",
+            sender_email=sender_accounts[0].email if sender_accounts else "",
+            recipient_emails=", ".join(recipient_list),
+            sql_filename=sql_filename if setting.backup_send_sql else "",
+            excel_filename=excel_filename if setting.backup_send_excel else "",
+            details=success_msg,
+        )
+        return True, success_msg
 
-            BackupHistoryLog.objects.create(
-                backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
-                status="Success",
-                sender_email=sender_email,
-                recipient_emails=", ".join(recipient_list),
-                sql_filename=sql_filename if setting.backup_send_sql else "",
-                excel_filename=excel_filename if setting.backup_send_excel else "",
-                details=success_msg,
-            )
-            return True, success_msg
-
-    fail_msg = f"Email sending failed ({last_error}). Local backup files were still saved in backups/ folder ({sql_filename}, {excel_filename})."
-    setting.last_auto_backup_status = "Failed"
+    fail_msg = (
+        f"<div class='text-start small'>"
+        f"<div class='alert alert-success py-1 px-2 mb-2'><i class='fas fa-check-circle me-1'></i> <strong>Offline Backup Saved:</strong> Both <code>{sql_filename}</code> &amp; <code>{excel_filename}</code> are safely saved in <strong>{safe_dest_msg}</strong>.</div>"
+        f"<div class='text-muted mb-1'><strong>Email Status:</strong> {last_error}</div>"
+        f"</div>"
+    )
+    setting.last_auto_backup_at = timezone.now()
+    setting.last_auto_backup_status = f"Saved in {safe_dest_msg}" if safe_folder_saved else "Saved in backups/"
     setting.last_auto_backup_message = fail_msg
-    setting.save(update_fields=["last_auto_backup_status", "last_auto_backup_message"])
+    setting.save(update_fields=["last_auto_backup_at", "last_auto_backup_status", "last_auto_backup_message"])
     BackupHistoryLog.objects.create(
-        backup_type="Auto Daily Email Backup" if is_auto else "Manual Email Backup",
-        status="Failed",
+        backup_type="Auto Daily Email Backup" if is_auto else "Manual Backup",
+        status="Saved to Safe Drive" if safe_folder_saved else "Saved Locally",
         sender_email=sender_accounts[0].email if sender_accounts else "",
         recipient_emails=", ".join(recipient_list),
         sql_filename=sql_filename,
         excel_filename=excel_filename,
         details=fail_msg,
     )
-    return False, fail_msg
+    is_saved_offline = safe_folder_saved or os.path.exists(os.path.join(backups_dir, sql_filename))
+    return is_saved_offline, fail_msg

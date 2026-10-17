@@ -120,7 +120,7 @@
         {% endif %}
         <div>
           <h6 class="fw-bold text-uppercase text-secondary mb-1" style="letter-spacing: 1px;">
-            KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT
+            {{ school_setting.name|upper }}
           </h6>
           <h5 class="fw-bold text-dark mb-0">
             LIST FOR <span class="text-primary text-uppercase">{{ selected_subject.name }}</span> PAPER CLASS <span class="text-primary text-uppercase">{{ selected_class.name }}</span> {% if selected_section %}(SECTION {{ selected_section.name }}){% endif %} — {{ selected_exam.name }}

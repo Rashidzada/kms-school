@@ -40,4 +40,8 @@ urlpatterns = [
     path("attendance/monthly-sheet/export-excel/", views.export_student_monthly_attendance_excel, name="export_student_monthly_attendance_excel"),
     path("attendance/yearly-sheet/", views.student_yearly_attendance_sheet, name="student_yearly_attendance_sheet"),
     path("attendance/yearly-sheet/export-excel/", views.export_student_yearly_attendance_excel, name="export_student_yearly_attendance_excel"),
+
+    # Exam Fee & General Student Fee Collection Register
+    path("fee-collection-list/", views.student_fee_collection_list, name="student_fee_collection_list"),
+    path("fee-collection-list/export-excel/", views.export_student_fee_collection_excel, name="export_student_fee_collection_excel"),
 ]

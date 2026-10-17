@@ -52,12 +52,114 @@ class SchoolSetting(models.Model):
     last_auto_backup_status = models.CharField(max_length=50, blank=True, default="Pending")
     last_auto_backup_message = models.TextField(blank=True, default="")
 
+    safe_backup_folder = models.CharField(
+        max_length=255,
+        default="D:\\School_Backups",
+        blank=True,
+        null=True,
+        help_text="Safe offline backup directory on hard drive (e.g. D:\\School_Backups or E:\\KMS_Backups) for auto storage",
+    )
+    auto_backup_mode = models.CharField(
+        max_length=30,
+        default="background",
+        blank=True,
+        null=True,
+        choices=[
+            ("background", "Run Silently in Background (Recommended - No Screen Popup)"),
+            ("prompt", "Prompt Me First (Ask Confirmation on Due Time)"),
+            ("splash", "Show Progress Splash Modal"),
+        ],
+        help_text="How the system handles scheduled auto backup when due",
+    )
+    auto_backup_preferred_time = models.TimeField(
+        null=True,
+        blank=True,
+        default="14:00:00",
+        help_text="Scheduled daily time to run/prompt backup (e.g. 14:00 for 02:00 PM)",
+    )
+
+    short_name = models.CharField(
+        max_length=50,
+        default="KMS",
+        blank=True,
+        null=True,
+        help_text="Short school code / abbreviation (e.g. KMS, BPS, APS) shown in headers, tabs, badges",
+    )
+    tagline = models.CharField(
+        max_length=150,
+        default="Student Information, Fee & Payroll Management System",
+        blank=True,
+        null=True,
+        help_text="Portal tagline / subtitle displayed in sidebar and reports",
+    )
+    email_provider = models.CharField(
+        max_length=20,
+        default="gmail_smtp",
+        blank=True,
+        null=True,
+        choices=[
+            ("gmail_smtp", "Standard Gmail SMTP (Ports 465 / 587)"),
+            ("https_api", "Cloud HTTPS Email (Port 443 - Bypasses ISP/Firewall Blocks)"),
+        ],
+        help_text="Choose standard Gmail SMTP or Cloud HTTPS Mail API if your ISP blocks SMTP ports",
+    )
+    https_api_provider = models.CharField(
+        max_length=20,
+        default="resend",
+        choices=[
+            ("resend", "Resend API (api.resend.com)"),
+            ("brevo", "Brevo / Sendinblue API (api.brevo.com)"),
+        ],
+        blank=True,
+        null=True,
+    )
+    https_api_key = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="",
+        help_text="API Key for Resend or Brevo (Sends backup directly over HTTPS port 443)",
+    )
+
     class Meta:
         verbose_name = "School Setting"
         verbose_name_plural = "School Settings"
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Auto-sync uploaded logo to static assets so every hardcoded and cached asset updates immediately
+        if self.logo:
+            try:
+                from PIL import Image
+                from django.conf import settings
+                import os
+                
+                logo_src_path = self.logo.path
+                if os.path.exists(logo_src_path):
+                    with Image.open(logo_src_path) as img:
+                        # Convert RGBA if needed
+                        img_converted = img.convert("RGBA") if img.mode in ("RGBA", "LA") else img.convert("RGB")
+                        
+                        # 1. Update static/dist/img/logo.png
+                        dist_img_dir = os.path.join(settings.BASE_DIR, "static", "dist", "img")
+                        os.makedirs(dist_img_dir, exist_ok=True)
+                        dest_logo = os.path.join(dist_img_dir, "logo.png")
+                        img.save(dest_logo)
+                        
+                        # 2. Update favicon.png
+                        dest_fav_png = os.path.join(dist_img_dir, "favicon.png")
+                        fav_img = img_converted.resize((64, 64), Image.Resampling.LANCZOS)
+                        fav_img.save(dest_fav_png, format="PNG")
+                        
+                        # 3. Update favicon.ico
+                        dest_fav_ico = os.path.join(dist_img_dir, "favicon.ico")
+                        fav_ico_img = img_converted.resize((32, 32), Image.Resampling.LANCZOS)
+                        fav_ico_img.save(dest_fav_ico, format="ICO")
+            except Exception:
+                pass
 
 
 class BackupEmailAccount(models.Model):
@@ -342,3 +444,105 @@ class SoftwareLicense(models.Model):
                 expires_at=timezone.now() + timedelta(days=365),
             )
         return lic
+
+
+class TimetablePeriod(models.Model):
+    """
+    Standard school periods: Period 01, 02, 03, 04, 05, Break / Recess, 06, 07, 08.
+    """
+    period_number = models.PositiveSmallIntegerField(default=1)
+    name = models.CharField(max_length=50, default="Period 1")
+    start_time = models.CharField(max_length=30, blank=True, default="")
+    end_time = models.CharField(max_length=30, blank=True, default="")
+    is_break = models.BooleanField(default=False)
+    order = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order", "period_number"]
+        verbose_name = "Timetable Period"
+        verbose_name_plural = "Timetable Periods"
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class TimetableEntry(models.Model):
+    """
+    Assigned class period schedule linking ClassLevel, Period, Subject and Teacher.
+    Supports conflict detection (flagging if teacher is double-booked in the same period).
+    """
+    DAY_CHOICES = [
+        ("Daily", "Daily / Regular (Mon - Sat)"),
+        ("Monday", "Monday"),
+        ("Tuesday", "Tuesday"),
+        ("Wednesday", "Wednesday"),
+        ("Thursday", "Thursday"),
+        ("Friday", "Friday"),
+        ("Saturday", "Saturday"),
+    ]
+    academic_session = models.ForeignKey(
+        "school.AcademicSession",
+        on_delete=models.CASCADE,
+        related_name="timetable_entries",
+        null=True,
+        blank=True,
+    )
+    class_level = models.ForeignKey(
+        "school.ClassLevel",
+        on_delete=models.CASCADE,
+        related_name="timetable_entries",
+    )
+    section = models.ForeignKey(
+        "school.Section",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="timetable_entries",
+    )
+    period = models.ForeignKey(
+        TimetablePeriod,
+        on_delete=models.CASCADE,
+        related_name="entries",
+    )
+    day_of_week = models.CharField(max_length=20, default="Daily", choices=DAY_CHOICES)
+
+    subject = models.ForeignKey(
+        "exams.Subject",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="timetable_entries",
+    )
+    custom_subject = models.CharField(max_length=120, blank=True, default="")
+
+    teacher = models.ForeignKey(
+        "teachers.Teacher",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="timetable_entries",
+    )
+    custom_teacher = models.CharField(max_length=120, blank=True, default="")
+    room_or_note = models.CharField(max_length=100, blank=True, default="")
+
+    class Meta:
+        ordering = ["period__order", "class_level__id"]
+        verbose_name = "Timetable Entry"
+        verbose_name_plural = "Timetable Entries"
+
+    def get_subject_name(self):
+        if self.custom_subject and self.custom_subject.strip():
+            return self.custom_subject.strip()
+        if self.subject:
+            return self.subject.name
+        return ""
+
+    def get_teacher_name(self):
+        if self.custom_teacher and self.custom_teacher.strip():
+            return self.custom_teacher.strip()
+        if self.teacher:
+            return self.teacher.full_name
+        return ""
+
+    def __str__(self):
+        return f"{self.class_level.name} - {self.period.name}: {self.get_subject_name()} ({self.get_teacher_name()})"

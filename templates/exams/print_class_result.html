@@ -151,7 +151,7 @@
       {% endif %}
     </div>
     <div class="col text-center pe-4">
-      <h3 class="school-title">KOHISAR MODEL SCHOOL & COLLEGE QALAGAY SWAT</h3>
+      <h3 class="school-title">{{ school_setting.name|upper }}</h3>
       <div class="sheet-subtitle">
         Result Sheet For Class: <span style="text-decoration: underline; font-weight: 800;">&nbsp;{{ class_level.name|upper }}{% if section %} (SEC {{ section.name }}){% endif %}&nbsp;</span> &nbsp;&nbsp;&nbsp;&nbsp; <span style="font-weight: 800;">{{ exam.name|upper }}</span>
       </div>

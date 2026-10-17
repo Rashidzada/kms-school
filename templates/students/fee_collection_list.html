@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Exam Fee &amp; Student Fee Collection Register | {{ school_setting.short_name|default:"KMS" }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-file-invoice-dollar text-success me-2"></i>Exam Fee &amp; Student Collection Register
+      </h3>
+      <p class="text-muted small mb-0">
+        Class-wise list of students with Father Name, Roll Number, Fee Amount &amp; Payment Status for Exam Fees, Paper Funds, or General Collections.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <!-- 1-Click Print Register Button -->
+      <a href="{% url 'student_fee_collection_list' %}?class_id={{ selected_class.id|default:'' }}&section_id={{ selected_section.id|default:'' }}&fee_title={{ fee_title|urlencode }}&fee_amount={{ default_fee }}&print=1" target="_blank" class="btn btn-outline-primary fw-bold shadow-sm">
+        <i class="fas fa-print me-1"></i> Print Collection Sheet
+      </a>
+      <!-- Export Excel -->
+      <a href="{% url 'export_student_fee_collection_excel' %}?class_id={{ selected_class.id|default:'' }}&section_id={{ selected_section.id|default:'' }}&fee_title={{ fee_title|urlencode }}&fee_amount={{ default_fee }}" class="btn btn-success fw-bold shadow-sm">
+        <i class="fas fa-file-excel me-1"></i> Export to Excel (.xlsx)
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter & Settings Card -->
+  <div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body p-3">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small fw-bold text-dark mb-1">Select Class</label>
+          <select name="class_id" class="form-select form-select-sm fw-semibold">
+            <option value="">-- All Classes (Full School) --</option>
+            {% for c in classes %}
+            <option value="{{ c.id }}" {% if selected_class and selected_class.id == c.id %}selected{% endif %}>
+              {{ c.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold text-dark mb-1">Select Section</label>
+          <select name="section_id" class="form-select form-select-sm">
+            <option value="">-- All Sections --</option>
+            {% for sec in sections %}
+            <option value="{{ sec.id }}" {% if selected_section and selected_section.id == sec.id %}selected{% endif %}>
+              {{ sec.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-bold text-dark mb-1">Fee Purpose / Title</label>
+          <input type="text" name="fee_title" value="{{ fee_title }}" class="form-control form-control-sm fw-semibold" placeholder="e.g. Examination Fee, Paper Money, Sports Fund">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold text-dark mb-1">Default Amount (PKR)</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white">Rs.</span>
+            <input type="number" name="fee_amount" value="{{ default_fee }}" min="0" step="10" class="form-control fw-bold">
+          </div>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary btn-sm fw-bold w-100">
+            <i class="fas fa-filter me-1"></i> Filter List
+          </button>
+          <a href="{% url 'student_fee_collection_list' %}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+            <i class="fas fa-undo"></i>
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Summary Counters Banner -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 border-start border-primary border-4 p-3 bg-white">
+        <div class="small text-muted fw-bold">TOTAL ENROLLED STUDENTS</div>
+        <div class="fs-4 fw-bold text-dark">{{ total_students }} Students</div>
+        <div class="small text-muted">Filtered in {{ selected_class.name|default:"All Classes" }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 border-start border-info border-4 p-3 bg-white">
+        <div class="small text-muted fw-bold">FEE PURPOSE</div>
+        <div class="fs-5 fw-bold text-primary text-truncate">{{ fee_title }}</div>
+        <div class="small text-muted">Default: <strong>Rs. {{ default_fee }}</strong> per student</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 border-start border-success border-4 p-3 bg-white">
+        <div class="small text-muted fw-bold">TOTAL EXPECTED COLLECTION</div>
+        <div class="fs-4 fw-bold text-success">Rs. {{ total_amount|floatformat:0 }}</div>
+        <div class="small text-muted">{{ total_students }} × Rs. {{ default_fee }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Table Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="fas fa-list-ol me-2 text-primary"></i>{{ selected_class.name|default:"All Classes" }} — Student Fee Collection List
+      </h5>
+      <span class="badge bg-secondary-subtle text-secondary px-3 py-1">
+        Session: {{ active_session.name|default:"2025-2026" }}
+      </span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered mb-0 align-middle">
+          <thead class="table-dark small">
+            <tr>
+              <th style="width: 50px;" class="text-center">S#</th>
+              <th style="width: 100px;" class="text-center">Adm No</th>
+              <th>Student Full Name</th>
+              <th>Father Name</th>
+              <th style="width: 140px;">Class &amp; Section</th>
+              <th style="width: 130px;" class="text-center">Payable Fee</th>
+              <th style="width: 130px;" class="text-center">Status / Paid</th>
+              <th style="width: 160px;" class="text-center">Date &amp; Signature</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            <tr>
+              <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
+              <td class="text-center font-monospace fw-bold">{{ s.admission_no }}</td>
+              <td class="fw-bold text-dark">
+                {{ s.full_name }}
+                {% if s.gender == 'Female' %}
+                  <span class="badge bg-pink-subtle text-danger ms-1" style="font-size: 0.65rem;">F</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary">{{ s.father_name|default:"—" }}</td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ s.current_class.name|default:"" }} {% if s.section %}- {{ s.section.name }}{% endif %}
+                </span>
+              </td>
+              <td class="text-center fw-bold text-primary font-monospace">
+                Rs. {{ default_fee }}
+              </td>
+              <td class="text-center">
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" style="transform: scale(1.2);">
+                  <label class="form-check-label small text-muted ms-1">Paid</label>
+                </div>
+              </td>
+              <td class="text-center text-muted" style="border-bottom: 1px dashed #cbd5e1;">
+                <span style="font-size: 0.75rem; opacity: 0.6;">__________________</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="fas fa-users-slash fa-2x mb-2 d-block text-secondary"></i>
+                No active students found in this class/section filter.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td colspan="5" class="text-end pe-3">TOTAL PAYABLE:</td>
+              <td class="text-center text-success fs-6">Rs. {{ total_amount|floatformat:0 }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -20,6 +20,8 @@ class StudentForm(forms.ModelForm):
             "profile_picture",
             "current_class",
             "current_section",
+            "custom_monthly_fee",
+            "is_fee_free",
             "family",
             "status",
             "remarks",
@@ -39,6 +41,11 @@ class StudentForm(forms.ModelForm):
         )
         self.fields["father_name"].required = False
         self.fields["father_name"].help_text = "Optional if not known in advance"
+        if "custom_monthly_fee" in self.fields:
+            self.fields["custom_monthly_fee"].label = "Custom Monthly Fee (PKR)"
+            self.fields["custom_monthly_fee"].help_text = "Leave empty to use Class default fee. Enter custom amount or 0 for Free."
+        if "is_fee_free" in self.fields:
+            self.fields["is_fee_free"].label = "100% Free / Full Scholarship Student"
 
 
 class FamilyHouseholdForm(forms.ModelForm):

@@ -161,7 +161,7 @@
       {% endif %}
     </div>
     <div class="col-10 text-center">
-      <h3 class="school-title">KOHISAR MODEL SCHOOL & COLLEGE</h3>
+      <h3 class="school-title">{{ school_setting.name|upper }}</h3>
       <div class="small text-muted">{{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat" }}</div>
       <div class="dmc-badge">DETAILED MARKS CERTIFICATE</div>
       <div class="fw-bold text-dark mt-1">{{ exam.name|upper }}</div>

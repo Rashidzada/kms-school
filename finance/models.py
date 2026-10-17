@@ -46,7 +46,19 @@ class StudentFeeMonthEntry(models.Model):
     arrears = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     exam_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    fine_punishment = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00, verbose_name="Fine / Punishment (PKR)"
+    )
+    fine_reason = models.CharField(
+        max_length=255, blank=True, default="", verbose_name="Fine / Punishment Reason"
+    )
     other_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    other_charges_label = models.CharField(
+        max_length=255, blank=True, default="Other Charges", verbose_name="Extra Charges Description"
+    )
+    discount_concession = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00, verbose_name="Discount / Concession (PKR)"
+    )
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_paid = models.BooleanField(default=False)
     last_payment_date = models.DateField(null=True, blank=True)
@@ -75,16 +87,20 @@ class StudentFeeMonthEntry(models.Model):
 
     @property
     def total_amount(self):
-        return (
+        calculated = (
             (self.arrears or Decimal("0.00"))
             + (self.monthly_fee or Decimal("0.00"))
             + (self.exam_fee or Decimal("0.00"))
+            + (self.fine_punishment or Decimal("0.00"))
             + (self.other_charges or Decimal("0.00"))
+            - (self.discount_concession or Decimal("0.00"))
         )
+        return max(Decimal("0.00"), calculated)
 
     @property
     def balance(self):
-        return self.total_amount - (self.paid_amount or Decimal("0.00"))
+        bal = self.total_amount - (self.paid_amount or Decimal("0.00"))
+        return max(Decimal("0.00"), bal)
 
 
 class FeePaymentReceipt(models.Model):

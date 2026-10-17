@@ -198,7 +198,7 @@
         {% endif %}
       </td>
       <td style="text-align: center; vertical-align: middle;">
-        <h1 class="school-title">{{ school_setting.name|default:"Kohisar Model School & College" }}</h1>
+        <h1 class="school-title">{{ school_setting.name|default:"School Management System" }}</h1>
         <div class="school-sub">
           {{ school_setting.address|default:"Qalagay, Tehsil Kabal, District Swat, Khyber Pakhtunkhwa" }} &bull; Ph: {{ school_setting.contact }}
         </div>
@@ -299,7 +299,7 @@
   <!-- Parent Instructions & Bank Accounts -->
   <div class="parent-note-box">
     <strong><i class="fas fa-info-circle text-primary"></i> Important Notice for Respected Parents:</strong><br>
-    1. Respected <strong>{{ family.father_guardian_name }}</strong>, this notice presents the consolidated fee status for all your children studying at Kohisar Model School & College.<br>
+    1. Respected <strong>{{ family.father_guardian_name }}</strong>, this notice presents the consolidated fee status for all your children studying at {{ school_setting.name }}.<br>
     2. Kindly arrange clearance of the outstanding total of <strong>PKR {{ grand_total_dues|floatformat:2 }}</strong> within <strong>7 days</strong> to ensure uninterrupted schooling and academic assessments.<br>
     3. You can clear the total amount in a single lump-sum transaction for all children at the school accounts desk or online bank transfer.<br>
     4. If any portion of the fee has already been deposited, kindly share the bank deposit slip at the school office.

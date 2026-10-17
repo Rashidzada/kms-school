@@ -133,7 +133,7 @@
       {% endif %}
     </div>
     <div class="col-10 text-center">
-      <h3 class="school-title">KOHISAR MODEL SCHOOL AND COLLEGE QALAGAY SWAT</h3>
+      <h3 class="school-title">{{ school_setting.name|upper }}</h3>
       <div class="sheet-subtitle">
         LIST FOR <span style="text-decoration: underline; font-weight:800;">&nbsp;{{ subject.name|upper }}&nbsp;</span> PAPER CLASS <span style="text-decoration: underline; font-weight:800;">&nbsp;{{ class_level.name|upper }}{% if section %} (SEC {{ section.name }}){% endif %}&nbsp;</span> &nbsp; {{ exam.name|upper }}
       </div>

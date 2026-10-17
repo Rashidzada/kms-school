@@ -3,10 +3,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-# Kohisar Model School & College (KMS) Admin Branding
-admin.site.site_header = "Kohisar Model School & College (KMS)"
-admin.site.site_title = "KMS Portal Administration"
-admin.site.index_title = "Institutional Control & Database Administration"
+admin.site.site_header = "Institutional Administration Portal"
+admin.site.site_title = "Portal Administration"
+admin.site.index_title = "Database Control & Administration"
 
 urlpatterns = [
     path("admin/", admin.site.urls),

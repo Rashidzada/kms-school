@@ -30,3 +30,21 @@ def month_abbr(value):
     except (ValueError, TypeError, IndexError):
         pass
     return value
+
+
+@register.filter(name="dict_lookup")
+def dict_lookup(d, key):
+    """
+    Safely retrieves a dictionary item by key in Django templates.
+    Supports nesting: dict|dict_lookup:k1|dict_lookup:k2
+    """
+    if d is None:
+        return None
+    try:
+        if isinstance(d, dict):
+            return d.get(key)
+        elif hasattr(d, "__getitem__"):
+            return d[key]
+    except Exception:
+        pass
+    return None

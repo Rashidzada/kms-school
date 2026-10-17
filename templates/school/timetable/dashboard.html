@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+{% load static month_filters %}
+
+{% block title %}School Master Timetable & Teacher Schedule | {{ school_setting.short_name|default:"KMS" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .tt-container {
+    background: #ffffff;
+    border-radius: 12px;
+  }
+  
+  /* Board Themes matching the actual school chart photos */
+  .board-pink {
+    background-color: #fdf2f4;
+    border: 2px solid #f472b6;
+  }
+  .board-pink th {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+  }
+  .board-pink .tt-cell {
+    background-color: #fff1f2;
+    border-color: #fecdd3 !important;
+  }
+  
+  .board-green {
+    background-color: #f0fdf4;
+    border: 2px solid #4ade80;
+  }
+  .board-green th {
+    background-color: #15803d !important;
+    color: #ffffff !important;
+  }
+  .board-green .tt-cell {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0 !important;
+  }
+
+  .board-default th {
+    background-color: #1e3a8a !important;
+    color: #ffffff !important;
+  }
+
+  .tt-table th, .tt-table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 10px 8px;
+  }
+
+  .tt-period-col {
+    width: 90px;
+    font-weight: 800;
+    font-size: 1.15rem;
+    background-color: #f8fafc !important;
+    color: #0f172a;
+    border-right: 2px solid #cbd5e1 !important;
+  }
+
+  .tt-break-row td {
+    background: repeating-linear-gradient(45deg, #fef08a, #fef08a 10px, #fef9c3 10px, #fef9c3 20px) !important;
+    color: #854d0e;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    padding: 8px !important;
+  }
+
+  .tt-cell {
+    min-width: 145px;
+    height: 78px;
+    transition: all 0.15s ease-in-out;
+    cursor: pointer;
+    position: relative;
+  }
+  .tt-cell:hover {
+    box-shadow: inset 0 0 0 2px #2563eb;
+    background-color: #ffffff !important;
+  }
+
+  .tt-subj {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+
+  .tt-teacher-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #334155;
+    text-decoration: none;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tt-teacher-badge:hover {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  .tt-clash-badge {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #ef4444 !important;
+    animation: pulse-border 1.8s infinite;
+  }
+
+  @keyframes pulse-border {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  .clash-card {
+    border-left: 4px solid #ef4444;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+  <!-- Top Navigation & Action Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">
+        <i class="fas fa-calendar-alt text-primary me-2"></i>School Timetable &amp; Teacher Schedule
+      </h3>
+      <p class="text-muted small mb-0">
+        Landscape Master Chart, Wing Timetables, Double-Booking Conflict Detection &amp; 1-Click Teacher Schedules.
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <!-- Print Button -->
+      <a href="{% url 'timetable_print_view' %}?wing={{ wing }}{% if selected_teacher_id %}&teacher_id={{ selected_teacher_id }}{% endif %}" target="_blank" class="btn btn-outline-primary fw-bold shadow-sm">
+        <i class="fas fa-print me-1"></i> Print Landscape (School Printer)
+      </a>
+      <!-- Reset to Official Photo Charts -->
+      <form method="post" action="{% url 'api_reset_default_timetable' %}" onsubmit="return confirm('Reload the official school timetable from the original photo charts?');" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-secondary fw-semibold btn-sm shadow-sm" title="Reset to original chart data">
+          <i class="fas fa-undo-alt me-1"></i> Reload Official Charts
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Clash / Conflict Alert Notice -->
+  {% if clashes_list %}
+  <div class="alert alert-warning border border-warning shadow-sm mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-danger fs-6 p-2"><i class="fas fa-exclamation-triangle"></i></span>
+        <div>
+          <strong class="text-dark">Timetable Conflict Warning:</strong>
+          <span class="text-dark ms-1">Detected <strong>{{ clashes_list|length }}</strong> double-booked period(s) where a teacher is assigned to multiple classes simultaneously!</span>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-outline-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#clashDetailsBox">
+        <i class="fas fa-eye me-1"></i> View Clashing Teachers
+      </button>
+    </div>
+    <div class="collapse mt-3" id="clashDetailsBox">
+      <div class="row g-2">
+        {% for c in clashes_list %}
+        <div class="col-md-6 col-lg-4">
+          <div class="bg-white p-2 rounded border clash-card shadow-sm">
+            <div class="fw-bold text-danger small">
+              <i class="fas fa-clock me-1"></i> Period {{ c.period.name }} Conflict:
+            </div>
+            <div class="fw-bold text-dark">{{ c.teacher_name }}</div>
+            <div class="small text-muted">
+              Scheduled simultaneously in: <strong class="text-primary">{{ c.classes|join:", " }}</strong>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-success border border-success py-2 px-3 small shadow-sm mb-3 d-flex align-items-center gap-2">
+    <i class="fas fa-check-circle text-success fs-5"></i>
+    <div><strong>All Clear:</strong> Zero teacher period clashes detected! Every teacher is scheduled in at most one class per period.</div>
+  </div>
+  {% endif %}
+
+  <!-- Wing & View Filter Tabs -->
+  <div class="card shadow-sm mb-4 border-0">
+    <div class="card-body p-2 bg-light rounded d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <ul class="nav nav-pills gap-1">
+        <li class="nav-item">
+          <a class="nav-link fw-bold px-3 {% if wing == 'primary' and not selected_teacher_id %}active bg-danger text-white{% endif %}" href="{% url 'timetable_dashboard' %}?wing=primary">
+            <i class="fas fa-shapes me-1"></i> Primary Section (Nur – 5th) [Pink Board]
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-bold px-3 {% if wing == 'middle_high' and not selected_teacher_id %}active bg-success text-white{% endif %}" href="{% url 'timetable_dashboard' %}?wing=middle_high">
+            <i class="fas fa-graduation-cap me-1"></i> Middle, High &amp; College (6th – 2nd Year) [Green Board]
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-bold px-3 {% if wing == 'all' and not selected_teacher_id %}active bg-primary text-white{% endif %}" href="{% url 'timetable_dashboard' %}?wing=all">
+            <i class="fas fa-th-large me-1"></i> Master View (All Classes)
+          </a>
+        </li>
+      </ul>
+
+      <!-- Teacher Quick Select Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="small fw-bold text-secondary text-nowrap"><i class="fas fa-user-tie me-1"></i> View Teacher:</span>
+        <select class="form-select form-select-sm fw-semibold" style="width: 220px;" onchange="if(this.value){ window.location.href='{% url 'timetable_dashboard' %}?wing={{ wing }}&teacher_id='+this.value; } else { window.location.href='{% url 'timetable_dashboard' %}?wing={{ wing }}'; }">
+          <option value="">-- All Teachers --</option>
+          {% for t in all_teachers %}
+          <option value="{{ t.id }}" {% if selected_teacher_id == t.id|stringformat:"s" %}selected{% endif %}>
+            {{ t.full_name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if selected_teacher_id %}
+        <a href="{% url 'timetable_dashboard' %}?wing={{ wing }}" class="btn btn-sm btn-outline-secondary" title="Clear teacher filter">
+          <i class="fas fa-times"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- If Teacher Individual Timetable Selected -->
+  {% if selected_teacher %}
+  <div class="card border border-primary shadow-sm mb-4">
+    <div class="card-header bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center">
+      <div class="fw-bold">
+        <i class="fas fa-chalkboard-teacher me-2"></i> Individual Teacher Timetable: {{ selected_teacher.full_name }}
+      </div>
+      <div>
+        <a href="{% url 'timetable_print_view' %}?teacher_id={{ selected_teacher.id }}" target="_blank" class="btn btn-sm btn-light fw-bold">
+          <i class="fas fa-print me-1"></i> Print Teacher Slip
+        </a>
+      </div>
+    </div>
+    <div class="card-body p-3">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center mb-0">
+          <thead class="table-dark small">
+            <tr>
+              <th style="width: 90px;">Period</th>
+              <th style="width: 140px;">Timing</th>
+              <th>Assigned Class &amp; Subject</th>
+              <th style="width: 140px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in teacher_schedule %}
+            <tr {% if item.period.is_break %}class="table-warning fw-bold"{% elif item.has_clash %}class="table-danger"{% endif %}>
+              <td class="fw-bold fs-6">{{ item.period.name }}</td>
+              <td class="small text-muted">{{ item.period.start_time }} – {{ item.period.end_time }}</td>
+              <td>
+                {% if item.period.is_break %}
+                  <span class="text-uppercase fw-bold text-warning-emphasis">Tiffin / Break Interval</span>
+                {% elif item.entries %}
+                  {% for e in item.entries %}
+                    <div class="d-inline-block bg-primary-subtle border border-primary text-dark rounded px-3 py-1 m-1">
+                      <strong>{{ e.class_level.name }}</strong>: {{ e.get_subject_name }}
+                      {% if item.has_clash %}
+                        <span class="badge bg-danger ms-1">Double-Booked!</span>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted fst-italic">Free / Off Period (Staff Room)</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item.period.is_break %}
+                  <span class="badge bg-warning text-dark">Recess</span>
+                {% elif item.has_clash %}
+                  <span class="badge bg-danger">Conflict</span>
+                {% elif item.entries %}
+                  <span class="badge bg-success">Class Teaching</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary">Free Period</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Main Timetable Matrix Board -->
+  <div class="card shadow-sm border-0 mb-4 tt-container">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="fw-bold mb-0 text-dark">
+          <i class="fas fa-table me-2 text-primary"></i>{{ wing_title }}
+        </h5>
+        <small class="text-muted">Click any cell to assign or change Subject and Teacher. Click a teacher name to filter their schedule.</small>
+      </div>
+      <div class="d-flex align-items-center gap-3 small">
+        <span class="d-inline-flex align-items-center gap-1">
+          <span class="badge bg-danger px-2 py-1">⚠️</span> = Conflict (Teacher double-booked)
+        </span>
+        <span class="d-inline-flex align-items-center gap-1">
+          <span class="badge bg-warning text-dark px-2 py-1">Break</span> = Recess / Interval
+        </span>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0 tt-table board-{{ board_theme }}">
+          <thead>
+            <tr>
+              <th class="tt-period-col">Period</th>
+              {% for cl in classes %}
+              <th style="min-width: 145px; font-size: 1.05rem; letter-spacing: 0.5px;">
+                {{ cl.name }}
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in periods %}
+              {% if p.is_break %}
+              <!-- Break Row -->
+              <tr class="tt-break-row">
+                <td class="tt-period-col">{{ p.name }}</td>
+                <td colspan="{{ classes|length }}">
+                  <i class="fas fa-coffee me-2"></i> RECESS / TIFFIN BREAK ({{ p.start_time }} – {{ p.end_time }})
+                </td>
+              </tr>
+              {% else %}
+              <!-- Regular Period Row -->
+              <tr>
+                <td class="tt-period-col">
+                  <div>{{ p.name }}</div>
+                  <div style="font-size: 0.65rem; font-weight: normal; opacity: 0.8;" class="text-muted">
+                    {{ p.start_time|default:"" }}
+                  </div>
+                </td>
+                {% for cl in classes %}
+                  {% with entry=grid|dict_lookup:p.id|dict_lookup:cl.id %}
+                  <td class="tt-cell {% if entry and entry.id in clash_entry_ids %}tt-clash-badge{% endif %}"
+                      id="cell_{{ p.id }}_{{ cl.id }}"
+                      onclick="openEditTimetableModal('{{ cl.id }}', '{{ cl.name|escapejs }}', '{{ p.id }}', '{{ p.name|escapejs }}', '{{ entry.subject_id|default:'' }}', '{{ entry.custom_subject|default:''|escapejs }}', '{{ entry.teacher_id|default:'' }}', '{{ entry.custom_teacher|default:''|escapejs }}');">
+                    
+                    {% if entry %}
+                      <div class="tt-subj" id="cell_subj_{{ p.id }}_{{ cl.id }}">
+                        {{ entry.get_subject_name|default:"—" }}
+                      </div>
+                      <div>
+                        {% if entry.get_teacher_name %}
+                          <a href="{% url 'timetable_dashboard' %}?wing={{ wing }}&teacher_id={{ entry.teacher_id|default:'' }}"
+                             class="tt-teacher-badge {% if entry.id in clash_entry_ids %}bg-danger text-white fw-bold{% endif %}"
+                             onclick="event.stopPropagation();"
+                             title="View {{ entry.get_teacher_name }}'s schedule">
+                            {% if entry.id in clash_entry_ids %}<i class="fas fa-exclamation-triangle me-1"></i>{% endif %}
+                            {{ entry.get_teacher_name }}
+                          </a>
+                        {% else %}
+                          <span class="text-muted small fst-italic">Click to assign</span>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div class="text-muted small fst-italic" style="opacity: 0.6;">
+                        <i class="fas fa-plus-circle me-1"></i> Assign
+                      </div>
+                    {% endif %}
+
+                  </td>
+                  {% endwith %}
+                {% endfor %}
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Timetable Cell -->
+<div class="modal fade" id="editTimetableModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-primary text-white py-3">
+        <h5 class="modal-title fw-bold" id="modalTitle">
+          <i class="fas fa-edit me-2"></i>Assign Class Period
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="modalClassId">
+        <input type="hidden" id="modalPeriodId">
+
+        <div class="alert alert-info py-2 px-3 small mb-3">
+          <i class="fas fa-info-circle me-1"></i>
+          Editing: <strong id="modalClassLabel">Class</strong> | <strong id="modalPeriodLabel">Period</strong>
+        </div>
+
+        <div id="modalClashAlert" class="alert alert-danger py-2 px-3 small d-none mb-3">
+          <i class="fas fa-exclamation-triangle me-1"></i> <span id="modalClashText"></span>
+        </div>
+
+        <!-- Subject Selection -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Subject</label>
+          <select class="form-select" id="modalSubjectSelect">
+            <option value="">-- Select from Subjects List --</option>
+            {% for s in all_subjects %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+          <div class="input-group input-group-sm mt-1">
+            <span class="input-group-text bg-light text-muted">Or Custom:</span>
+            <input type="text" class="form-control" id="modalCustomSubject" placeholder="e.g. English Writing, Nazira, Hand Writing">
+          </div>
+        </div>
+
+        <!-- Teacher Selection -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Teacher</label>
+          <select class="form-select" id="modalTeacherSelect">
+            <option value="">-- Select from Staff Directory --</option>
+            {% for t in all_teachers %}
+            <option value="{{ t.id }}">{{ t.full_name }}</option>
+            {% endfor %}
+          </select>
+          <div class="input-group input-group-sm mt-1">
+            <span class="input-group-text bg-light text-muted">Or Custom:</span>
+            <input type="text" class="form-control" id="modalCustomTeacher" placeholder="e.g. Mufti Atta ur Rahman, Dr. Usman Ghani">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm fw-bold px-4" id="btnSaveTimetableCell" onclick="saveTimetableCell();">
+          <i class="fas fa-save me-1"></i> Save Period Slot
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openEditTimetableModal(classId, className, periodId, periodName, subjectId, customSubject, teacherId, customTeacher) {
+    document.getElementById('modalClassId').value = classId;
+    document.getElementById('modalPeriodId').value = periodId;
+    document.getElementById('modalClassLabel').textContent = className;
+    document.getElementById('modalPeriodLabel').textContent = 'Period ' + periodName;
+
+    document.getElementById('modalSubjectSelect').value = subjectId || '';
+    document.getElementById('modalCustomSubject').value = customSubject || '';
+    document.getElementById('modalTeacherSelect').value = teacherId || '';
+    document.getElementById('modalCustomTeacher').value = customTeacher || '';
+
+    document.getElementById('modalClashAlert').classList.add('d-none');
+
+    var modal = new bootstrap.Modal(document.getElementById('editTimetableModal'));
+    modal.show();
+  }
+
+  function saveTimetableCell() {
+    var classId = document.getElementById('modalClassId').value;
+    var periodId = document.getElementById('modalPeriodId').value;
+    var subjectId = document.getElementById('modalSubjectSelect').value;
+    var customSubject = document.getElementById('modalCustomSubject').value.trim();
+    var teacherId = document.getElementById('modalTeacherSelect').value;
+    var customTeacher = document.getElementById('modalCustomTeacher').value.trim();
+
+    var btn = document.getElementById('btnSaveTimetableCell');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+
+    fetch("{% url 'api_update_timetable_cell' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({
+        class_id: classId,
+        period_id: periodId,
+        subject_id: subjectId,
+        custom_subject: customSubject,
+        teacher_id: teacherId,
+        custom_teacher: customTeacher
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Save Period Slot';
+
+      if (data.success) {
+        var modalEl = document.getElementById('editTimetableModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        // Reload page to refresh matrix and clash warnings cleanly
+        window.location.reload();
+      } else {
+        alert('Could not update slot: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Save Period Slot';
+      alert('Network or server error: ' + err);
+    });
+  }
+</script>
+{% endblock %}

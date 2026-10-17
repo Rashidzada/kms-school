@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ school_setting.name|default:"Kohisar Model School & College" }}{% endblock %} | KMS ERP</title>
+  <title>{% block title %}{{ school_setting.name|default:"School Management System" }}{% endblock %} | {{ school_setting.short_name|default:"Portal" }}</title>
   
-  <link rel="icon" type="image/png" href="{% static 'dist/img/favicon.png' %}">
-  <link rel="shortcut icon" href="{% static 'dist/img/favicon.ico' %}">
+  <link rel="icon" type="image/png" href="{% if school_setting.logo %}{{ school_setting.logo.url }}{% else %}{% static 'dist/img/favicon.png' %}{% endif %}">
+  <link rel="shortcut icon" href="{% if school_setting.logo %}{{ school_setting.logo.url }}{% else %}{% static 'dist/img/favicon.ico' %}{% endif %}">
 
   <!-- Bootstrap 5 CSS (Offline) -->
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
@@ -325,8 +325,8 @@
           <img src="{% static 'dist/img/logo.png' %}" alt="Logo">
         {% endif %}
         <div class="sidebar-brand-text">
-          {{ school_setting.name }}
-          <div style="font-size: 0.7rem; font-weight: 400; opacity: 0.8;">KMS Portal</div>
+          {{ school_setting.name|default:"School Management" }}
+          <div style="font-size: 0.7rem; font-weight: 400; opacity: 0.85;">{{ school_setting.tagline|default:"Management Portal" }}</div>
         </div>
       </a>
 
@@ -335,6 +335,11 @@
         <li class="nav-item">
           <a href="{% url 'dashboard' %}" class="nav-link">
             <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'timetable_dashboard' %}" class="nav-link text-warning fw-bold">
+            <i class="fas fa-calendar-alt text-warning"></i> School Timetable (Pink/Green)
           </a>
         </li>
       </ul>
@@ -474,6 +479,11 @@
             <i class="fas fa-calendar-alt"></i> Exam Terms
           </a>
         </li>
+        <li class="nav-item">
+          <a href="{% url 'student_fee_collection_list' %}" class="nav-link text-info">
+            <i class="fas fa-file-invoice-dollar text-info"></i> Exam Fee Collection List
+          </a>
+        </li>
       </ul>
 
       <div class="sidebar-section-title sidebar-section-teachers"><i class="fas fa-chalkboard-teacher me-1"></i> Teachers & Staff</div>
@@ -481,6 +491,11 @@
         <li class="nav-item">
           <a href="{% url 'teacher_list' %}" class="nav-link">
             <i class="fas fa-chalkboard-teacher"></i> Staff Directory
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'timetable_dashboard' %}" class="nav-link">
+            <i class="fas fa-calendar-week text-warning"></i> Teacher Timetable & Clashes
           </a>
         </li>
         <li class="nav-item">
@@ -553,6 +568,11 @@
           </a>
         </li>
         <li class="nav-item">
+          <a href="{% url 'student_fee_collection_list' %}" class="nav-link text-info">
+            <i class="fas fa-clipboard-list text-info"></i> Fee Collection Register (Print)
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="{% url 'defaulters_list' %}" class="nav-link">
             <i class="fas fa-exclamation-triangle"></i> Defaulters List
           </a>
@@ -608,7 +628,7 @@
         </li>
         <li class="nav-item">
           <a href="/admin/" target="_blank" class="nav-link">
-            <i class="fas fa-shield-halved"></i> KMS Administration
+            <i class="fas fa-shield-halved"></i> {{ school_setting.short_name|default:"Master" }} Administration
           </a>
         </li>
         <li class="nav-item">
@@ -736,7 +756,7 @@
           </div>
           <h5 class="fw-bold mb-1" id="kmsSplashTitle">Automated Daily Cloud Backup</h5>
           <p class="small mb-0 text-white-50">
-            {{ school_setting.name|default:"Kohisar Model School & College" }} &bull; Full PostgreSQL (<code>.sql</code>) &amp; Master Excel (<code>.xlsx</code>)
+            {{ school_setting.name|default:"School Management System" }} &bull; Full PostgreSQL (<code>.sql</code>) &amp; Master Excel (<code>.xlsx</code>)
           </p>
         </div>
         <div class="modal-body p-4 text-center">
@@ -762,6 +782,45 @@
     </div>
   </div>
 
+  <!-- Toast Notification Container for Non-Blocking Auto Backup Prompt & Done Alerts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+    <!-- Prompt Toast -->
+    <div id="kmsAutoBackupPromptToast" class="toast shadow-lg border border-primary" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+      <div class="toast-header bg-primary text-white">
+        <i class="fas fa-hdd me-2"></i>
+        <strong class="me-auto">Scheduled Backup Due</strong>
+        <small class="text-white-50">Offline &amp; Cloud</small>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body bg-light">
+        <div class="small mb-2 text-dark">
+          Full system backup (.sql &amp; .xlsx) is scheduled to save to safe drive <strong>{{ school_setting.safe_backup_folder|default:"D:\School_Backups" }}</strong>.
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="window.runKmsAutoBackupBackground(false, true)">
+            <i class="fas fa-play me-1"></i> Run Backup Now
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="toast">
+            Later
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done / Status Toast -->
+    <div id="kmsAutoBackupDoneToast" class="toast shadow-lg border border-success" role="alert" aria-live="polite" aria-atomic="true" data-bs-delay="6500">
+      <div class="toast-header bg-success text-white">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong class="me-auto" id="kmsDoneToastTitle">Backup Saved</strong>
+        <small class="text-white-50">Safe Drive</small>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body bg-light small" id="kmsDoneToastBody">
+        Full .sql &amp; .xlsx files saved safely.
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap 5 JS Bundle (Offline) -->
   <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <!-- jQuery (Offline) -->
@@ -771,6 +830,48 @@
       $('#sidebar').toggleClass('collapsed');
     });
 
+    // Background Backup Runner (No Splash Modal Freeze)
+    window.runKmsAutoBackupBackground = function(isAuto, fromPrompt) {
+      if (fromPrompt) {
+        var pToastEl = document.getElementById('kmsAutoBackupPromptToast');
+        if (pToastEl) {
+          var pToast = bootstrap.Toast.getInstance(pToastEl);
+          if (pToast) pToast.hide();
+        }
+      }
+
+      var formData = new FormData();
+      formData.append('is_auto', isAuto ? '1' : '0');
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+      fetch("{% url 'api_run_email_backup' %}", {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(resData) {
+        sessionStorage.setItem('kms_auto_backup_done_session', '1');
+        var doneToastEl = document.getElementById('kmsAutoBackupDoneToast');
+        var bodyEl = document.getElementById('kmsDoneToastBody');
+        var titleEl = document.getElementById('kmsDoneToastTitle');
+        if (doneToastEl && bodyEl) {
+          if (resData.success) {
+            titleEl.textContent = 'Backup Complete';
+            bodyEl.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> Full .sql & .xlsx backups safely preserved on safe hard drive (<strong>{{ school_setting.safe_backup_folder|default:"D:\\School_Backups"|escapejs }}</strong>).';
+          } else {
+            titleEl.textContent = 'Backup Notice';
+            bodyEl.innerHTML = resData.message || 'Backup saved locally.';
+          }
+          var doneToast = new bootstrap.Toast(doneToastEl, { delay: 6500 });
+          doneToast.show();
+        }
+      })
+      .catch(function(err) {
+        console.warn('Background auto backup note:', err);
+      });
+    };
+
+    // Splash Modal Runner (Visual Progress Modal)
     window.triggerKmsAutoBackupSplash = function(isAuto) {
       var modalEl = document.getElementById('kmsAutoBackupSplashModal');
       if (!modalEl) return;
@@ -784,83 +885,76 @@
       var retryBtn = document.getElementById('kmsSplashRetryBtn');
 
       retryBtn.classList.add('d-none');
-      icon.className = 'fas fa-satellite-dish fa-3x text-warning fa-spin';
+      icon.className = 'fas fa-cog fa-spin fa-3x text-info';
       badge.className = 'badge bg-primary-subtle text-primary px-3 py-2 mb-3 fs-6';
-      badge.innerHTML = '<i class="fas fa-wifi me-1"></i> Step 1/3: Checking Internet & Mail Network...';
-      msg.textContent = 'Testing live connection to mail server before packaging .sql and .xlsx backup files...';
+      badge.innerHTML = '<i class="fas fa-hdd me-1"></i> Creating Full Backup (.SQL + Master .XLSX)...';
+      msg.textContent = 'Generating database dump and master Excel file, saving to safe drive {{ school_setting.safe_backup_folder|default:"D:\\School_Backups"|escapejs }} and sending to configured emails...';
       bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
-      bar.style.width = '30%';
+      bar.style.width = '60%';
 
-      fetch("{% url 'api_check_backup_network' %}")
-        .then(function(r) { return r.json(); })
-        .then(function(netData) {
-          if (!netData.online) {
-            icon.className = 'fas fa-exclamation-triangle fa-3x text-warning';
-            badge.className = 'badge bg-warning text-dark px-3 py-2 mb-3 fs-6';
-            badge.innerHTML = '<i class="fas fa-plug me-1"></i> Network Offline — Backup Queued';
-            msg.textContent = netData.message + ' Automatic backup will wait and run when internet is connected.';
-            bar.className = 'progress-bar bg-warning';
-            bar.style.width = '100%';
-            retryBtn.classList.remove('d-none');
-            return;
-          }
+      var formData = new FormData();
+      formData.append('is_auto', isAuto ? '1' : '0');
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-          // Step 2 & 3: Network is good -> Generate & Send .sql + .xlsx
-          icon.className = 'fas fa-cog fa-spin fa-3x text-info';
+      fetch("{% url 'api_run_email_backup' %}", {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(resData) {
+        sessionStorage.setItem('kms_auto_backup_done_session', '1');
+        if (resData.success) {
+          icon.className = 'fas fa-check-circle fa-3x text-success';
+          badge.className = 'badge bg-success text-white px-3 py-2 mb-3 fs-6';
+          badge.innerHTML = '<i class="fas fa-check-double me-1"></i> Full Backup Generated &amp; Saved!';
+          msg.innerHTML = '<div class="alert alert-success py-1 px-2 mb-0"><i class="fas fa-hdd me-1"></i> Saved to safe folder: <strong>{{ school_setting.safe_backup_folder|default:"D:\\School_Backups"|escapejs }}</strong> &amp; <code>backups/</code>.</div>';
+          bar.className = 'progress-bar bg-success';
+          bar.style.width = '100%';
+          setTimeout(function() {
+            modal.hide();
+          }, 3200);
+        } else {
+          icon.className = 'fas fa-hdd fa-3x text-info';
           badge.className = 'badge bg-info text-dark px-3 py-2 mb-3 fs-6';
-          badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Step 2/3: Network Good! Sending Full .SQL & .XLSX Backup...';
-          msg.textContent = 'Generating full PostgreSQL (.sql) & 16-Sheet Master Excel (.xlsx) with all Marks, Payments, Students & Teachers and sending to configured emails...';
-          bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-success';
-          bar.style.width = '75%';
-
-          var formData = new FormData();
-          formData.append('is_auto', isAuto ? '1' : '0');
-          formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
-          return fetch("{% url 'api_run_email_backup' %}", {
-            method: 'POST',
-            body: formData
-          })
-          .then(function(r2) { return r2.json(); })
-          .then(function(resData) {
-            if (resData.success) {
-              icon.className = 'fas fa-check-circle fa-3x text-success';
-              badge.className = 'badge bg-success text-white px-3 py-2 mb-3 fs-6';
-              badge.innerHTML = '<i class="fas fa-check-double me-1"></i> Step 3/3: Full Backup Sent Successfully!';
-              msg.textContent = resData.message;
-              bar.className = 'progress-bar bg-success';
-              bar.style.width = '100%';
-              sessionStorage.setItem('kms_auto_backup_done_session', '1');
-              setTimeout(function() {
-                modal.hide();
-              }, 3800);
-            } else {
-              icon.className = 'fas fa-exclamation-circle fa-3x text-danger';
-              badge.className = 'badge bg-danger text-white px-3 py-2 mb-3 fs-6';
-              badge.innerHTML = '<i class="fas fa-times-circle me-1"></i> Backup Email Notice';
-              msg.textContent = resData.message;
-              bar.className = 'progress-bar bg-danger';
-              bar.style.width = '100%';
-              retryBtn.classList.remove('d-none');
-            }
-          });
-        })
-        .catch(function(err) {
-          icon.className = 'fas fa-exclamation-triangle fa-3x text-warning';
-          badge.className = 'badge bg-warning text-dark px-3 py-2 mb-3 fs-6';
-          badge.innerHTML = 'Network Check Failed';
-          msg.textContent = 'Could not reach server: ' + err;
+          badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Backup Saved to Safe Drive (Offline)';
+          msg.innerHTML = resData.message;
+          bar.className = 'progress-bar bg-info';
+          bar.style.width = '100%';
           retryBtn.classList.remove('d-none');
-        });
+        }
+      })
+      .catch(function(err) {
+        icon.className = 'fas fa-exclamation-triangle fa-3x text-warning';
+        badge.className = 'badge bg-warning text-dark px-3 py-2 mb-3 fs-6';
+        badge.innerHTML = 'Backup Check Note';
+        msg.textContent = 'Could not reach server: ' + err;
+        retryBtn.classList.remove('d-none');
+      });
     };
 
     {% if auto_backup_due %}
     document.addEventListener('DOMContentLoaded', function() {
-      if (!sessionStorage.getItem('kms_auto_backup_checked_session')) {
-        sessionStorage.setItem('kms_auto_backup_checked_session', '1');
+      if (sessionStorage.getItem('kms_auto_backup_checked_session')) return;
+      sessionStorage.setItem('kms_auto_backup_checked_session', '1');
+
+      var mode = "{{ school_setting.auto_backup_mode|default:'background' }}";
+      if (mode === 'prompt') {
+        setTimeout(function() {
+          var toastEl = document.getElementById('kmsAutoBackupPromptToast');
+          if (toastEl) {
+            var toast = new bootstrap.Toast(toastEl, { autohide: false });
+            toast.show();
+          }
+        }, 1200);
+      } else if (mode === 'splash') {
         setTimeout(function() {
           window.triggerKmsAutoBackupSplash(true);
-        }, 600);
+        }, 800);
+      } else {
+        // mode === 'background' (Default, Silent & Smooth)
+        setTimeout(function() {
+          window.runKmsAutoBackupBackground(true, false);
+        }, 1500);
       }
     });
     {% endif %}

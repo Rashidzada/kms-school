@@ -6,69 +6,182 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-8">
-    <!-- Top Action Bar for Dues PDF & Print Reminder Notices -->
+  <div class="col-lg-10">
+    <!-- Top Action Bar -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-      <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-arrow-left me-1"></i> Student Profile
-      </a>
+      <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'student_detail' student.pk %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left me-1"></i> Student Profile
+        </a>
+        <span class="badge {% if student.is_fee_free %}bg-success{% elif student.custom_monthly_fee is not None %}bg-primary{% else %}bg-secondary{% endif %} fs-6 py-2 px-3 shadow-sm">
+          <i class="fas fa-tag me-1"></i> {{ student.fee_status_display }}
+        </span>
+      </div>
+
       <div class="d-flex flex-wrap gap-2">
-        <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-danger fw-bold shadow-sm" title="Print Official Dues Reminder Notice / Chalan for Parents">
-          <i class="fas fa-file-pdf me-1"></i> Print / PDF Dues Notice
+        <button type="button" class="btn btn-warning fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddChargeOrAdjust">
+          <i class="fas fa-plus-circle me-1"></i> Add Fine / Extra Charge / Custom Fee
+        </button>
+        <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-danger fw-bold shadow-sm" title="Print Official Dues Reminder Notice">
+          <i class="fas fa-file-pdf me-1"></i> PDF Dues Notice
         </a>
         {% if family %}
-          <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-primary fw-bold shadow-sm" title="Print Full Family Household Dues Reminder Notice">
-            <i class="fas fa-users me-1"></i> Full Family Dues Notice (PDF)
+          <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-primary fw-bold shadow-sm" title="Print Full Family Dues Reminder Notice">
+            <i class="fas fa-users me-1"></i> Family Notice (PDF)
           </a>
         {% endif %}
       </div>
     </div>
 
+    <!-- Main Payment Card -->
     <div class="card shadow-sm border-success">
       <div class="card-header bg-success text-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <h5 class="fw-bold mb-0">
-          <i class="fas fa-money-bill-wave me-2"></i> Collect Student Fee: {{ student.full_name }}
-        </h5>
+        <div>
+          <h5 class="fw-bold mb-0">
+            <i class="fas fa-money-bill-wave me-2"></i> Collect Student Fee: {{ student.full_name }}
+          </h5>
+          <small class="opacity-85">Father: {{ student.father_name|default:"—" }} | Class: {{ student.current_class.name }} - {{ student.current_section.name }}</small>
+        </div>
         <div class="d-flex align-items-center gap-2">
-          <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-warning btn-sm text-dark fw-bold py-1 px-2" title="Print PDF Dues Slip">
-            <i class="fas fa-file-pdf me-1"></i> Dues Slip
-          </a>
-          <span class="badge bg-white text-success">Adm: {{ student.admission_no }}</span>
+          <span class="badge bg-white text-success fw-bold px-3 py-2">Admission No: {{ student.admission_no }}</span>
         </div>
       </div>
+
       <div class="card-body p-4">
-        <!-- Unpaid months overview -->
-        <div class="card bg-light border mb-4">
-          <div class="card-body p-3">
-            <h6 class="fw-bold text-dark mb-2">Unpaid / Outstanding Months</h6>
+        <!-- Interactive Form with Per-Month Custom Typing Fields -->
+        <form method="post" id="feePaymentForm">
+          {% csrf_token %}
+
+          <!-- Unpaid months table with custom typing fields -->
+          <div class="card border mb-4">
+            <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center py-2">
+              <span class="fw-bold text-dark">
+                <i class="fas fa-calendar-alt text-primary me-1"></i> Unpaid & Due Months (Flexible Typing per Month)
+              </span>
+              <div class="d-flex gap-1">
+                <button type="button" class="btn btn-sm btn-outline-success fw-bold py-1 px-2" onclick="payAllFull()">
+                  <i class="fas fa-check-double me-1"></i> Pay Full (All Months)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-bold py-1 px-2" onclick="payOldestMonthOnly()">
+                  <i class="fas fa-calendar-day me-1"></i> Pay 1st Month Only
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="clearAllAmounts()">
+                  <i class="fas fa-eraser me-1"></i> Clear
+                </button>
+              </div>
+            </div>
+
             <div class="table-responsive">
               <table class="table table-sm table-bordered text-center align-middle mb-0 small bg-white">
                 <thead class="table-light">
                   <tr>
+                    <th style="width: 35px;">
+                      <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" checked title="Select/Deselect All">
+                    </th>
                     <th>Month</th>
                     <th>Arrears</th>
-                    <th>Monthly Fee</th>
-                    <th>Exam/Other</th>
+                    <th>Monthly Tuition</th>
+                    <th>Fine / Punishment</th>
+                    <th>Extra / Other</th>
+                    <th>Concession</th>
                     <th>Total Due</th>
                     <th>Already Paid</th>
                     <th>Outstanding Balance</th>
+                    <th style="width: 140px;" class="bg-success bg-opacity-10 text-success fw-bold">
+                      Pay Amount (PKR)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for u in unpaid_entries %}
-                    <tr>
-                      <td class="fw-bold">{{ u.get_month_display }}</td>
+                    <tr id="row_month_{{ u.id }}">
+                      <td>
+                        <input type="checkbox" name="selected_months" value="{{ u.id }}" class="month-check" id="check_{{ u.id }}" checked onchange="handleCheckboxChange({{ u.id }})">
+                      </td>
+                      <td class="fw-bold text-start ps-2">
+                        {{ u.get_month_display }}
+                        <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-primary text-decoration-none" onclick="openMonthQuickAdjust('{{ u.month }}', '{{ u.monthly_fee }}', '{{ u.fine_punishment }}', '{{ u.fine_reason|escapejs }}', '{{ u.other_charges }}', '{{ u.other_charges_label|escapejs }}', '{{ u.exam_fee }}', '{{ u.discount_concession }}')" title="Edit charges/fines for {{ u.get_month_display }}">
+                          <i class="fas fa-pen-square"></i>
+                        </button>
+                      </td>
                       <td>{{ u.arrears|floatformat:0|intcomma }}</td>
-                      <td>{{ u.monthly_fee|floatformat:0|intcomma }}</td>
-                      <td>{{ u.exam_fee|add:u.other_charges|floatformat:0|intcomma }}</td>
+                      <td>
+                        {% if u.monthly_fee == 0 %}
+                          <span class="badge bg-success">Free (0)</span>
+                        {% else %}
+                          PKR {{ u.monthly_fee|floatformat:0|intcomma }}
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if u.fine_punishment > 0 %}
+                          <span class="badge bg-danger" title="{{ u.fine_reason|default:'Fine' }}">
+                            {{ u.fine_punishment|floatformat:0|intcomma }}
+                            {% if u.fine_reason %}<small class="d-block fst-italic">({{ u.fine_reason }})</small>{% endif %}
+                          </span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if u.other_charges > 0 or u.exam_fee > 0 %}
+                          <span class="badge bg-info text-dark" title="{{ u.other_charges_label|default:'Extra' }}">
+                            {{ u.other_charges|add:u.exam_fee|floatformat:0|intcomma }}
+                            {% if u.other_charges_label %}<small class="d-block fst-italic">({{ u.other_charges_label }})</small>{% endif %}
+                          </span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if u.discount_concession > 0 %}
+                          <span class="badge bg-success">-{{ u.discount_concession|floatformat:0|intcomma }}</span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
                       <td class="fw-bold">{{ u.total_amount|floatformat:0|intcomma }}</td>
                       <td class="text-success">{{ u.paid_amount|floatformat:0|intcomma }}</td>
-                      <td class="fw-bold text-danger">PKR {{ u.balance|floatformat:2|intcomma }}</td>
+                      <td class="fw-bold text-danger">
+                        PKR {{ u.balance|floatformat:0|intcomma }}
+                      </td>
+                      <td class="bg-success bg-opacity-10 p-1">
+                        <div class="input-group input-group-sm">
+                          <input type="number" step="1" name="pay_month_{{ u.id }}" id="pay_input_{{ u.id }}" 
+                                 class="form-control form-control-sm text-end fw-bold month-pay-input" 
+                                 value="{{ u.balance|floatformat:0 }}" 
+                                 data-balance="{{ u.balance|floatformat:0 }}" 
+                                 data-id="{{ u.id }}"
+                                 min="0" max="{{ u.balance|floatformat:0 }}"
+                                 oninput="updateTotalFromInputs()"
+                                 placeholder="0">
+                        </div>
+                      </td>
                     </tr>
                   {% empty %}
                     <tr>
-                      <td colspan="7" class="text-center py-3 text-success fw-bold">
-                        <i class="fas fa-check-circle me-1"></i> All fees are fully cleared for this student!
+                      <td colspan="11" class="text-center py-5">
+                        <div class="p-3 rounded bg-success bg-opacity-10 border border-success d-inline-block text-start shadow-sm" style="max-width: 650px;">
+                          <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                              <h5 class="fw-bold text-success mb-0">All fees are 100% cleared for {{ student.full_name }}!</h5>
+                              <small class="text-muted">There are no pending monthly dues for the active academic session.</small>
+                            </div>
+                          </div>
+                          <div class="mt-3 pt-2 border-top border-success border-opacity-25 d-flex gap-2 flex-wrap justify-content-between align-items-center">
+                            <span class="small text-danger fw-bold"><i class="fas fa-history me-1"></i> Paid by mistake or need to return/reverse?</span>
+                            <div class="d-flex gap-2">
+                              {% if recent_receipts %}
+                                <a href="#recentReceiptsSection" class="btn btn-outline-danger btn-sm fw-bold">
+                                  <i class="fas fa-undo-alt me-1"></i> Void Recent Payment
+                                </a>
+                              {% endif %}
+                              <button type="button" class="btn btn-danger btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalFullLedgerReset">
+                                <i class="fas fa-sync-alt me-1"></i> Reset Full Year to Unpaid
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   {% endfor %}
@@ -76,60 +189,588 @@
               </table>
             </div>
           </div>
-        </div>
 
-        <!-- Student Total Dues & Family Household Notice -->
-        <div class="row g-2 mb-4">
-          <div class="col-md-6">
-            <div class="p-3 rounded h-100 {% if student_total_dues > 0 %}bg-danger bg-opacity-10 border border-danger{% else %}bg-success bg-opacity-10 border border-success{% endif %}">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="small fw-bold text-dark"><i class="fas fa-user-graduate me-1 text-primary"></i> Total Student Dues:</span>
-                <span class="fw-bold {% if student_total_dues > 0 %}text-danger{% else %}text-success{% endif %}">
-                  PKR {{ student_total_dues|floatformat:2|intcomma }}
-                </span>
-              </div>
-              <div class="mt-2 text-end">
-                <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.8rem;">
-                  <i class="fas fa-file-pdf me-1"></i> Print Student Dues Notice
-                </a>
+          <!-- Total Payment Summary & Date -->
+          <div class="row g-3 mb-4 align-items-center">
+            <div class="col-md-5">
+              <div class="card bg-success bg-opacity-10 border border-success p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold text-dark fs-6">
+                    <i class="fas fa-coins text-warning me-1"></i> Total Payment To Collect:
+                  </span>
+                  <span class="fs-4 fw-bold text-success" id="displayTotalPaid">
+                    PKR 0
+                  </span>
+                </div>
+                <input type="hidden" name="amount_paid" id="masterAmountPaid" value="0">
+                <small class="text-muted mt-1 d-block">
+                  <i class="fas fa-info-circle me-1"></i> Dynamically calculated from your typed monthly amounts.
+                </small>
               </div>
             </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-bold small text-muted">Payment Date</label>
+              <input type="date" name="payment_date" id="id_payment_date" class="form-control" value="{% now 'Y-m-d' %}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold small text-muted">Receipt Remarks / Notes</label>
+              <input type="text" name="remarks" class="form-control" placeholder="Optional notes (e.g. Paid in Cash)">
+            </div>
           </div>
-          {% if family %}
+
+          <!-- Dues Overview & Sibling Info -->
+          <div class="row g-2 mb-4">
             <div class="col-md-6">
-              <div class="p-3 rounded h-100 bg-primary bg-opacity-10 border border-primary">
+              <div class="p-3 rounded h-100 {% if student_total_dues > 0 %}bg-danger bg-opacity-10 border border-danger{% else %}bg-success bg-opacity-10 border border-success{% endif %}">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="small fw-bold text-dark"><i class="fas fa-users me-1 text-primary"></i> Full Family Dues:</span>
-                  <span class="fw-bold text-danger">PKR {{ family_total_dues|floatformat:2|intcomma }}</span>
+                  <span class="small fw-bold text-dark"><i class="fas fa-user-graduate me-1 text-primary"></i> Total Student Dues:</span>
+                  <span class="fw-bold {% if student_total_dues > 0 %}text-danger{% else %}text-success{% endif %}">
+                    PKR {{ student_total_dues|floatformat:2|intcomma }}
+                  </span>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                  <small class="text-muted">{{ family_siblings_summary|length }} sibling{{ family_siblings_summary|length|pluralize }} enrolled</small>
-                  <div class="d-flex gap-1">
-                    <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
-                      <i class="fas fa-file-pdf me-1"></i> Family Notice
-                    </a>
-                    <a href="{% url 'family_payment' family.pk %}" class="btn btn-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
-                      Pay All &rarr;
-                    </a>
+                <div class="mt-2 text-end">
+                  <a href="{% url 'student_dues_notice' student.pk %}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.8rem;">
+                    <i class="fas fa-file-pdf me-1"></i> Print Student Dues Notice
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% if family %}
+              <div class="col-md-6">
+                <div class="p-3 rounded h-100 bg-primary bg-opacity-10 border border-primary">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="small fw-bold text-dark"><i class="fas fa-users me-1 text-primary"></i> Full Family Dues:</span>
+                    <span class="fw-bold text-danger">PKR {{ family_total_dues|floatformat:2|intcomma }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted">{{ family_siblings_summary|length }} sibling{{ family_siblings_summary|length|pluralize }} enrolled</small>
+                    <div class="d-flex gap-1">
+                      <a href="{% url 'family_dues_notice' family.pk %}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                        <i class="fas fa-file-pdf me-1"></i> Family Notice
+                      </a>
+                      <a href="{% url 'family_payment' family.pk %}" class="btn btn-primary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                        Pay All &rarr;
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
+            {% endif %}
+          </div>
+
+          <!-- Submit Buttons -->
+          <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+            <a href="{% url 'student_detail' student.pk %}" class="btn btn-light border">Cancel</a>
+            <button type="submit" class="btn btn-success fw-bold px-4 py-2 fs-6 shadow">
+              <i class="fas fa-check-circle me-1"></i> Process Fee Payment & Issue Receipt Slip
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== RETURN / VOID RECENT RECEIPTS ==================== -->
+    <div class="card shadow-sm border-0 mb-4" id="recentReceiptsSection">
+      <div class="card-header bg-danger bg-opacity-10 border-danger d-flex justify-content-between align-items-center py-3">
+        <h6 class="m-0 fw-bold text-danger">
+          <i class="fas fa-undo-alt me-2"></i> Payment History & Void / Return Receipts
+        </h6>
+        <span class="badge bg-danger">Mistake / Return Payment Options</span>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_receipts %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center" style="font-size: 0.9rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Receipt #</th>
+                  <th>Payment Date</th>
+                  <th>Amount Paid</th>
+                  <th>Months Covered</th>
+                  <th>Remarks / Notes</th>
+                  <th style="width: 220px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in recent_receipts %}
+                  <tr>
+                    <td class="fw-bold text-primary">{{ r.receipt_no }}</td>
+                    <td>{{ r.payment_date|date:"d M Y" }}</td>
+                    <td class="fw-bold text-success">PKR {{ r.amount_paid|floatformat:0|intcomma }}</td>
+                    <td class="text-start">
+                      {% for m in r.month_entries.all %}
+                        <span class="badge bg-secondary mb-1">{{ m.get_month_display }}</span>
+                      {% empty %}
+                        <span class="text-muted small">No months linked</span>
+                      {% endfor %}
+                    </td>
+                    <td class="small text-muted">{{ r.remarks|default:"—" }}</td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <a href="{% url 'fee_receipt' r.pk %}" class="btn btn-outline-primary" title="View / Print Receipt Slip">
+                          <i class="fas fa-file-invoice me-1"></i> View Slip
+                        </a>
+                        <button type="button" class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalVoidReceipt_{{ r.id }}" title="Void or return this payment receipt">
+                          <i class="fas fa-undo-alt me-1"></i> Void / Return
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="fas fa-receipt fa-2x mb-2 text-muted"></i>
+            <p class="mb-0 small">No receipts recorded yet for this student.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ==================== SESSION MONTHS STATUS & RESET OPTIONS ==================== -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-warning bg-opacity-10 border-warning d-flex justify-content-between align-items-center py-3">
+        <div>
+          <h6 class="m-0 fw-bold text-dark">
+            <i class="fas fa-calendar-alt me-2 text-warning"></i> All Session Months & Individual / Full Reset (12 Months)
+          </h6>
+          <small class="text-muted">Return any mistakenly paid month or reset the full year back to unpaid dues.</small>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalFullLedgerReset">
+          <i class="fas fa-sync-alt me-1"></i> Reset Full 12 Months to Unpaid
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 text-center" style="font-size: 0.88rem;">
+            <thead class="table-light">
+              <tr>
+                <th>Month</th>
+                <th>Tuition Fee</th>
+                <th>Fine / Extra</th>
+                <th>Concession</th>
+                <th>Total Billed</th>
+                <th>Paid Amount</th>
+                <th>Status</th>
+                <th>Receipt #</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in all_entries %}
+                <tr class="{% if entry.is_paid %}table-light{% endif %}">
+                  <td class="fw-bold text-start ps-3">{{ entry.get_month_display }}</td>
+                  <td>PKR {{ entry.monthly_fee|floatformat:0|intcomma }}</td>
+                  <td>
+                    {% if entry.fine_punishment > 0 or entry.other_charges > 0 or entry.exam_fee > 0 %}
+                      <span class="badge bg-danger">{{ entry.fine_punishment|add:entry.other_charges|add:entry.exam_fee|floatformat:0|intcomma }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.discount_concession > 0 %}
+                      <span class="badge bg-success">-{{ entry.discount_concession|floatformat:0|intcomma }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="fw-bold">PKR {{ entry.total_amount|floatformat:0|intcomma }}</td>
+                  <td class="text-success fw-bold">PKR {{ entry.paid_amount|floatformat:0|intcomma }}</td>
+                  <td>
+                    {% if entry.is_paid %}
+                      <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Paid</span>
+                    {% elif entry.paid_amount > 0 %}
+                      <span class="badge bg-warning text-dark"><i class="fas fa-adjust me-1"></i> Partial</span>
+                    {% else %}
+                      <span class="badge bg-danger"><i class="fas fa-clock me-1"></i> Unpaid</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.last_receipt_no %}
+                      <span class="badge bg-info text-dark">{{ entry.last_receipt_no }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entry.paid_amount > 0 or entry.is_paid %}
+                      <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 fw-bold" data-bs-toggle="modal" data-bs-target="#modalResetMonth_{{ entry.id }}">
+                        <i class="fas fa-undo-alt me-1"></i> Reset Month
+                      </button>
+                    {% else %}
+                      <span class="badge bg-light text-muted border">Unpaid</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== MODAL: ADD EXTRA CHARGES / FINE / CUSTOMIZE MONTH FEE ==================== -->
+<div class="modal fade" id="modalAddChargeOrAdjust" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-warning text-dark py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="fas fa-sliders-h me-2"></i> Add Fine / Extra Charge / Custom Fee
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'collect_fee' student.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_charge_or_adjust">
+        
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">
+            Add custom fines, extra charges, or customize monthly tuition fee for <strong>{{ student.full_name }}</strong>. All charges appear separately on the official fee slip.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Target Month <span class="text-danger">*</span></label>
+            <select name="target_month" id="modalTargetMonth" class="form-select fw-bold">
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-7">
+              <label class="form-label fw-bold small">Monthly Tuition Fee (PKR)</label>
+              <input type="number" step="1" name="month_tuition_fee" id="modalMonthTuition" class="form-control" value="{{ student.effective_monthly_fee|floatformat:0 }}" placeholder="e.g. 1500, or 0 for Free">
+              <small class="text-muted" style="font-size: 0.75rem;">Enter 0 if tuition fee is Free for this student.</small>
             </div>
-          {% endif %}
+            <div class="col-md-5 d-flex align-items-end mb-2">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="set_permanent_custom" id="chkSetPermanent" value="1">
+                <label class="form-check-label small fw-bold" for="chkSetPermanent">
+                  Make Permanent
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-danger bg-opacity-10 border-danger p-3 mb-3">
+            <h6 class="fw-bold text-danger mb-2">
+              <i class="fas fa-exclamation-triangle me-1"></i> Fine / Punishment
+            </h6>
+            <div class="row g-2">
+              <div class="col-md-5">
+                <label class="form-label small fw-bold">Fine Amount (PKR)</label>
+                <input type="number" step="1" name="fine_punishment" id="modalFineAmt" class="form-control" placeholder="e.g. 200" value="0">
+              </div>
+              <div class="col-md-7">
+                <label class="form-label small fw-bold">Punishment / Fine Reason</label>
+                <input type="text" name="fine_reason" id="modalFineReason" class="form-control" placeholder="e.g. Late attendance, Discipline, Absent">
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-info bg-opacity-10 border-info p-3 mb-3">
+            <h6 class="fw-bold text-dark mb-2">
+              <i class="fas fa-receipt me-1 text-info"></i> Extra Charges / Fund
+            </h6>
+            <div class="row g-2">
+              <div class="col-md-5">
+                <label class="form-label small fw-bold">Extra Amount (PKR)</label>
+                <input type="number" step="1" name="other_charges" id="modalOtherAmt" class="form-control" placeholder="e.g. 300" value="0">
+              </div>
+              <div class="col-md-7">
+                <label class="form-label small fw-bold">Charges Description</label>
+                <input type="text" name="other_charges_label" id="modalOtherLabel" class="form-control" placeholder="e.g. Annual Sports Fund, ID Card, Books" value="Other Charges">
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">DMC / Examination Fee (PKR)</label>
+              <input type="number" step="1" name="exam_fee" id="modalExamFee" class="form-control" placeholder="0" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Special Discount / Concession (PKR)</label>
+              <input type="number" step="1" name="discount_concession" id="modalDiscount" class="form-control" placeholder="0" value="0">
+            </div>
+          </div>
         </div>
 
-        <form method="post">
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-warning fw-bold text-dark px-4">
+            <i class="fas fa-save me-1"></i> Save & Apply Charges
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: FULL LEDGER RESET (MISTAKEN YEAR PAYMENT) ==================== -->
+<div class="modal fade" id="modalFullLedgerReset" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-danger text-white py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="fas fa-exclamation-triangle me-2"></i> Reset Full 12 Months to Unpaid
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'reset_student_ledger' student.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="alert alert-danger mb-3">
+            <h6 class="fw-bold mb-1"><i class="fas fa-undo-alt me-1"></i> Full Year Payment Return / Reversal</h6>
+            <p class="mb-0 small">
+              This will reset all 12 monthly fee entries for <strong>{{ student.full_name }}</strong> back to <strong>Unpaid (PKR 0 Paid)</strong> and recalculate outstanding arrears.
+            </p>
+          </div>
+          <p class="small text-muted mb-3">
+            Use this if the owner or cashier mistakenly paid the entire year or collected fees against the wrong student.
+          </p>
+          <div class="form-check p-3 bg-light rounded border">
+            <input class="form-check-input" type="checkbox" name="void_receipts" value="1" id="checkVoidReceipts" checked>
+            <label class="form-check-label small fw-bold text-dark" for="checkVoidReceipts">
+              Also delete / void all fee receipts issued for this student's months
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold">
+            <i class="fas fa-check-circle me-1"></i> Yes, Reset All Months to Unpaid
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODALS: VOID SPECIFIC RECEIPTS ==================== -->
+{% for r in recent_receipts %}
+<div class="modal fade" id="modalVoidReceipt_{{ r.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header bg-danger text-white py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="fas fa-undo-alt me-2"></i> Void / Return Receipt {{ r.receipt_no }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'void_fee_receipt' r.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <p class="mb-2">Are you sure you want to return and void payment receipt <strong class="text-danger">{{ r.receipt_no }}</strong>?</p>
+          <ul class="list-group list-group-flush small mb-3 border rounded">
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Amount Paid:</span>
+              <strong class="text-success">PKR {{ r.amount_paid|floatformat:0|intcomma }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Payment Date:</span>
+              <span>{{ r.payment_date|date:"d M Y" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Months Covered:</span>
+              <span>
+                {% for m in r.month_entries.all %}{{ m.get_month_display }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}
+              </span>
+            </li>
+          </ul>
+          <div class="alert alert-warning py-2 mb-0 small">
+            <i class="fas fa-exclamation-triangle me-1"></i> This receipt will be permanently deleted and the paid amounts on the above months will be reversed back to pending student dues.
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold">
+            <i class="fas fa-undo-alt me-1"></i> Yes, Void & Return This Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- ==================== MODALS: RESET SINGLE MONTHS ==================== -->
+{% for entry in all_entries %}
+  {% if entry.paid_amount > 0 or entry.is_paid %}
+  <div class="modal fade" id="modalResetMonth_{{ entry.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-warning text-dark py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="fas fa-undo-alt me-2"></i> Return / Reset Month: {{ entry.get_month_display }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="post" action="{% url 'reset_month_fee' entry.id %}">
           {% csrf_token %}
-          {{ form|crispy }}
-          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-            <a href="{% url 'student_detail' student.pk %}" class="btn btn-light border">Cancel</a>
-            <button type="submit" class="btn btn-success fw-bold px-4">
-              <i class="fas fa-check-circle me-1"></i> Process Fee Payment & Issue Receipt
+          <div class="modal-body p-4">
+            <p class="mb-2">
+              Are you sure you want to return and reset the payment for <strong>{{ entry.get_month_display }}</strong>?
+            </p>
+            <div class="alert alert-info small mb-0">
+              Paid amount of <strong>PKR {{ entry.paid_amount|floatformat:0|intcomma }}</strong> will be reset to 0, and <strong>{{ entry.get_month_display }}</strong> will be marked as unpaid. Subsequent month arrears will automatically roll forward and recalculate.
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning fw-bold text-dark">
+              <i class="fas fa-undo-alt me-1"></i> Yes, Reset {{ entry.get_month_display }} to Unpaid
             </button>
           </div>
         </form>
       </div>
     </div>
   </div>
-</div>
+  {% endif %}
+{% endfor %}
+
+<script>
+  function updateTotalFromInputs() {
+    let total = 0;
+    const inputs = document.querySelectorAll('.month-pay-input');
+    inputs.forEach(input => {
+      const id = input.getAttribute('data-id');
+      const chk = document.getElementById('check_' + id);
+      const val = parseFloat(input.value) || 0;
+      if (chk && chk.checked && val > 0) {
+        total += val;
+      }
+    });
+
+    document.getElementById('displayTotalPaid').innerText = 'PKR ' + total.toLocaleString('en-US');
+    document.getElementById('masterAmountPaid').value = total;
+  }
+
+  function handleCheckboxChange(id) {
+    const chk = document.getElementById('check_' + id);
+    const inp = document.getElementById('pay_input_' + id);
+    if (!chk.checked) {
+      inp.value = 0;
+    } else {
+      const bal = inp.getAttribute('data-balance') || 0;
+      if (parseFloat(inp.value) === 0) {
+        inp.value = bal;
+      }
+    }
+    updateTotalFromInputs();
+  }
+
+  function toggleSelectAll(master) {
+    const checks = document.querySelectorAll('.month-check');
+    checks.forEach(c => {
+      c.checked = master.checked;
+      const id = c.value;
+      const inp = document.getElementById('pay_input_' + id);
+      if (inp) {
+        if (!master.checked) {
+          inp.value = 0;
+        } else {
+          inp.value = inp.getAttribute('data-balance') || 0;
+        }
+      }
+    });
+    updateTotalFromInputs();
+  }
+
+  function payAllFull() {
+    const checks = document.querySelectorAll('.month-check');
+    checks.forEach(c => {
+      c.checked = true;
+      const id = c.value;
+      const inp = document.getElementById('pay_input_' + id);
+      if (inp) {
+        inp.value = inp.getAttribute('data-balance') || 0;
+      }
+    });
+    const master = document.getElementById('selectAllCheckbox');
+    if (master) master.checked = true;
+    updateTotalFromInputs();
+  }
+
+  function payOldestMonthOnly() {
+    clearAllAmounts();
+    const checks = document.querySelectorAll('.month-check');
+    if (checks.length > 0) {
+      const firstCheck = checks[0];
+      firstCheck.checked = true;
+      const id = firstCheck.value;
+      const inp = document.getElementById('pay_input_' + id);
+      if (inp) {
+        inp.value = inp.getAttribute('data-balance') || 0;
+      }
+    }
+    updateTotalFromInputs();
+  }
+
+  function clearAllAmounts() {
+    const checks = document.querySelectorAll('.month-check');
+    checks.forEach(c => {
+      c.checked = false;
+      const id = c.value;
+      const inp = document.getElementById('pay_input_' + id);
+      if (inp) {
+        inp.value = 0;
+      }
+    });
+    const master = document.getElementById('selectAllCheckbox');
+    if (master) master.checked = false;
+    updateTotalFromInputs();
+  }
+
+  function openMonthQuickAdjust(m, monthlyFee, fineAmt, fineReason, otherAmt, otherLabel, examFee, discount) {
+    document.getElementById('modalTargetMonth').value = m;
+    if (monthlyFee !== undefined && monthlyFee !== 'None') {
+      document.getElementById('modalMonthTuition').value = Math.round(parseFloat(monthlyFee) || 0);
+    }
+    if (fineAmt !== undefined && fineAmt !== 'None') {
+      document.getElementById('modalFineAmt').value = Math.round(parseFloat(fineAmt) || 0);
+    }
+    if (fineReason !== undefined && fineReason !== 'None') {
+      document.getElementById('modalFineReason').value = fineReason;
+    }
+    if (otherAmt !== undefined && otherAmt !== 'None') {
+      document.getElementById('modalOtherAmt').value = Math.round(parseFloat(otherAmt) || 0);
+    }
+    if (otherLabel !== undefined && otherLabel !== 'None') {
+      document.getElementById('modalOtherLabel').value = otherLabel;
+    }
+    if (examFee !== undefined && examFee !== 'None') {
+      document.getElementById('modalExamFee').value = Math.round(parseFloat(examFee) || 0);
+    }
+    if (discount !== undefined && discount !== 'None') {
+      document.getElementById('modalDiscount').value = Math.round(parseFloat(discount) || 0);
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('modalAddChargeOrAdjust'));
+    modal.show();
+  }
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', function() {
+    updateTotalFromInputs();
+  });
+</script>
 {% endblock %}

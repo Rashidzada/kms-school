@@ -284,6 +284,21 @@ def school_settings(request):
             setting.default_backup_email = request.POST.get("default_backup_email", "").strip()
             setting.backup_send_sql = request.POST.get("backup_send_sql") == "on"
             setting.backup_send_excel = request.POST.get("backup_send_excel") == "on"
+            setting.email_provider = request.POST.get("email_provider", setting.email_provider or "gmail_smtp")
+            setting.https_api_provider = request.POST.get("https_api_provider", setting.https_api_provider or "resend")
+            entered_api_key = request.POST.get("https_api_key", "").strip()
+            if entered_api_key:
+                setting.https_api_key = entered_api_key
+            elif request.POST.get("clear_api_key") == "1":
+                setting.https_api_key = ""
+            setting.safe_backup_folder = request.POST.get("safe_backup_folder", setting.safe_backup_folder or "D:\\School_Backups").strip()
+            setting.auto_backup_mode = request.POST.get("auto_backup_mode", setting.auto_backup_mode or "background").strip()
+            preferred_time = request.POST.get("auto_backup_preferred_time", "").strip()
+            if preferred_time:
+                try:
+                    setting.auto_backup_preferred_time = preferred_time
+                except Exception:
+                    pass
             setting.save()
 
             if request.POST.get("send_now") == "1":
